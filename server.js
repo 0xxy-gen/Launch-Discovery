@@ -4,7 +4,13 @@ import { fileURLToPath } from 'node:url';
 
 import { COUNTRIES } from './lib/countries.js';
 import { ACCOUNT_TYPES } from './lib/account-types.js';
-import { validateRegistration, validateLogin } from './lib/validate.js';
+import { ORBIT_TYPES, RIDE_TYPES, FORM_FACTORS } from './lib/mission-options.js';
+import { ownerMission, previewMission } from './lib/banding.js';
+import {
+  createMission, updateMission, setMissionStatus,
+  missionById, missionsForOwner, deleteMission,
+} from './lib/missions.js';
+import { validateRegistration, validateLogin, validateMission } from './lib/validate.js';
 import { hashPassword, verifyPassword, newSessionToken, hashToken } from './lib/auth.js';
 import {
   createUser, findUserByEmail, createSession, findSessionUser,
@@ -97,7 +103,13 @@ const DUMMY_HASH = await hashPassword(newSessionToken());
 // editing the account types or country list can never leave a client stale.
 app.get('/api/options', (req, res) => {
   res.set('Cache-Control', 'no-cache');
-  res.json({ countries: COUNTRIES, accountTypes: ACCOUNT_TYPES });
+  res.json({
+    countries: COUNTRIES,
+    accountTypes: ACCOUNT_TYPES,
+    orbitTypes: ORBIT_TYPES,
+    rideTypes: RIDE_TYPES,
+    formFactors: FORM_FACTORS,
+  });
 });
 
 app.get('/api/me', (req, res) => {
@@ -166,6 +178,91 @@ app.post('/api/logout', (req, res) => {
   if (token) deleteSession(hashToken(token));
   res.clearCookie(COOKIE, { path: '/', httpOnly: true, sameSite: 'lax', secure: SECURE_COOKIES });
   res.status(204).end();
+});
+
+// ─── missions ───────────────────────────────────────────────────────────────
+
+function currentUser(req) {
+  const token = readCookie(req, COOKIE);
+  return token ? findSessionUser(hashToken(token)) : undefined;
+}
+
+function requireUser(req, res, next) {
+  const user = currentUser(req);
+  if (!user) return res.status(401).json({ error: 'Not signed in.' });
+  req.user = user;
+  next();
+}
+
+// Ownership is checked on every mission route: the id in the URL is never
+// trusted on its own, only rows belonging to the signed-in account are touched.
+function ownedMission(req, res) {
+  const mission = missionById(Number(req.params.id));
+  if (!mission || mission.user_id !== req.user.id) {
+    res.status(404).json({ error: 'Not found.' });
+    return undefined;
+  }
+  return mission;
+}
+
+app.get('/api/missions', requireUser, (req, res) => {
+  const missions = missionsForOwner(req.user.id).map(m => ownerMission(m, req.user));
+  res.json({ missions });
+});
+
+// Drives the "what providers see" panel as the form is typed into.
+app.post('/api/missions/preview', requireJson, requireUser, (req, res) => {
+  const { fields, values } = validateMission(req.body);
+  res.json({ preview: previewMission(values, fields, req.user) });
+});
+
+app.post('/api/missions', requireJson, requireUser, (req, res) => {
+  const { fields, values } = validateMission(req.body);
+  if (Object.keys(fields).length) return res.status(400).json({ fields });
+
+  const mission = createMission(req.user.id, values, req.body.publish === true);
+  res.status(201).json({ mission: ownerMission(mission, req.user) });
+});
+
+app.put('/api/missions/:id', requireJson, requireUser, (req, res) => {
+  if (!ownedMission(req, res)) return;
+
+  const { fields, values } = validateMission(req.body);
+  if (Object.keys(fields).length) return res.status(400).json({ fields });
+
+  const mission = updateMission(req.user.id, Number(req.params.id), values);
+  res.json({ mission: ownerMission(mission, req.user) });
+});
+
+// Publishing is its own route, not a field on the update — flipping a
+// requirement between private and visible should be one deliberate action.
+app.post('/api/missions/:id/status', requireJson, requireUser, (req, res) => {
+  if (!ownedMission(req, res)) return;
+
+  const status = req.body.status;
+  if (status !== 'published' && status !== 'draft') {
+    return res.status(400).json({ error: 'Status must be draft or published.' });
+  }
+  const mission = setMissionStatus(req.user.id, Number(req.params.id), status);
+  res.json({ mission: ownerMission(mission, req.user) });
+});
+
+app.delete('/api/missions/:id', requireUser, (req, res) => {
+  if (!ownedMission(req, res)) return;
+  deleteMission(req.user.id, Number(req.params.id));
+  res.status(204).end();
+});
+
+// ─── pages ──────────────────────────────────────────────────────────────────
+
+app.get('/', (req, res, next) => {
+  if (currentUser(req)) return res.redirect('/missions');
+  next();
+});
+
+app.get('/missions', (req, res) => {
+  if (!currentUser(req)) return res.redirect('/');
+  res.sendFile(join(root, 'public', 'missions.html'));
 });
 
 app.use(express.static(join(root, 'public'), { extensions: ['html'] }));

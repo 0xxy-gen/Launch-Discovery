@@ -7,43 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
+<link rel="stylesheet" href="theme.css">
 <style>
-  /* Palette from mission-management/app/globals.css,
-     type + button treatment from aetherspace.tech */
-  :root {
-    --background: #000000;
-    --surface: #0f0f0f;       /* raised panel — neutral black, lifted off the page */
-    --radius-panel: 16px;
-    --radius-btn: 10px;
-    --surface-line: rgba(255, 255, 255, 0.16);
-    --cyan: #22d3ee;          /* cyan-400 — solid CTA fill */
-    --cyan-hover: #67e8f9;    /* cyan-300 */
-    --rule: #3ce0f5;          /* section titles / active tab */
-    --destructive: #ff6b6b;
-    --text: #ffffff;
-    --text-2: rgba(255, 255, 255, 0.78);   /* body copy */
-    --text-3: rgba(255, 255, 255, 0.62);   /* labels, eyebrows */
-    --text-4: rgba(255, 255, 255, 0.42);   /* placeholders, fine print */
-    --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  * { box-sizing: border-box; }
-
-  html { background: #000; }
-
-  body {
-    margin: 0;
-    height: 100vh;
-    overflow: hidden;
-    background: var(--background);
-    color: var(--text);
-    font-family: var(--font-sans);
-    font-weight: 300;
-    font-size: 15px;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
-  }
-
   /* Split: form column left, visual panel right */
   .split {
     display: grid;
@@ -80,288 +45,6 @@
   @keyframes drift  { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-10px, -16px, 0); } }
   @media (prefers-reduced-motion: reduce) {
     .visual-pane .drift { animation: none; }
-  }
-  /* The pane is the card now — the form itself sits flat inside it */
-  .panel { background: transparent; border: 0; }
-
-  .panel-head { padding: 0 0 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
-
-  /* Micro eyebrow — the site's mono/heavy-tracking label idiom */
-  .eyebrow {
-    margin: 0 0 12px;
-    font-weight: 600;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-3);
-  }
-
-  /* Headline — tracking-tighter, leading 1.0, mixed light/bold weights */
-  h1 {
-    margin: 0;
-    font-size: 34px;
-    line-height: 1.0;
-    letter-spacing: -0.045em;
-    font-weight: 300;
-  }
-  h1 .lite { font-weight: 300; color: rgba(255, 255, 255, 0.75); }
-  h1 .bold { font-weight: 700; color: #fff; }
-
-  .lede { margin: 14px 0 0; font-size: 14px; font-weight: 300; color: var(--text-2); }
-
-  .tabs {
-    display: flex;
-    gap: 34px;
-    padding: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-  }
-  .tabs button {
-    padding: 16px 0;
-    margin-bottom: -1px;
-    background: none;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 15px;
-    letter-spacing: 0;
-    color: var(--text-3);
-    cursor: pointer;
-    transition: color .2s;
-  }
-  .tabs button:hover { color: #fff; }
-  .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--rule); }
-
-  .panel-body { padding: 30px 0 0; }
-
-  .banner {
-    display: none;
-    padding: 12px 14px;
-    margin-bottom: 26px;
-    font-weight: 400;
-    font-size: 13.5px;
-  }
-  .banner { border-radius: 8px; }
-  .banner.show { display: block; }
-  .banner.bad { color: #ff8f8f; border: 1px solid rgba(255, 107, 107, .5); background: rgba(255, 107, 107, .12); }
-  .banner.ok  { color: var(--rule); border: 1px solid rgba(60, 224, 245, .5); background: rgba(60, 224, 245, .12); }
-
-  /* Section rule — the app's Section title treatment */
-  .section {
-    margin: 34px 0 26px;
-    padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--rule);
-  }
-
-  .field { margin-bottom: 26px; }
-
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    font-size: 13.5px;
-    letter-spacing: 0;
-    color: var(--text-2);
-  }
-  label .opt { margin-left: 6px; font-weight: 400; color: var(--text-4); }
-
-  .field-label {
-    display: block;
-    margin: 0 0 10px;
-    font-weight: 500;
-    font-size: 13.5px;
-    color: var(--text-2);
-  }
-
-  .choices { display: grid; gap: 8px; }
-
-  .choice {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 2px 12px;
-    margin: 0;
-    padding: 12px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 10px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: border-color .2s, background .2s;
-  }
-  .choice:hover { border-color: rgba(255, 255, 255, 0.32); }
-  .choice:has(input:checked) { border-color: var(--cyan); background: rgba(34, 211, 238, .07); }
-  .choice:focus-within { outline: 2px solid rgba(34, 211, 238, .5); outline-offset: 2px; }
-
-  .choice input {
-    width: 15px;
-    height: 15px;
-    margin: 0;
-    padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 50%;
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
-    transition: border-color .2s;
-  }
-  .choice input:checked {
-    border-color: var(--cyan);
-    background: radial-gradient(circle, var(--cyan) 0 42%, transparent 44%);
-  }
-
-  .choice-label { font-weight: 500; color: #fff; }
-  .choice-help  { grid-column: 2; font-size: 12px; line-height: 1.4; color: var(--text-4); }
-
-  .choices[aria-invalid="true"] .choice { border-color: rgba(255, 107, 107, .5); }
-
-  input,
-  select {
-    width: 100%;
-    padding: 11px 0;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 0;
-    color: #fff;
-    font-family: var(--font-sans);
-    font-weight: 300;
-    font-size: 16px;
-    line-height: 1.5;
-    outline: none;
-    transition: border-color .2s;
-  }
-  input::placeholder { color: var(--text-4); }
-  input:focus,
-  select:focus { border-bottom-color: var(--cyan); }
-  input[aria-invalid="true"],
-  select[aria-invalid="true"] { border-bottom-color: var(--destructive); }
-
-  select {
-    padding-right: 24px;
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M2 5L7 10L12 5' stroke='rgba(255,255,255,0.65)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 2px center;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-  select.placeholder { color: var(--text-4); }
-  select option { background: #0f0f0f; color: #fff; }
-
-  /* Country code + number share one row */
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-
-  .err {
-    min-height: 16px;
-    margin-top: 7px;
-    font-weight: 400;
-    font-size: 12.5px;
-    color: #ff8f8f;
-  }
-
-  /* Solid, black-on-color fills — the site's CTA treatment */
-  button.primary,
-  button.alt {
-    width: 100%;
-    margin-top: 8px;
-    padding: 14px;
-    border: 0;
-    border-radius: 0;
-    color: #000;
-    font-family: var(--font-sans);
-    font-weight: 600;
-    font-size: 15px;
-    letter-spacing: 0.025em;
-    border-radius: var(--radius-btn);
-    cursor: pointer;
-    transition: background .2s, box-shadow .2s;
-  }
-  button.primary { background: var(--cyan); }
-  button.primary:hover { background: var(--cyan-hover); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55); }
-  button.alt { background: #fff; }
-  button.alt:hover { background: rgba(255, 255, 255, 0.9); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
-
-  .note {
-    margin: 18px 0 0;
-    font-weight: 400;
-    font-size: 12.5px;
-    color: var(--text-4);
-    text-align: center;
-  }
-
-  .granted { text-align: center; }
-  .seal {
-    width: 58px;
-    height: 58px;
-    margin: 0 auto 22px;
-    display: grid;
-    place-items: center;
-    background: var(--cyan);
-    border-radius: 14px;
-    color: #000;
-    font-weight: 600;
-    font-size: 19px;
-    letter-spacing: 0;
-  }
-  .granted .eyebrow { margin-bottom: 10px; }
-  .granted h1 { font-size: 30px; }
-  .granted .who {
-    margin: 16px 0 0;
-    font-weight: 400;
-    font-size: 14px;
-    color: var(--text-2);
-    word-break: break-all;
-  }
-  .granted .meta {
-    margin: 20px 0 28px;
-    padding-top: 18px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    font-weight: 400;
-    font-size: 13px;
-    line-height: 1.9;
-    color: var(--text-3);
-  }
-  .granted .meta:empty { display: none; }
-  .granted .meta div:first-child {
-    margin-bottom: 4px;
-    font-weight: 600;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--rule);
-  }
-
-  .linkish {
-    padding: 0;
-    background: none;
-    border: 0;
-    color: var(--text-4);
-    font-family: var(--font-sans);
-    font-size: 12.5px;
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    cursor: pointer;
-    transition: color .2s;
-  }
-  .linkish:hover { color: #fff; }
-
-  @media (max-width: 900px) {
-    .split { grid-template-columns: 1fr; }
-    .visual-pane { display: none; }
-  }
-
-  .disclaimer {
-    margin: 40px 0 0;
-    font-weight: 300;
-    font-size: 12px;
-    line-height: 1.7;
-    color: var(--text-4);
-    text-align: center;
   }
 </style>
 </head>
@@ -464,18 +147,6 @@
       </form>
 
       <p class="note" id="note"></p>
-    </div>
-  </section>
-
-  <!-- signed-in -->
-  <section id="account" class="panel" hidden>
-    <div class="panel-body granted">
-      <div class="seal" id="seal">?</div>
-      <p class="eyebrow">Session Active</p>
-      <h1><span class="lite">Access</span> <span class="bold">Granted</span></h1>
-      <p class="who" id="who"></p>
-      <div class="meta" id="meta"></div>
-      <button class="alt" id="signout">Sign out</button>
     </div>
   </section>
 
@@ -587,7 +258,6 @@
 <script>
 (function () {
   const $ = id => document.getElementById(id);
-  const authView = $('auth'), accountView = $('account');
   const form = $('form'), banner = $('banner'), note = $('note'), submit = $('submit');
   const email = $('email'), password = $('password'), confirm = $('confirm');
   const accountType = $('account-type');   // radiogroup container
@@ -728,49 +398,12 @@
     }
     setBusy(false);
 
-    if (res.ok) {
-      form.reset();
-      [country, dial].forEach(markPlaceholder);
-      return render(res.data.user);
-    }
+    if (res.ok) return location.assign('/missions');
 
     showFieldErrors(res.data.fields);
     if (res.data.error) showBanner(res.data.error, 'bad');
     else if (res.status === 429) showBanner('Too many attempts. Try again shortly.', 'bad');
   });
-
-  $('signout').addEventListener('click', async () => {
-    try { await api('/api/logout', { method: 'POST' }); } catch { /* fall through */ }
-    setMode('signin');
-    render(null);
-    showBanner('Session ended', 'ok');
-  });
-
-  // ─── render ───────────────────────────────────────────────────────────────
-
-  function render(user) {
-    authView.hidden = Boolean(user);
-    accountView.hidden = !user;
-    if (!user) return;
-
-    $('who').textContent = user.email;
-    $('seal').textContent = user.email.slice(0, 2).toUpperCase();
-
-    const rows = [
-      user.accountTypeLabel,
-      [user.role, user.organisation].filter(Boolean).join(' · '),
-      user.country,
-      [user.dial, user.phone].filter(Boolean).join(' '),
-    ].filter(Boolean);
-
-    const meta = $('meta');
-    meta.textContent = '';
-    rows.forEach(r => {
-      const line = document.createElement('div');
-      line.textContent = r;   // user-supplied — never innerHTML
-      meta.appendChild(line);
-    });
-  }
 
   // ─── boot ─────────────────────────────────────────────────────────────────
 
@@ -805,8 +438,10 @@
   }
 
   async function loadSession() {
-    const { ok, data } = await api('/api/me');
-    render(ok ? data.user : null);
+    // The server also redirects a signed-in visitor, so this only fires when a
+    // session appears while the page is already open.
+    const { ok } = await api('/api/me');
+    if (ok) location.assign('/missions');
   }
 
   setMode('signin');
