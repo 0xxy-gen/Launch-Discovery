@@ -216,10 +216,15 @@ providers find them without learning who they are. `/missions` holds the whole
 flow: the list, the editor, and a live "what providers see" panel beside the
 form.
 
-The word **requirement** is deliberately absent from the interface — it does not
-say whether you are looking at one satellite or a whole programme. On screen it
-is a *mission*, a constellation groups *satellites*, and `New mission` creates
-exactly one satellite's record.
+**One record is one satellite**, and the interface says so: `New satellite`,
+`Add satellite`, `Edit satellite`, and counts in satellites. Two words were
+rejected on the way there. *Requirement* never said whether you were looking at
+one spacecraft or a whole programme. *Mission* is worse in this domain than it
+first appears — in launch it usually means the **flight**, which is what the
+`Launches` tab lists, so using it for the payload side puts the same word on
+both sides of the marketplace. `My Missions` survives as the name of the area,
+because a programme of satellites is a mission; the records inside it are
+satellites.
 
 **Banding is the anonymity mechanism.** Exact values are fingerprints — "180 kg
 to 550 km SSO in March 2027" names a specific company to anyone in the industry

@@ -182,7 +182,7 @@
 
     const published = missions.filter(m => m.status === 'published').length;
     $('list-lede').textContent = missions.length
-      ? `${missions.length} mission${missions.length === 1 ? '' : 's'} · ${published} visible to providers`
+      ? `${missions.length} satellite${missions.length === 1 ? '' : 's'} · ${published} visible to providers`
       : 'Add a satellite and providers can find it without learning who you are.';
 
     // one container per constellation, then whatever is not in one
@@ -273,7 +273,7 @@
       if (data.needsProfile) return showProfile(() => setStatus(id, status));
       return showBanner(data.error ?? 'Could not change that.', 'bad');
     }
-    showBanner(status === 'published' ? 'Mission published' : 'Mission hidden from providers', 'ok');
+    showBanner(status === 'published' ? 'Published — providers can find it' : 'Hidden from providers', 'ok');
     loadList();
   }
 
@@ -309,7 +309,7 @@
     clearErrors();
     clearBanner();
     fillForm(mission);
-    $('editor-eyebrow').textContent = mission ? 'Edit mission' : 'New mission';
+    $('editor-eyebrow').textContent = mission ? 'Edit satellite' : 'New satellite';
     $('save-publish').textContent = mission?.status === 'published' ? 'Save changes' : 'Publish';
     $('delete').hidden = !mission;
     listView.hidden = true;
@@ -338,7 +338,7 @@
         for (const [id, msg] of Object.entries(res.data.fields)) if ($(id)) setError(id, msg);
         showBanner('Check the highlighted fields.', 'bad');
       } else if (res.data.needsProfile) {
-        showProfile(() => { showBanner('Now publish your mission.', 'ok'); openEditorAgain(); });
+        showProfile(() => { showBanner('Now publish it.', 'ok'); openEditorAgain(); });
       } else {
         showBanner(res.data.error ?? 'Could not save that.', 'bad');
       }
@@ -350,7 +350,7 @@
     if (publish && saved.status !== 'published') {
       await api(`/api/missions/${saved.id}/status`, { method: 'POST', body: { status: 'published' } });
     }
-    showBanner(publish ? 'Mission published' : 'Saved as a draft', 'ok');
+    showBanner(publish ? 'Published — providers can find it' : 'Saved as a draft', 'ok');
     showList();
   }
 
@@ -360,7 +360,7 @@
   $('delete').addEventListener('click', async () => {
     if (!editingId) return;
     const { ok } = await api(`/api/missions/${editingId}`, { method: 'DELETE' });
-    if (ok) { showBanner('Mission deleted', 'ok'); showList(); }
+    if (ok) { showBanner('Satellite deleted', 'ok'); showList(); }
   });
 
   $('new-constellation').addEventListener('click', async () => {
