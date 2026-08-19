@@ -14,6 +14,8 @@ import {
   createPool, poolById, allPools, poolView, joinPool, leavePool, isMember,
 } from './lib/pools.js';
 import { compatibility } from './lib/compatibility.js';
+import { destinations } from './lib/destinations.js';
+import { saveLaunch, unsaveLaunch, savedIds, savedLaunches } from './lib/saved.js';
 import { waitlistEntry, joinWaitlist, leaveWaitlist } from './lib/waitlist.js';
 import {
   createConstellation, constellationById, constellationsFor,
@@ -146,7 +148,8 @@ app.get('/api/me', (req, res) => {
   const token = readCookie(req, COOKIE);
   const user = token && findSessionUser(hashToken(token));
   if (!user) return res.status(401).json({ error: 'Not signed in.' });
-  res.json({ user: publicUser(user) });
+  // the saved count rides along so the nav badge does not need its own request
+  res.json({ user: { ...publicUser(user), savedCount: savedIds(user.company_id).size } });
 });
 
 app.post('/api/register', requireJson, rateLimit(20), async (req, res, next) => {
@@ -523,8 +526,10 @@ app.get('/api/launches', requireUser, (req, res) => {
 
   // for a payload owner, which of their missions could actually fly on each
   const mine = missionsForOwner(req.user.company_id);
+  const saved = savedIds(req.user.company_id);
   const launches = rows.map(l => ({
     ...launchView(l),
+    saved: saved.has(l.id),
     candidates: mine.map(m => {
       const { ok, reasons } = compatibility(l, m);
       return { id: m.id, reference: m.reference, mass: m.payload_mass_kg, ok, reasons };
@@ -532,6 +537,30 @@ app.get('/api/launches', requireUser, (req, res) => {
   }));
 
   res.json({ launches });
+});
+
+// ─── saved launches ─────────────────────────────────────────────────────────
+
+app.get('/api/saved', requireUser, (req, res) => {
+  res.json({
+    launches: savedLaunches(req.user.company_id).map(l => ({
+      ...launchView(l),
+      saved: true,
+      savedAt: new Date(l.saved_at).toISOString(),
+    })),
+  });
+});
+
+app.post('/api/saved/:id', requireJson, requireUser, (req, res) => {
+  const launch = launchById(Number(req.params.id));
+  if (!launch || launch.status !== 'published') return res.status(404).json({ error: 'Not found.' });
+  saveLaunch(req.user.company_id, launch.id, req.user.id);
+  res.status(201).json({ saved: true });
+});
+
+app.delete('/api/saved/:id', requireUser, (req, res) => {
+  unsaveLaunch(req.user.company_id, Number(req.params.id));
+  res.status(204).end();
 });
 
 const SELLS_LAUNCH = new Set(['launch_provider', 'broker']);
@@ -591,6 +620,15 @@ app.delete('/api/my-launches/:id', requireUser, requireProvider, (req, res) => {
 // ─── pooling ────────────────────────────────────────────────────────────────
 // Owners coordinating with each other, which is the one place the anonymity
 // model inverts — so it is opt-in, and only members see who is inside.
+
+// Where people are going, derived from the published satellites themselves.
+app.get('/api/destinations', requireUser, (req, res) => {
+  const all = destinations(req.user.company_id);
+  res.json({
+    yours: all.filter(d => d.yours),
+    others: all.filter(d => !d.yours),
+  });
+});
 
 app.get('/api/pools', requireUser, (req, res) => {
   const mine = missionsForOwner(req.user.company_id);
@@ -708,6 +746,21 @@ app.get('/join', (req, res) => {
 app.get('/agents', (req, res) => {
   if (!currentUser(req)) return res.redirect('/');
   res.sendFile(join(root, 'public', 'agents.html'));
+});
+
+app.get('/messages', (req, res) => {
+  if (!currentUser(req)) return res.redirect('/');
+  res.sendFile(join(root, 'public', 'messages.html'));
+});
+
+app.get('/saved', (req, res) => {
+  if (!currentUser(req)) return res.redirect('/');
+  res.sendFile(join(root, 'public', 'saved.html'));
+});
+
+app.get('/settings', (req, res) => {
+  if (!currentUser(req)) return res.redirect('/');
+  res.sendFile(join(root, 'public', 'settings.html'));
 });
 
 app.get('/profile', (req, res) => {

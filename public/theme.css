@@ -13,6 +13,7 @@
     --rule: #3ce0f5;          /* section titles / active tab */
     --destructive: #ff6b6b;
     --danger-text: #ff8f8f;
+    --heart: #ff5a63;
 
     --text: #ffffff;
     --text-2: rgba(255, 255, 255, 0.78);   /* body copy */
@@ -49,6 +50,7 @@
     --rule: #0e7490;
     --destructive: #c0342b;
     --danger-text: #b3271e;
+    --heart: #e02f39;
 
     --text: #0d0f12;
     --text-2: rgba(0, 0, 0, 0.74);

@@ -158,56 +158,23 @@ mission fits a target if the orbit type matches exactly, inclination is within
 
 ## Aether Pooling
 
-Owners going to the same orbit group up and approach a provider as one
-manifest. It is the one place the anonymity model inverts, so it is opt-in and
-scoped: everyone sees a pool's target, running total, member count and the
-jurisdictions inside it, but **only members see who is in it** and their exact
-figures. That disclosure is the trade for joining.
+Orbit and launch window, nothing else for now — the way a trip is a city plus a
+date range. A **destination** is not created by anyone: it is derived from the
+published satellites themselves, keyed on orbit shell plus launch quarter. If
+two operators are heading for the same place at the same time they see that
+without either having opened a group first, which is the whole point — a pool
+you have to create before you can discover anyone is a pool nobody starts.
 
-**Compatibility is physics, not preference.** Two payloads can only share a ride
-if they want essentially the same orbit — a plane change costs more delta-v than
-most missions carry. `lib/pools.js` enforces it on the API, not just in the UI:
+Counts are public, identities are not. A destination card shows how many
+satellites, how many operators and which jurisdictions; who they are stays
+hidden until you join a group with them. The "avatars" on each card are the
+flags of the countries going, which is both meaningful and anonymous.
 
-| Constraint | Tolerance |
-| --- | --- |
-| Orbit type | must match exactly |
-| Inclination | ±1.5° |
-| Altitude | ±150 km |
-| Window | ±3 months |
-
-A pool's target comes from the mission that seeds it, so the creator is by
-definition compatible with their own pool, and **a pool with one member is
-simply a request** — it becomes real when someone compatible joins. That is the
-cold start solved with one object rather than two.
-
-When none of your missions fit, the card says which constraint each one fails
-rather than grey-ing out a button.
-
-Still missing, and deliberately: a **lead member** — someone eventually has to be
-the counterparty on a launch contract. Every group-buy without a named lead
-dead-ends at the moment it succeeds.
-
-## Constellations
-
-Satellites are rarely procured one at a time, so `My Missions` groups them.
-A constellation is drawn as a **container** rather than a heading — the
-satellites sit visibly inside it, collapsible, each keeping its own card, name,
-status and published pseudonym. The group header carries the rollup (count,
-total mass, altitude and inclination ranges, window span); each member carries
-its own figures. That contrast is what says *this is a grouping, and these are
-individually distinct records*.
-
-`Duplicate` copies a satellite into the same constellation as a draft with the
-name bumped — `Aurora-2` becomes `Aurora-3`, `Aurora` becomes `Aurora 2` — and
-`Add satellite` on the group header does the same from the last member. Typing
-the same form twenty-four times is not a workflow.
-
-`Ungroup` deletes the grouping, never the satellites: the column is
-`ON DELETE SET NULL`, so they return to the ungrouped list.
-
-The grouping is private. A provider sees each requirement on its own, banded,
-with no signal that several belong to one programme — the fact that you are
-building a constellation is itself commercially sensitive.
+Groups sit inside a destination for people who actually want to coordinate.
+Compatibility is still enforced on the API — orbit type exact, inclination
+within 1.5°, altitude within 150 km, window within 3 months — but capacity
+targets are no longer required, because this is about who is going where and
+when rather than tonnage.
 
 ## Missions
 
@@ -318,6 +285,22 @@ Not built. The tab carries a `Beta` chip and the page is a waitlist — it says
 plainly that nothing runs yet, describes what an agent would watch for, and
 collects one row per company. The note field is the useful part: it records
 what people actually want an agent to do.
+
+## Saved launches and the account menu
+
+The hamburger beside the avatar holds everything that is not a top-level tab:
+My Missions, My Pools, Profile, Saved Launch Opportunities, Settings, Log Out.
+A chat icon and a heart sit next to it — the heart carries a count and turns red
+once something is saved.
+
+**Saving is per company, not per person.** If a colleague shortlists a flight the
+whole team sees it, which is the same reasoning that put missions on the company
+rather than the account that typed them in. One favourite affordance is used
+everywhere: a heart that fills red, never a star in one place and a heart in
+another.
+
+`/messages` and the Agents tab both say plainly that they are not built. An
+inert button is better than one that pretends to send something.
 
 ## Theming
 

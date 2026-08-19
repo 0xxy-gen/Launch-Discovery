@@ -11,42 +11,84 @@
 <script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
-  .pool-card {
-    padding: 22px;
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 34px 0 14px; }
+  .section-head h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-head span { font-size: 13px; color: var(--text-3); }
+
+  .dests { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+
+  .dest {
     background: var(--surface);
     border: 1px solid var(--surface-line);
-    border-radius: 12px;
+    border-radius: 16px;
+    overflow: hidden;
   }
-  .pool-card.mine { border-color: rgba(34, 211, 238, .4); }
+  .dest.mine { border-color: rgba(34, 211, 238, .45); }
 
-  .pool-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
-  .pool-head h2 { margin: 0 0 6px; font-size: 17px; font-weight: 500; }
-  .pool-target { font-size: 13px; color: var(--text-3); }
+  /* the orbit band stands in for the trip photo */
+  .dest-banner {
+    position: relative;
+    padding: 20px 20px 16px;
+    background:
+      radial-gradient(120% 90% at 50% 140%, rgba(34, 211, 238, .30), transparent 60%),
+      linear-gradient(180deg, #01060a, #04141b);
+    border-bottom: 1px solid var(--surface-line);
+  }
+  .dest-banner svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .dest-banner > * { position: relative; }
+  .dest-orbit { margin: 0; font-size: 16px; font-weight: 600; color: #fff; }
+  .dest-alt { margin: 4px 0 0; font-size: 13px; color: rgba(255, 255, 255, .6); }
+  .dest-window {
+    position: absolute; top: 20px; right: 20px;
+    font-size: 12px; font-weight: 600; letter-spacing: .04em;
+    color: rgba(255, 255, 255, .8);
+  }
 
-  /* the running total is the thing that tells you whether to join */
-  .meter { margin: 18px 0 10px; }
-  .meter-track { height: 6px; background: var(--track); border-radius: 999px; overflow: hidden; }
-  .meter-fill { height: 100%; background: var(--cyan); border-radius: 999px; transition: width .3s; }
-  .meter-legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12.5px; color: var(--text-3); }
-  .meter-legend b { color: var(--text); font-weight: 600; }
+  .dest-body { padding: 16px 20px 18px; }
+  .going { display: flex; align-items: center; gap: 10px; }
+  .flags { display: flex; }
+  .flag {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    margin-left: -8px;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 50%;
+    font-size: 14px;
+  }
+  .flag:first-child { margin-left: 0; }
+  .flag.more { font-size: 11px; font-weight: 600; color: var(--text-3); }
+  .going-text { font-size: 13px; color: var(--text-2); }
+  .going-text b { font-weight: 600; color: var(--text); }
 
-  .jurisdictions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
-  .jur-label { margin-right: 4px; font-size: 12px; color: var(--text-4); }
+  .yours-line { margin: 12px 0 0; font-size: 12.5px; color: var(--cyan); }
 
-  .members { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
-  .member { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 9px 0; font-size: 13px; }
-  .member + .member { border-top: 1px solid var(--hair); }
-  .member b { font-weight: 500; color: var(--text); }
-  .member .figures { color: var(--text-3); font-size: 12.5px; }
-  .member .you { margin-left: 8px; color: var(--cyan); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+  .groups { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+  .group-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 12px;
+    background: var(--tint);
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  .group-row b { font-weight: 500; }
+  .group-meta { font-size: 12px; color: var(--text-3); }
 
-  .join-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
-  .join-row select { width: auto; min-width: 200px; padding: 8px 24px 8px 0; font-size: 14px; }
-  .why { margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--text-4); }
-  .why b { color: var(--text-3); font-weight: 500; }
+  .add-group {
+    width: 100%;
+    margin-top: 10px;
+    padding: 11px;
+    background: transparent;
+    border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .add-group:hover { border-color: var(--cyan); color: var(--cyan); }
 
-  .create { max-width: 520px; }
-  .create .pair { gap: 0 20px; }
+  .empty p { max-width: 460px; }
 </style>
 </head>
 <body>
@@ -61,67 +103,38 @@
 <main class="wrap">
   <div class="banner" id="banner"></div>
 
-  <section id="list-view" hidden>
-    <div class="page-head">
-      <div>
-        <p class="eyebrow">Aether Pooling</p>
-        <h1><span class="lite">Share a</span> <span class="bold">ride</span></h1>
-        <p class="lede">
-          Group up with other owners going to the same orbit and approach a provider as one manifest.
-          Members see each other's exact figures — that is the trade for joining.
-        </p>
-      </div>
-      <button class="primary compact" id="new-pool">Start a pool</button>
-    </div>
-
-    <div class="rows" id="rows"></div>
-
-    <div class="empty" id="empty" hidden>
-      <h2><span class="lite">No pools</span> <b>open</b></h2>
-      <p>
-        Start one from a mission you have already described. A pool with one member is
-        simply a request — it becomes real when someone compatible joins.
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Aether Pooling</p>
+      <h1><span class="lite">Who else is going</span> <span class="bold">your way</span></h1>
+      <p class="lede">
+        Orbit and launch window, nothing else for now. Anyone with a satellite headed for the
+        same shell in the same quarter shows up together — you do not have to open a group to
+        find out. Counts are public; who they are stays hidden until you join a group with them.
       </p>
-      <button class="primary" id="empty-cta">Start a pool</button>
     </div>
+  </div>
+
+  <section id="yours-section" hidden>
+    <div class="section-head">
+      <h2>Where you are going</h2>
+      <span id="yours-count"></span>
+    </div>
+    <div class="dests" id="yours"></div>
   </section>
 
-  <section id="create-view" hidden>
-    <div class="page-head">
-      <div>
-        <p class="eyebrow">New pool</p>
-        <h1><span class="lite">Start a</span> <span class="bold">pool</span></h1>
-        <p class="lede">The target orbit comes from the mission you seed it with, so anyone who joins has to match it.</p>
-      </div>
-      <button class="ghost-sm" id="cancel">Back</button>
+  <section id="others-section" hidden>
+    <div class="section-head">
+      <h2>Everywhere else</h2>
+      <span id="others-count"></span>
     </div>
-
-    <form class="create" id="pool-form" novalidate>
-      <div class="field">
-        <label for="name">Pool name</label>
-        <input id="name" type="text" placeholder="e.g. SSO 550 — spring 2027" autocomplete="off">
-        <div class="err" id="name-err"></div>
-      </div>
-
-      <div class="field">
-        <label for="missionId">Seed it with</label>
-        <select id="missionId"><option value="">Choose one of your missions</option></select>
-        <p class="hint" id="seed-hint">Its orbit, altitude, inclination and window become the pool's target.</p>
-        <div class="err" id="missionId-err"></div>
-      </div>
-
-      <div class="field">
-        <label for="capacityKg">Combined mass you are aiming for (kg)</label>
-        <input id="capacityKg" type="number" min="1" step="1" placeholder="e.g. 3500">
-        <p class="hint">Roughly what a dedicated vehicle to this orbit could take.</p>
-        <div class="err" id="capacityKg-err"></div>
-      </div>
-
-      <div class="actions">
-        <button class="primary" type="submit">Create pool</button>
-      </div>
-    </form>
+    <div class="dests" id="others"></div>
   </section>
+
+  <div class="empty" id="empty" hidden>
+    <h2><span class="lite">Nothing published</span> <b>yet</b></h2>
+    <p>Destinations appear as soon as satellites are published. Publish one and anybody heading for the same orbit in the same quarter will see it.</p>
+  </div>
 </main>
 
 <script src="nav.js"></script>

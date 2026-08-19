@@ -9,6 +9,8 @@
     return { ok: res.ok, status: res.status, data: await res.json().catch(() => ({})) };
   }
 
+  const heart = on => `<svg viewBox="0 0 20 20" width="18" height="18" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M10 16.5S3.5 12.6 3.5 8.2A3.7 3.7 0 0110 6a3.7 3.7 0 016.5 2.2c0 4.4-6.5 8.3-6.5 8.3z"/></svg>`;
+
   const el = (tag, className, text) => {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -25,8 +27,30 @@
     left.append(el('p', 'launch-target',
       `${l.orbitType} · ${l.altitudeKm} km · ${l.inclinationDeg}° · ${l.windowMonth}`));
     head.append(left);
-    const right = el('div');
+    const right = el('div', 'launch-right');
     right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+
+    const save = el('button', 'fav' + (l.saved ? ' on' : ''));
+    save.type = 'button';
+    save.title = l.saved ? 'Remove from saved' : 'Save this launch';
+    save.setAttribute('aria-pressed', String(Boolean(l.saved)));
+    save.innerHTML = heart(l.saved);
+    save.addEventListener('click', async () => {
+      const next = !save.classList.contains('on');
+      const res = await fetch(`/api/saved/${l.id}`, {
+        method: next ? 'POST' : 'DELETE',
+        headers: next ? { 'Content-Type': 'application/json' } : undefined,
+        body: next ? '{}' : undefined,
+        credentials: 'same-origin',
+      });
+      if (!res.ok) return;
+      save.classList.toggle('on', next);
+      save.setAttribute('aria-pressed', String(next));
+      save.title = next ? 'Remove from saved' : 'Save this launch';
+      save.innerHTML = heart(next);
+    });
+    right.append(save);
+
     head.append(right);
     card.append(head);
 

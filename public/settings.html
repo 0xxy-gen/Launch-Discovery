@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aether — Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+<link rel="stylesheet" href="app.css">
+<style>
+  .settings { max-width: 620px; }
+  .row {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .row-label { font-size: 14px; font-weight: 500; }
+  .row-value { margin-top: 3px; font-size: 13px; color: var(--text-3); word-break: break-all; }
+  .choice-row { display: flex; gap: 8px; }
+  .choice-row button {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--text-3);
+    font: inherit; font-size: 13px;
+    cursor: pointer;
+  }
+  .choice-row button.on { border-color: var(--cyan); color: var(--cyan); background: rgba(34, 211, 238, .08); }
+  .danger-row { border-color: rgba(255, 107, 107, .35); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand">Aether <span>Launch Discovery</span></div>
+    <nav class="nav" id="nav"></nav>
+  </div>
+  <div class="account" id="account"></div>
+</header>
+
+<main class="wrap">
+  <div class="banner" id="banner"></div>
+
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Settings</p>
+      <h1><span class="lite">This</span> <span class="bold">account</span></h1>
+      <p class="lede">Company details live on the profile. This page is about you and this browser.</p>
+    </div>
+  </div>
+
+  <div class="settings">
+    <p class="section" style="margin-top:0; padding-top:0; border-top:0">Appearance</p>
+    <div class="row">
+      <div>
+        <div class="row-label">Theme</div>
+        <div class="row-value">Follows your system until you choose. Remembered in this browser.</div>
+      </div>
+      <div class="choice-row" id="theme-choice">
+        <button type="button" data-theme="system">System</button>
+        <button type="button" data-theme="light">Light</button>
+        <button type="button" data-theme="dark">Dark</button>
+      </div>
+    </div>
+
+    <p class="section">Account</p>
+    <div class="row">
+      <div>
+        <div class="row-label">Signed in as</div>
+        <div class="row-value" id="who"></div>
+      </div>
+      <a class="ghost-sm" href="/profile" style="text-decoration:none">Edit profile</a>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">Company</div>
+        <div class="row-value" id="company"></div>
+      </div>
+      <span class="tag" id="company-role"></span>
+    </div>
+
+    <p class="section">Session</p>
+    <div class="row danger-row">
+      <div>
+        <div class="row-label">Sign out</div>
+        <div class="row-value">Ends this session on this browser only.</div>
+      </div>
+      <button class="ghost-sm" id="signout">Sign out</button>
+    </div>
+  </div>
+</main>
+
+<script src="nav.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>
