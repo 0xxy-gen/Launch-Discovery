@@ -3,6 +3,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { COUNTRIES } from './lib/countries.js';
+import { ACCOUNT_TYPES } from './lib/account-types.js';
 import { validateRegistration, validateLogin } from './lib/validate.js';
 import { hashPassword, verifyPassword, newSessionToken, hashToken } from './lib/auth.js';
 import {
@@ -91,9 +92,10 @@ const DUMMY_HASH = await hashPassword(newSessionToken());
 
 // ─── routes ─────────────────────────────────────────────────────────────────
 
-app.get('/api/countries', (req, res) => {
+// Everything the register form needs to build its dropdowns.
+app.get('/api/options', (req, res) => {
   res.set('Cache-Control', 'public, max-age=86400');
-  res.json({ countries: COUNTRIES });
+  res.json({ countries: COUNTRIES, accountTypes: ACCOUNT_TYPES });
 });
 
 app.get('/api/me', (req, res) => {
@@ -118,6 +120,7 @@ app.post('/api/register', requireJson, rateLimit(20), async (req, res, next) => 
     const user = createUser({
       email: values.email,
       passwordHash: await hashPassword(values.password),
+      accountType: values.accountType,
       organisation: values.organisation,
       role: values.role,
       country: values.country,

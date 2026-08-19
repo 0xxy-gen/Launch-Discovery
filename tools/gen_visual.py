@@ -6,9 +6,9 @@ PXKM = R_px / R_E
 CX, CY = 400.0, 3220.0            # limb apex at y = 820
 def px(km): return km * PXKM
 
-H_INS, S_INS = 400.0, 1400.0
-P    = 0.7878                     # tuned so MECO (s=90 km) sits at h≈72 km
-PHI0 = -0.11274                   # launch site -> x ≈ 130
+H_INS, S_INS = 400.0, 1700.0
+P    = 0.7355                     # tuned so MECO (s=90 km) sits at h≈72 km
+PHI0 = -0.13584                   # launch site -> x ≈ 75
 
 def h_of_s(s):
     u = max(s, 0.0) / S_INS
@@ -38,7 +38,7 @@ path = "M " + " L ".join(f"{f(x)} {f(y)}" for x, y in pts)
 
 lift = pos(0.0)
 meco = pos(90.0)
-maxq = pos(14.0)
+maxq = pos(8.74)          # max dynamic pressure, ~13 km
 seco = pos(S_INS)
 phi_end = phi_of_s(S_INS)
 tan_deg = math.degrees(phi_end)
@@ -188,24 +188,26 @@ SVG = f"""      <svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice"
              fill="#ffffff" fill-opacity=".5" stroke="#000407" stroke-width="3.2" stroke-opacity=".65"
              paint-order="stroke fill">
             <text x="{f(lift[0] - 8)}" y="{f(lift[1] + 26)}">T+00:00 &#183; LIFT-OFF</text>
-            <text x="{f(meco[0] + 24)}" y="{f(meco[1] - 18)}">T+02:38 &#183; MECO</text>
-            <text x="{f(seco[0] - 14)}" y="{f(seco[1] - 34)}" text-anchor="end">T+08:44 &#183; SECO</text>
+            <text x="{f(maxq[0] + 26)}" y="{f(maxq[1] + 4)}">T+01:12 &#183; MAX-Q</text>
+            <text x="{f(meco[0] + 26)}" y="{f(meco[1] - 30)}">T+02:38 &#183; MECO / STAGE SEP</text>
+            <text x="{f(seco[0] - 16)}" y="{f(seco[1] - 34)}" text-anchor="end">T+08:44 &#183; SECO / INSERTION</text>
           </g>
 
           <g font-family="Inter, sans-serif" font-size="10.5" font-weight="500" letter-spacing="1.4"
              fill="#ffffff" fill-opacity=".32" stroke="#000407" stroke-width="3" stroke-opacity=".6"
              paint-order="stroke fill">
-            <text x="770" y="{f(CY - math.sqrt(R_KARMAN**2 - 370**2) - 9)}" text-anchor="end">K&#193;RM&#193;N LINE &#183; 100 KM</text>
-            <text x="26"  y="{f(CY - math.sqrt(R_ORBIT**2 - 374**2) - 17)}">MISSION ORBIT &#183; 400 KM</text>
+            <text x="770" y="{f(CY - math.sqrt(R_KARMAN**2 - 200**2) - 10)}" text-anchor="end">K&#193;RM&#193;N LINE &#183; 100 KM</text>
+            <text x="26"  y="{f(CY - math.sqrt(R_ORBIT**2 - 200**2) - 12)}">TARGET ORBIT &#183; 400 KM CIRCULAR</text>
           </g>
 
           <!-- readout -->
           <g font-family="Inter, sans-serif" letter-spacing="1.6" fill="#c9fbff">
-            <text x="140" y="212" font-size="11.5" font-weight="600" fill-opacity=".75">400 KM CIRCULAR</text>
+            <text x="140" y="206" font-size="11.5" font-weight="600" fill-opacity=".75">400 &#215; 400 KM &#183; 97.0&#176;</text>
             <g font-size="11" font-weight="400" fill="#ffffff" fill-opacity=".34">
-              <text x="140" y="238">VELOCITY &#183; {v_orb:.2f} KM/S</text>
-              <text x="140" y="260">PERIOD &#183; {T_orb:.1f} MIN</text>
-              <text x="140" y="282">INCLINATION &#183; 97.0&#176; SSO</text>
+              <text x="140" y="232">SUN-SYNCHRONOUS &#183; 10:30 LTDN</text>
+              <text x="140" y="254">INERTIAL VELOCITY &#183; {v_orb:.2f} KM/S</text>
+              <text x="140" y="276">PERIOD &#183; {T_orb:.1f} MIN</text>
+              <text x="140" y="298">PROFILE &#183; DIRECT ASCENT, FPA 0&#176; AT SECO</text>
             </g>
           </g>
 

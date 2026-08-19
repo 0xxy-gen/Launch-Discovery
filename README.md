@@ -18,7 +18,7 @@ Requires Node 22.5+; developed on 24.
 
 | Method | Path             | Purpose                                                    |
 | ------ | ---------------- | ---------------------------------------------------------- |
-| GET    | `/api/countries` | Country list with flags and dial codes (cached a day)      |
+| GET    | `/api/options`   | Account types, and countries with flags and dial codes     |
 | GET    | `/api/me`        | Current account, or 401                                    |
 | POST   | `/api/register`  | Create an account, start a session                         |
 | POST   | `/api/login`     | Start a session                                            |
@@ -52,6 +52,7 @@ any mapping.
 | Field                  | Required | Notes                                    |
 | ---------------------- | -------- | ---------------------------------------- |
 | Email address          | yes      | format-checked, must be unique           |
+| Account type           | yes      | launch provider / satellite operator / … |
 | Password / Confirm     | yes      | 8-character minimum, must match          |
 | Organisation           | yes      |                                          |
 | Role                   | yes      |                                          |
@@ -98,6 +99,19 @@ Inter throughout — `tracking-tighter` mixed-weight headlines, sentence-case
 field labels, and light letterspaced uppercase only for the small kickers and
 section titles.
 
+## Account types
+
+One account table, one login, with `account_type` on the user — not separate
+launcher and operator logins. What differs between a launch provider and a
+satellite operator is what they see *after* signing in, which is routing, not
+authentication; splitting the login surface doubles the reset flows and support
+load and produces the "wrong login page" failure. Segment on this column at
+sign-in instead, and it can be changed later without migrating accounts.
+
+Types live in `lib/account-types.js`; adding one puts it in the dropdown and
+through validation. A database created before this column existed gets it added
+in place on the next start.
+
 ## Country data
 
 `lib/countries.js` is a single `name:dial:ISO` string — 163 entries, shared by
@@ -114,6 +128,7 @@ lib/db.js          SQLite schema and queries
 lib/auth.js        scrypt hashing, session tokens
 lib/validate.js    server-side field validation
 lib/countries.js   shared country/dial/ISO data
+lib/account-types.js  account type slugs and labels
 public/index.html  the page (self-contained apart from the API)
 tools/gen_visual.py  regenerates the launch graphic
 data/app.db        created on first run, gitignored
