@@ -7,11 +7,14 @@ import { ACCOUNT_TYPES } from './lib/account-types.js';
 import { ORBIT_TYPES, RIDE_TYPES, FORM_FACTORS } from './lib/mission-options.js';
 import { ownerMission, previewMission, publicMission } from './lib/banding.js';
 import {
+  createPool, poolById, allPools, poolView, joinPool, leavePool, isMember, compatibility,
+} from './lib/pools.js';
+import {
   createMission, updateMission, setMissionStatus,
   missionById, missionsForOwner, deleteMission, browsePublished,
 } from './lib/missions.js';
 import {
-  validateRegistration, validateLogin, validateMission, validateProfile,
+  validateRegistration, validateLogin, validateMission, validateProfile, validatePool,
 } from './lib/validate.js';
 import { hashPassword, verifyPassword, newSessionToken, hashToken } from './lib/auth.js';
 import {
@@ -285,6 +288,83 @@ app.delete('/api/missions/:id', requireUser, (req, res) => {
   res.status(204).end();
 });
 
+// ─── pooling ────────────────────────────────────────────────────────────────
+// Owners coordinating with each other, which is the one place the anonymity
+// model inverts — so it is opt-in, and only members see who is inside.
+
+const CAN_POOL = new Set(['payload_owner', 'broker']);
+const canPool = user => CAN_POOL.has(user.account_type);
+
+function requirePooling(req, res, next) {
+  if (!canPool(req.user)) return res.status(403).json({ error: 'Not available on this account.' });
+  next();
+}
+
+app.get('/api/pools', requireUser, requirePooling, (req, res) => {
+  const mine = missionsForOwner(req.user.id);
+
+  const pools = allPools().map(pool => {
+    const view = poolView(pool, req.user.id);
+    // which of your missions could actually fly on this, and why not
+    view.candidates = mine.map(m => {
+      const { ok, reasons } = compatibility(pool, m);
+      return { id: m.id, reference: m.reference, ok, reasons };
+    });
+    return view;
+  });
+
+  res.json({ pools, missions: mine.map(m => ({ id: m.id, reference: m.reference })) });
+});
+
+app.post('/api/pools', requireJson, requireUser, requirePooling, (req, res) => {
+  const { fields, values } = validatePool(req.body);
+  if (Object.keys(fields).length) return res.status(400).json({ fields });
+
+  const seed = missionById(values.missionId);
+  if (!seed || seed.user_id !== req.user.id) {
+    return res.status(400).json({ fields: { missionId: 'Choose one of your own missions.' } });
+  }
+
+  // The target comes from the seeding mission, so the creator is by definition
+  // compatible with their own pool.
+  const pool = createPool(req.user.id, {
+    name: values.name,
+    orbitType: seed.orbit_type,
+    altitudeKm: seed.altitude_km,
+    inclinationDeg: seed.inclination_deg,
+    windowMonth: seed.window_month,
+    capacityKg: values.capacityKg,
+  });
+  joinPool(pool.id, seed.id, req.user.id);
+
+  res.status(201).json({ pool: poolView(pool, req.user.id) });
+});
+
+app.post('/api/pools/:id/join', requireJson, requireUser, requirePooling, (req, res) => {
+  const pool = poolById(Number(req.params.id));
+  if (!pool) return res.status(404).json({ error: 'Not found.' });
+  if (isMember(pool.id, req.user.id)) return res.status(409).json({ error: 'You are already in this pool.' });
+
+  const mission = missionById(Number(req.body.missionId));
+  if (!mission || mission.user_id !== req.user.id) {
+    return res.status(400).json({ error: 'Choose one of your own missions.' });
+  }
+
+  // Compatibility is physics, not preference — enforced here, not just in the UI.
+  const { ok, reasons } = compatibility(pool, mission);
+  if (!ok) return res.status(409).json({ error: reasons[0], reasons });
+
+  joinPool(pool.id, mission.id, req.user.id);
+  res.json({ pool: poolView(pool, req.user.id) });
+});
+
+app.post('/api/pools/:id/leave', requireJson, requireUser, requirePooling, (req, res) => {
+  const pool = poolById(Number(req.params.id));
+  if (!pool) return res.status(404).json({ error: 'Not found.' });
+  leavePool(pool.id, req.user.id);
+  res.json({ pool: poolView(pool, req.user.id) });
+});
+
 // ─── pages ──────────────────────────────────────────────────────────────────
 
 app.get('/', (req, res, next) => {
@@ -295,6 +375,13 @@ app.get('/', (req, res, next) => {
 app.get('/missions', (req, res) => {
   if (!currentUser(req)) return res.redirect('/');
   res.sendFile(join(root, 'public', 'missions.html'));
+});
+
+app.get('/pooling', (req, res) => {
+  const user = currentUser(req);
+  if (!user) return res.redirect('/');
+  if (!canPool(user)) return res.redirect('/missions');
+  res.sendFile(join(root, 'public', 'pooling.html'));
 });
 
 app.get('/payloads', (req, res) => {

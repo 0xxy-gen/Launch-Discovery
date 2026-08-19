@@ -32,7 +32,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 
   .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
   .page-head h1 { font-size: 30px; }
-  button.compact { width: auto; margin: 0; padding: 11px 18px; font-size: 14px; }
+  button.compact { width: auto; margin: 0; padding: 11px 18px; font-size: 14px; white-space: nowrap; }
 
   /* ── requirement rows ────────────────────────────────────────────────── */
   .rows { display: grid; gap: 12px; }
@@ -74,6 +74,16 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   .empty h2 b { font-weight: 700; }
   .empty p { max-width: 460px; margin: 0 auto 24px; font-size: 14px; color: var(--text-3); }
   .empty button { width: auto; margin: 0; padding: 12px 22px; }
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.tag.key { border-color: rgba(34, 211, 238, .45); color: var(--cyan); }
 
 .topbar-left { display: flex; align-items: center; gap: 32px; }
 

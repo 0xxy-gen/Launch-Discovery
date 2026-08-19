@@ -6,7 +6,8 @@
   "description": "Access page for Aether mission management",
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning server.js",
-    "dev": "node --disable-warning=ExperimentalWarning --watch server.js"
+    "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
+    "seed": "node --disable-warning=ExperimentalWarning tools/seed.js"
   },
   "engines": {
     "node": ">=22.5"

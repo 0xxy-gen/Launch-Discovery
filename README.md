@@ -8,7 +8,21 @@ front end backed by a small Node API with real accounts and sessions.
 ```
 npm install
 npm start          # http://localhost:3100   (npm run dev to watch)
+npm run seed       # demo accounts and sample data
 ```
+
+`npm run seed` is safe to re-run — it creates only what is missing. Pass
+`-- --reset` to wipe the demo accounts and rebuild them.
+
+| Account | Type | Has |
+| --- | --- | --- |
+| `satco@demo.aether` | Payload owner | 2 missions, 1 published, leads a pool |
+| `cubes@demo.aether` | Payload owner | A 12U cubesat, in that pool |
+| `orbital@demo.aether` | Payload owner | A 45° LEO payload — incompatible with the pool |
+| `rocketco@demo.aether` | Launch provider | Browses Payloads |
+| `broker@demo.aether` | Broker | Sees both sides |
+
+Password for all of them: `aether-demo-2026`
 
 One dependency (Express). SQLite comes from Node's built-in `node:sqlite`, and
 password hashing from `node:crypto`, so there is nothing native to compile.
@@ -25,6 +39,10 @@ Requires Node 22.5+; developed on 24.
 | POST   | `/api/logout`              | End the current session                              |
 | PUT    | `/api/profile`             | Organisation, role, country, contact details         |
 | GET    | `/api/payloads`            | Published requirements from others — banded, supply side only |
+| GET    | `/api/pools`               | Open pools, with which of your missions could join each |
+| POST   | `/api/pools`               | Start a pool, seeded by one of your missions          |
+| POST   | `/api/pools/:id/join`      | Join with a compatible mission                        |
+| POST   | `/api/pools/:id/leave`     | Leave                                                 |
 | GET    | `/api/missions`            | Your requirements, private figures and public view   |
 | POST   | `/api/missions`            | Create one                                           |
 | POST   | `/api/missions/preview`    | Band a draft without saving — drives the live preview |
@@ -72,10 +90,11 @@ detail before anyone has decided to trust you.
 Object-named browse tabs plus one "mine" tab, the shape Qasa uses. Which tabs
 exist depends on the account, because access does:
 
-| | Payload owner | Launch provider or broker |
-| --- | --- | --- |
-| Browse | *(Launches, once provider capacity exists)* | Payloads |
-| Yours | My Missions | My Launches |
+| | Payload owner | Launch provider | Broker |
+| --- | --- | --- | --- |
+| Browse | *(Launches, once provider capacity exists)* | Payloads | Payloads |
+| Coordinate | Aether Pooling | — | Aether Pooling |
+| Yours | My Missions | My Launches | My Missions |
 
 **Payload owners cannot browse the payloads directory.** Other people's banded
 demand is competitor intelligence, and reading it is the exact leak the banding
@@ -85,6 +104,37 @@ account only has one destination: a single tab is noise, not navigation.
 
 "Launches" is deliberately unused for now. It should mean actual flights with
 dates, vehicles and spare capacity, and those objects do not exist yet.
+
+## Aether Pooling
+
+Owners going to the same orbit group up and approach a provider as one
+manifest. It is the one place the anonymity model inverts, so it is opt-in and
+scoped: everyone sees a pool's target, running total, member count and the
+jurisdictions inside it, but **only members see who is in it** and their exact
+figures. That disclosure is the trade for joining.
+
+**Compatibility is physics, not preference.** Two payloads can only share a ride
+if they want essentially the same orbit — a plane change costs more delta-v than
+most missions carry. `lib/pools.js` enforces it on the API, not just in the UI:
+
+| Constraint | Tolerance |
+| --- | --- |
+| Orbit type | must match exactly |
+| Inclination | ±1.5° |
+| Altitude | ±150 km |
+| Window | ±3 months |
+
+A pool's target comes from the mission that seeds it, so the creator is by
+definition compatible with their own pool, and **a pool with one member is
+simply a request** — it becomes real when someone compatible joins. That is the
+cold start solved with one object rather than two.
+
+When none of your missions fit, the card says which constraint each one fails
+rather than grey-ing out a button.
+
+Still missing, and deliberately: a **lead member** — someone eventually has to be
+the counterparty on a launch contract. Every group-buy without a named lead
+dead-ends at the moment it succeeds.
 
 ## Launch requirements
 
@@ -202,5 +252,7 @@ public/index.html  sign in and register
 public/missions.html + missions.js   the requirements app
 public/theme.css   shared tokens and form components
 tools/gen_visual.py  regenerates the launch graphic
+tools/seed.js      demo accounts and sample data
+lib/pools.js       pools, membership and compatibility
 data/app.db        created on first run, gitignored
 ```
