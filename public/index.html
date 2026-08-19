@@ -77,25 +77,10 @@
   .visual-pane { position: relative; background: #000; }
   .visual-pane svg { display: block; width: 100%; height: 100%; }
   .visual-pane .drift { animation: drift 90s ease-in-out infinite alternate; }
-  .visual-pane .beacon { animation: beacon 2.6s ease-in-out infinite; }
   @keyframes drift  { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-10px, -16px, 0); } }
-  @keyframes beacon { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
   @media (prefers-reduced-motion: reduce) {
-    .visual-pane .drift, .visual-pane .beacon { animation: none; }
+    .visual-pane .drift { animation: none; }
   }
-  .visual-caption {
-    position: absolute;
-    left: 30px;
-    top: 26px;
-    font-weight: 600;
-    font-size: 11px;
-    line-height: 1.9;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
-  }
-  .visual-caption span { display: block; font-weight: 400; letter-spacing: 0.08em; color: rgba(255, 255, 255, 0.32); }
-
   /* The pane is the card now — the form itself sits flat inside it */
   .panel { background: transparent; border: 0; }
 
@@ -184,6 +169,55 @@
     color: var(--text-2);
   }
   label .opt { margin-left: 6px; font-weight: 400; color: var(--text-4); }
+
+  .field-label {
+    display: block;
+    margin: 0 0 10px;
+    font-weight: 500;
+    font-size: 13.5px;
+    color: var(--text-2);
+  }
+
+  .choices { display: grid; gap: 8px; }
+
+  .choice {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2px 12px;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .choice:hover { border-color: rgba(255, 255, 255, 0.32); }
+  .choice:has(input:checked) { border-color: var(--cyan); background: rgba(34, 211, 238, .07); }
+  .choice:focus-within { outline: 2px solid rgba(34, 211, 238, .5); outline-offset: 2px; }
+
+  .choice input {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .choice input:checked {
+    border-color: var(--cyan);
+    background: radial-gradient(circle, var(--cyan) 0 42%, transparent 44%);
+  }
+
+  .choice-label { font-weight: 500; color: #fff; }
+  .choice-help  { grid-column: 2; font-size: 12px; line-height: 1.4; color: var(--text-4); }
+
+  .choices[aria-invalid="true"] .choice { border-color: rgba(255, 107, 107, .5); }
 
   input,
   select {
@@ -376,10 +410,8 @@
           <p class="section">Organisation</p>
 
           <div class="field">
-            <label for="account-type">Account type</label>
-            <select id="account-type" name="accountType" required>
-              <option value="" selected>Select a type</option>
-            </select>
+            <p class="field-label" id="account-type-label">What brings you here?</p>
+            <div class="choices" id="account-type" role="radiogroup" aria-labelledby="account-type-label"></div>
             <div class="err" id="account-type-err"></div>
           </div>
 
@@ -453,173 +485,102 @@
 
   <!-- Visual panel. Swap the <svg> for <img src="..." style="width:100%;height:100%;object-fit:cover"> to use a photograph. -->
   <aside class="pane visual-pane" aria-hidden="true">
-            <svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" role="presentation">
-      <!-- Scale: planet radius 2400 units = 6371 km, so 1 unit = 2.655 km.
-           Every altitude, the Kármán line, the orbit radius and the ascent
-           profile are drawn at that one scale. Insertion is tangent to the
-           orbit (7.5° off horizontal) because a circular orbit is reached
-           with a zero flight-path angle. -->
-        <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stop-color="#000000"/>
-            <stop offset="55%"  stop-color="#02060a"/>
-            <stop offset="82%"  stop-color="#04121a"/>
-            <stop offset="100%" stop-color="#07242f"/>
-          </linearGradient>
-          <linearGradient id="trailFade" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%"   stop-color="#7fefff" stop-opacity=".2"/>
-            <stop offset="45%"  stop-color="#7fefff" stop-opacity=".8"/>
-            <stop offset="100%" stop-color="#ffffff" stop-opacity=".95"/>
-          </linearGradient>
-          <linearGradient id="terminator" x1="0" y1="0" x2="1" y2="0.4">
-            <stop offset="0%"   stop-color="#000000" stop-opacity=".9"/>
-            <stop offset="50%"  stop-color="#00121a" stop-opacity=".4"/>
-            <stop offset="100%" stop-color="#00394a" stop-opacity=".6"/>
-          </linearGradient>
-          <radialGradient id="vignette" cx="50%" cy="44%" r="76%">
-            <stop offset="52%"  stop-color="#000000" stop-opacity="0"/>
-            <stop offset="100%" stop-color="#000000" stop-opacity=".6"/>
-          </radialGradient>
-          <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4"/></filter>
-          <filter id="wide" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="20"/></filter>
-          <filter id="grain" x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
-            <feColorMatrix type="saturate" values="0"/>
-          </filter>
-          <marker id="tip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M0 0 L10 5 L0 10 z" fill="#c9fbff" fill-opacity=".9"/>
-          </marker>
-          <clipPath id="frame"><rect width="800" height="1000"/></clipPath>
-        </defs>
+              <svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" role="presentation">
+      <!-- To scale: planet radius 2400 units = 6371 km, so 1 unit = 2.655 km.
+           Insertion is tangent to the orbit (7.5° off horizontal) because a
+           circular orbit is reached at a zero flight-path angle. -->
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#000000"/>
+          <stop offset="55%"  stop-color="#02060a"/>
+          <stop offset="82%"  stop-color="#04121a"/>
+          <stop offset="100%" stop-color="#07242f"/>
+        </linearGradient>
+        <linearGradient id="trailFade" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#7fefff" stop-opacity=".12"/>
+          <stop offset="45%"  stop-color="#7fefff" stop-opacity=".6"/>
+          <stop offset="100%" stop-color="#ffffff" stop-opacity=".85"/>
+        </linearGradient>
+        <linearGradient id="terminator" x1="0" y1="0" x2="1" y2="0.4">
+          <stop offset="0%"   stop-color="#000000" stop-opacity=".9"/>
+          <stop offset="50%"  stop-color="#00121a" stop-opacity=".4"/>
+          <stop offset="100%" stop-color="#00394a" stop-opacity=".6"/>
+        </linearGradient>
+        <radialGradient id="vignette" cx="50%" cy="44%" r="76%">
+          <stop offset="52%"  stop-color="#000000" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity=".6"/>
+        </radialGradient>
+        <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="wide" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="20"/></filter>
+        <filter id="grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+        </filter>
+        <clipPath id="frame"><rect width="800" height="1000"/></clipPath>
+      </defs>
 
-        <g clip-path="url(#frame)">
-          <rect width="800" height="1000" fill="url(#sky)"/>
+      <g clip-path="url(#frame)">
+        <rect width="800" height="1000" fill="url(#sky)"/>
 
-          <!-- starfield: three tiers, densest toward the horizon -->
-          <g class="drift">
-            <g fill="#ffffff" opacity=".38">
-              <circle cx="62"  cy="88"  r=".7"/><circle cx="158" cy="212" r=".7"/><circle cx="331" cy="180" r=".7"/>
-              <circle cx="408" cy="52"  r=".7"/><circle cx="572" cy="78"  r=".7"/><circle cx="736" cy="104" r=".7"/>
-              <circle cx="205" cy="352" r=".7"/><circle cx="389" cy="392" r=".7"/><circle cx="559" cy="404" r=".7"/>
-              <circle cx="742" cy="418" r=".7"/><circle cx="52"  cy="452" r=".7"/><circle cx="264" cy="486" r=".7"/>
-              <circle cx="447" cy="498" r=".7"/><circle cx="629" cy="512" r=".7"/><circle cx="118" cy="546" r=".7"/>
-              <circle cx="228" cy="592" r=".7"/><circle cx="352" cy="562" r=".7"/><circle cx="486" cy="604" r=".7"/>
-              <circle cx="604" cy="578" r=".7"/><circle cx="708" cy="622" r=".7"/><circle cx="86"  cy="638" r=".7"/>
-              <circle cx="292" cy="668" r=".7"/><circle cx="418" cy="694" r=".7"/><circle cx="540" cy="656" r=".7"/>
-              <circle cx="662" cy="702" r=".7"/><circle cx="762" cy="668" r=".7"/><circle cx="146" cy="716" r=".7"/>
-              <circle cx="248" cy="748" r=".7"/><circle cx="372" cy="726" r=".7"/><circle cx="498" cy="762" r=".7"/>
-            </g>
-            <g fill="#ffffff" opacity=".62">
-              <circle cx="243" cy="64"  r="1.1"/><circle cx="486" cy="146" r="1.1"/><circle cx="96"  cy="286" r="1.1"/>
-              <circle cx="298" cy="298" r="1.1"/><circle cx="471" cy="318" r="1.1"/><circle cx="648" cy="330" r="1.1"/>
-              <circle cx="146" cy="524" r="1.1"/><circle cx="538" cy="576" r="1.1"/><circle cx="718" cy="588" r="1.1"/>
-              <circle cx="186" cy="654" r="1.1"/><circle cx="330" cy="612" r="1.1"/><circle cx="576" cy="690" r="1.1"/>
-            </g>
-            <g fill="#ffffff" opacity=".92">
-              <circle cx="655" cy="196" r="1.7"/><circle cx="112" cy="372" r="1.6"/><circle cx="392" cy="240" r="1.5"/>
-              <circle cx="266" cy="520" r="1.6"/><circle cx="596" cy="470" r="1.5"/><circle cx="472" cy="672" r="1.4"/>
-            </g>
-            <g stroke="#ffffff" stroke-width=".8" stroke-linecap="round" opacity=".5">
-              <path d="M655 186v20M645 196h20"/><path d="M266 512v16M258 520h16"/><path d="M392 232v16M384 240h16"/>
-            </g>
+        <!-- starfield: three tiers, densest toward the horizon -->
+        <g class="drift">
+          <g fill="#ffffff" opacity=".38">
+            <circle cx="62"  cy="88"  r=".7"/><circle cx="158" cy="212" r=".7"/><circle cx="331" cy="180" r=".7"/>
+            <circle cx="408" cy="52"  r=".7"/><circle cx="572" cy="78"  r=".7"/><circle cx="736" cy="104" r=".7"/>
+            <circle cx="205" cy="352" r=".7"/><circle cx="389" cy="392" r=".7"/><circle cx="559" cy="404" r=".7"/>
+            <circle cx="742" cy="418" r=".7"/><circle cx="52"  cy="452" r=".7"/><circle cx="264" cy="486" r=".7"/>
+            <circle cx="447" cy="498" r=".7"/><circle cx="629" cy="512" r=".7"/><circle cx="118" cy="546" r=".7"/>
+            <circle cx="228" cy="592" r=".7"/><circle cx="352" cy="562" r=".7"/><circle cx="486" cy="604" r=".7"/>
+            <circle cx="604" cy="578" r=".7"/><circle cx="708" cy="622" r=".7"/><circle cx="86"  cy="638" r=".7"/>
+            <circle cx="292" cy="668" r=".7"/><circle cx="418" cy="694" r=".7"/><circle cx="540" cy="656" r=".7"/>
+            <circle cx="662" cy="702" r=".7"/><circle cx="762" cy="668" r=".7"/><circle cx="146" cy="716" r=".7"/>
+            <circle cx="248" cy="748" r=".7"/><circle cx="372" cy="726" r=".7"/><circle cx="498" cy="762" r=".7"/>
           </g>
-
-          <!-- atmosphere, drawn to scale: dense layer 0-50 km, haze out to ~120 km -->
-          <circle cx="400" cy="3220" r="2422.6" fill="none" stroke="#00E5FF"
-                  stroke-opacity=".10" stroke-width="45.2" filter="url(#wide)"/>
-          <circle cx="400" cy="3220" r="2409.4" fill="none" stroke="#4fe8ff"
-                  stroke-opacity=".22" stroke-width="18.8" filter="url(#wide)"/>
-
-          <!-- mission orbit, 400 km circular -->
-          <circle cx="400" cy="3220" r="2550.7" fill="none"
-                  stroke="#7fefff" stroke-opacity=".38" stroke-width="1"/>
-          <!-- Karman line, 100 km -->
-          <circle cx="400" cy="3220" r="2437.7" fill="none"
-                  stroke="#ffffff" stroke-opacity=".18" stroke-width=".8" stroke-dasharray="3 6"/>
-
-          <!-- planet -->
-          <circle cx="400" cy="3220" r="2400" fill="#000204"/>
-          <circle cx="400" cy="3220" r="2400" fill="url(#terminator)"/>
-          <circle cx="400" cy="3220" r="2402" fill="none" stroke="#00E5FF"
-                  stroke-opacity=".45" stroke-width="6" filter="url(#soft)"/>
-          <circle cx="400" cy="3220" r="2400" fill="none" stroke="#c9fbff"
-                  stroke-opacity=".85" stroke-width="1.3"/>
-
-          <!-- ascent: gravity turn, vertical off the pad, flight-path angle -> 0 at insertion -->
-          <g class="ascent">
-            <path d="M 75.0 842.1 L 75.1 841.4 L 75.4 840.6 L 75.8 839.7 L 76.4 838.7 L 77.0 837.8 L 77.6 836.8 L 78.4 835.7 L 79.2 834.7 L 80.0 833.6 L 80.9 832.5 L 81.9 831.4 L 82.9 830.3 L 84.0 829.2 L 85.1 828.1 L 86.3 826.9 L 87.5 825.7 L 88.7 824.6 L 90.0 823.4 L 91.3 822.2 L 92.7 821.0 L 94.1 819.8 L 95.6 818.6 L 97.0 817.3 L 98.6 816.1 L 100.1 814.9 L 101.7 813.6 L 103.3 812.4 L 105.0 811.1 L 106.7 809.8 L 108.4 808.6 L 110.2 807.3 L 112.0 806.0 L 113.8 804.7 L 115.6 803.4 L 117.5 802.1 L 119.4 800.9 L 121.4 799.6 L 123.4 798.3 L 125.4 797.0 L 127.4 795.7 L 129.5 794.4 L 131.6 793.0 L 133.7 791.7 L 135.8 790.4 L 138.0 789.1 L 140.2 787.8 L 142.5 786.5 L 144.7 785.2 L 147.0 783.9 L 149.3 782.6 L 151.7 781.2 L 154.0 779.9 L 156.4 778.6 L 158.9 777.3 L 161.3 776.0 L 163.8 774.7 L 166.3 773.4 L 168.8 772.1 L 171.4 770.8 L 173.9 769.5 L 176.5 768.2 L 179.2 766.9 L 181.8 765.6 L 184.5 764.3 L 187.2 763.0 L 189.9 761.8 L 192.7 760.5 L 195.4 759.2 L 198.2 757.9 L 201.1 756.7 L 203.9 755.4 L 206.8 754.1 L 209.7 752.9 L 212.6 751.6 L 215.5 750.4 L 218.5 749.2 L 221.5 747.9 L 224.5 746.7 L 227.5 745.5 L 230.6 744.3 L 233.6 743.1 L 236.7 741.9 L 239.9 740.7 L 243.0 739.5 L 246.2 738.3 L 249.4 737.1 L 252.6 736.0 L 255.8 734.8 L 259.0 733.6 L 262.3 732.5 L 265.6 731.4 L 268.9 730.2 L 272.3 729.1 L 275.6 728.0 L 279.0 726.9 L 282.4 725.8 L 285.9 724.7 L 289.3 723.7 L 292.8 722.6 L 296.3 721.5 L 299.8 720.5 L 303.3 719.5 L 306.8 718.4 L 310.4 717.4 L 314.0 716.4 L 317.6 715.4 L 321.2 714.4 L 324.9 713.5 L 328.6 712.5 L 332.3 711.5 L 336.0 710.6 L 339.7 709.7 L 343.4 708.8 L 347.2 707.9 L 351.0 707.0 L 354.8 706.1 L 358.6 705.2 L 362.5 704.4 L 366.3 703.5 L 370.2 702.7 L 374.1 701.9 L 378.1 701.1 L 382.0 700.3 L 385.9 699.5 L 389.9 698.8 L 393.9 698.0 L 397.9 697.3 L 402.0 696.6 L 406.0 695.9 L 410.1 695.2 L 414.2 694.5 L 418.3 693.8 L 422.4 693.2 L 426.5 692.6 L 430.7 691.9 L 434.9 691.3 L 439.1 690.8 L 443.3 690.2 L 447.5 689.6 L 451.7 689.1 L 456.0 688.6 L 460.3 688.1 L 464.6 687.6 L 468.9 687.1 L 473.2 686.7 L 477.5 686.2 L 481.9 685.8 L 486.3 685.4 L 490.6 685.0 L 495.1 684.6 L 499.5 684.3 L 503.9 684.0 L 508.4 683.6 L 512.8 683.3 L 517.3 683.1 L 521.8 682.8 L 526.3 682.6 L 530.9 682.3 L 535.4 682.1 L 540.0 681.9 L 544.5 681.8 L 549.1 681.6 L 553.7 681.5 L 558.3 681.4 L 563.0 681.3 L 567.6 681.2 L 572.3 681.2 L 577.0 681.1 L 581.6 681.1 L 586.4 681.1 L 591.1 681.2 L 595.8 681.2 L 600.5 681.3 L 605.3 681.4 L 610.1 681.5 L 614.8 681.6 L 619.6 681.7 L 624.4 681.9 L 629.3 682.1 L 634.1 682.3 L 638.9 682.6 L 643.8 682.8 L 648.7 683.1 L 653.5 683.4 L 658.4 683.7 L 663.3 684.1 L 668.3 684.4 L 673.2 684.8 L 678.1 685.2 L 683.1 685.6 L 688.0 686.1 L 693.0 686.6 L 698.0 687.1 L 703.0 687.6 L 708.0 688.1 L 713.0 688.7 L 718.0 689.3 L 723.1 689.9 L 728.1 690.5 L 733.2 691.2" fill="none" stroke="url(#trailFade)" stroke-width="5"
-                  stroke-linecap="round" filter="url(#soft)" opacity=".5"/>
-            <path d="M 75.0 842.1 L 75.1 841.4 L 75.4 840.6 L 75.8 839.7 L 76.4 838.7 L 77.0 837.8 L 77.6 836.8 L 78.4 835.7 L 79.2 834.7 L 80.0 833.6 L 80.9 832.5 L 81.9 831.4 L 82.9 830.3 L 84.0 829.2 L 85.1 828.1 L 86.3 826.9 L 87.5 825.7 L 88.7 824.6 L 90.0 823.4 L 91.3 822.2 L 92.7 821.0 L 94.1 819.8 L 95.6 818.6 L 97.0 817.3 L 98.6 816.1 L 100.1 814.9 L 101.7 813.6 L 103.3 812.4 L 105.0 811.1 L 106.7 809.8 L 108.4 808.6 L 110.2 807.3 L 112.0 806.0 L 113.8 804.7 L 115.6 803.4 L 117.5 802.1 L 119.4 800.9 L 121.4 799.6 L 123.4 798.3 L 125.4 797.0 L 127.4 795.7 L 129.5 794.4 L 131.6 793.0 L 133.7 791.7 L 135.8 790.4 L 138.0 789.1 L 140.2 787.8 L 142.5 786.5 L 144.7 785.2 L 147.0 783.9 L 149.3 782.6 L 151.7 781.2 L 154.0 779.9 L 156.4 778.6 L 158.9 777.3 L 161.3 776.0 L 163.8 774.7 L 166.3 773.4 L 168.8 772.1 L 171.4 770.8 L 173.9 769.5 L 176.5 768.2 L 179.2 766.9 L 181.8 765.6 L 184.5 764.3 L 187.2 763.0 L 189.9 761.8 L 192.7 760.5 L 195.4 759.2 L 198.2 757.9 L 201.1 756.7 L 203.9 755.4 L 206.8 754.1 L 209.7 752.9 L 212.6 751.6 L 215.5 750.4 L 218.5 749.2 L 221.5 747.9 L 224.5 746.7 L 227.5 745.5 L 230.6 744.3 L 233.6 743.1 L 236.7 741.9 L 239.9 740.7 L 243.0 739.5 L 246.2 738.3 L 249.4 737.1 L 252.6 736.0 L 255.8 734.8 L 259.0 733.6 L 262.3 732.5 L 265.6 731.4 L 268.9 730.2 L 272.3 729.1 L 275.6 728.0 L 279.0 726.9 L 282.4 725.8 L 285.9 724.7 L 289.3 723.7 L 292.8 722.6 L 296.3 721.5 L 299.8 720.5 L 303.3 719.5 L 306.8 718.4 L 310.4 717.4 L 314.0 716.4 L 317.6 715.4 L 321.2 714.4 L 324.9 713.5 L 328.6 712.5 L 332.3 711.5 L 336.0 710.6 L 339.7 709.7 L 343.4 708.8 L 347.2 707.9 L 351.0 707.0 L 354.8 706.1 L 358.6 705.2 L 362.5 704.4 L 366.3 703.5 L 370.2 702.7 L 374.1 701.9 L 378.1 701.1 L 382.0 700.3 L 385.9 699.5 L 389.9 698.8 L 393.9 698.0 L 397.9 697.3 L 402.0 696.6 L 406.0 695.9 L 410.1 695.2 L 414.2 694.5 L 418.3 693.8 L 422.4 693.2 L 426.5 692.6 L 430.7 691.9 L 434.9 691.3 L 439.1 690.8 L 443.3 690.2 L 447.5 689.6 L 451.7 689.1 L 456.0 688.6 L 460.3 688.1 L 464.6 687.6 L 468.9 687.1 L 473.2 686.7 L 477.5 686.2 L 481.9 685.8 L 486.3 685.4 L 490.6 685.0 L 495.1 684.6 L 499.5 684.3 L 503.9 684.0 L 508.4 683.6 L 512.8 683.3 L 517.3 683.1 L 521.8 682.8 L 526.3 682.6 L 530.9 682.3 L 535.4 682.1 L 540.0 681.9 L 544.5 681.8 L 549.1 681.6 L 553.7 681.5 L 558.3 681.4 L 563.0 681.3 L 567.6 681.2 L 572.3 681.2 L 577.0 681.1 L 581.6 681.1 L 586.4 681.1 L 591.1 681.2 L 595.8 681.2 L 600.5 681.3 L 605.3 681.4 L 610.1 681.5 L 614.8 681.6 L 619.6 681.7 L 624.4 681.9 L 629.3 682.1 L 634.1 682.3 L 638.9 682.6 L 643.8 682.8 L 648.7 683.1 L 653.5 683.4 L 658.4 683.7 L 663.3 684.1 L 668.3 684.4 L 673.2 684.8 L 678.1 685.2 L 683.1 685.6 L 688.0 686.1 L 693.0 686.6 L 698.0 687.1 L 703.0 687.6 L 708.0 688.1 L 713.0 688.7 L 718.0 689.3 L 723.1 689.9 L 728.1 690.5 L 733.2 691.2" fill="none" stroke="url(#trailFade)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M 743.3 692.5 L 753.4 693.9 L 763.5 695.4 L 773.6 696.8 L 783.7 698.3 L 793.8 699.9 L 803.8 701.5 L 813.9 703.1 L 824.0 704.8 L 834.0 706.5 L 844.1 708.3 L 854.1 710.1 L 864.2 711.9 L 874.2 713.8 L 884.2 715.7 L 894.2 717.7 L 904.2 719.7 L 914.2 721.7 L 924.2 723.8 L 934.2 725.9 L 944.2 728.0 L 954.1 730.2 L 964.1 732.5 L 974.0 734.7 L 984.0 737.1" fill="none" stroke="#7fefff" stroke-opacity=".45" stroke-width="1.1"
-                  stroke-dasharray="2 6" stroke-linecap="round"/>
-
-            <g fill="#02080b" stroke="#9ff3ff" stroke-width="1.1">
-              <circle cx="75.0" cy="842.1" r="3.2"/>
-              <circle cx="77.6" cy="836.8" r="2.4"/>
-              <circle cx="105.3" cy="810.8" r="2.8"/>
-              <circle cx="733.2" cy="691.2" r="3.2"/>
-            </g>
-
-            <!-- velocity at insertion: tangent to the orbit, prograde -->
-            <path d="M 733.2 691.2 L 778.8 697.2" stroke="#c9fbff" stroke-opacity=".9"
-                  stroke-width="1.3" marker-end="url(#tip)"/>
+          <g fill="#ffffff" opacity=".62">
+            <circle cx="243" cy="64"  r="1.1"/><circle cx="486" cy="146" r="1.1"/><circle cx="96"  cy="286" r="1.1"/>
+            <circle cx="298" cy="298" r="1.1"/><circle cx="471" cy="318" r="1.1"/><circle cx="648" cy="330" r="1.1"/>
+            <circle cx="146" cy="524" r="1.1"/><circle cx="538" cy="576" r="1.1"/><circle cx="718" cy="588" r="1.1"/>
+            <circle cx="186" cy="654" r="1.1"/><circle cx="330" cy="612" r="1.1"/><circle cx="576" cy="690" r="1.1"/>
           </g>
-
-          <!-- payload, aligned with the local horizontal -->
-          <g transform="translate(733.2 691.2) rotate(7.51)">
-            <g fill="#040d11" stroke="#8fe9f7" stroke-width="1.1" stroke-opacity=".85">
-              <rect x="-31" y="-3.5" width="20" height="7" rx="1"/>
-              <rect x="11"  y="-3.5" width="20" height="7" rx="1"/>
-              <rect x="-8"  y="-6"   width="16" height="12" rx="1.5" fill="#071820"/>
-            </g>
-            <g stroke="#8fe9f7" stroke-opacity=".35" stroke-width=".7">
-              <path d="M-25 -3.5v7M-18 -3.5v7M18 -3.5v7M25 -3.5v7"/>
-            </g>
-            <path d="M-11 0h-3M11 0h3" stroke="#8fe9f7" stroke-opacity=".8" stroke-width="1.1"/>
-            <circle class="beacon" cx="0" cy="-9" r="2" fill="#c9fbff"/>
+          <g fill="#ffffff" opacity=".92">
+            <circle cx="655" cy="196" r="1.7"/><circle cx="112" cy="372" r="1.6"/><circle cx="392" cy="240" r="1.5"/>
+            <circle cx="266" cy="520" r="1.6"/><circle cx="596" cy="470" r="1.5"/><circle cx="472" cy="672" r="1.4"/>
           </g>
-
-          <!-- annotations -->
-          <g font-family="Inter, sans-serif" font-size="11.5" font-weight="500" letter-spacing="1.5"
-             fill="#ffffff" fill-opacity=".5" stroke="#000407" stroke-width="3.2" stroke-opacity=".65"
-             paint-order="stroke fill">
-            <text x="67.0" y="868.1">T+00:00 &#183; LIFT-OFF</text>
-            <text x="103.6" y="840.8">T+01:12 &#183; MAX-Q</text>
-            <text x="131.3" y="780.8">T+02:38 &#183; MECO / STAGE SEP</text>
-            <text x="717.2" y="657.2" text-anchor="end">T+08:44 &#183; SECO / INSERTION</text>
-          </g>
-
-          <g font-family="Inter, sans-serif" font-size="10.5" font-weight="500" letter-spacing="1.4"
-             fill="#ffffff" fill-opacity=".32" stroke="#000407" stroke-width="3" stroke-opacity=".6"
-             paint-order="stroke fill">
-            <text x="770" y="780.5" text-anchor="end">K&#193;RM&#193;N LINE &#183; 100 KM</text>
-            <text x="26"  y="665.2">TARGET ORBIT &#183; 400 KM CIRCULAR</text>
-          </g>
-
-          <!-- readout -->
-          <g font-family="Inter, sans-serif" letter-spacing="1.6" fill="#c9fbff">
-            <text x="140" y="206" font-size="11.5" font-weight="600" fill-opacity=".75">400 &#215; 400 KM &#183; 97.0&#176;</text>
-            <g font-size="11" font-weight="400" fill="#ffffff" fill-opacity=".34">
-              <text x="140" y="232">SUN-SYNCHRONOUS &#183; 10:30 LTDN</text>
-              <text x="140" y="254">INERTIAL VELOCITY &#183; 7.67 KM/S</text>
-              <text x="140" y="276">PERIOD &#183; 92.4 MIN</text>
-              <text x="140" y="298">PROFILE &#183; DIRECT ASCENT, FPA 0&#176; AT SECO</text>
-            </g>
-          </g>
-
-          <!-- scale bar, same units as everything else -->
-          <g stroke="#ffffff" stroke-opacity=".3" stroke-width="1">
-            <path d="M140.0 560.0h188.4"/>
-            <path d="M140.0 556.0v8M328.4 556.0v8M234.2 558.0v4"/>
-          </g>
-          <text x="140.0" y="548.0" font-family="Inter, sans-serif" font-size="10.5"
-                font-weight="500" letter-spacing="1.4" fill="#ffffff" fill-opacity=".34">500 KM &#183; TO SCALE</text>
-
-          <rect width="800" height="1000" filter="url(#grain)" opacity=".05"/>
-          <rect width="800" height="1000" fill="url(#vignette)"/>
         </g>
-      </svg>
-    <p class="visual-caption">Launch Discovery<span>Mission Control &#183; Aether</span></p>
+
+        <!-- atmosphere, to scale: dense layer 0-50 km, haze out to ~120 km -->
+        <circle cx="400" cy="3220" r="2422.6" fill="none" stroke="#00E5FF"
+                stroke-opacity=".10" stroke-width="45.2" filter="url(#wide)"/>
+        <circle cx="400" cy="3220" r="2409.4" fill="none" stroke="#4fe8ff"
+                stroke-opacity=".22" stroke-width="18.8" filter="url(#wide)"/>
+
+        <!-- 400 km circular orbit -->
+        <circle cx="400" cy="3220" r="2550.7" fill="none"
+                stroke="#7fefff" stroke-opacity=".18" stroke-width="1"/>
+
+        <!-- planet -->
+        <circle cx="400" cy="3220" r="2400" fill="#000204"/>
+        <circle cx="400" cy="3220" r="2400" fill="url(#terminator)"/>
+        <circle cx="400" cy="3220" r="2402" fill="none" stroke="#00E5FF"
+                stroke-opacity=".45" stroke-width="6" filter="url(#soft)"/>
+        <circle cx="400" cy="3220" r="2400" fill="none" stroke="#c9fbff"
+                stroke-opacity=".85" stroke-width="1.3"/>
+
+        <!-- ascent -->
+        <g class="ascent">
+          <path d="M 75.0 842.1 L 75.1 841.4 L 75.4 840.6 L 75.8 839.7 L 76.4 838.7 L 77.0 837.8 L 77.6 836.8 L 78.4 835.7 L 79.2 834.7 L 80.0 833.6 L 80.9 832.5 L 81.9 831.4 L 82.9 830.3 L 84.0 829.2 L 85.1 828.1 L 86.3 826.9 L 87.5 825.7 L 88.7 824.6 L 90.0 823.4 L 91.3 822.2 L 92.7 821.0 L 94.1 819.8 L 95.6 818.6 L 97.0 817.3 L 98.6 816.1 L 100.1 814.9 L 101.7 813.6 L 103.3 812.4 L 105.0 811.1 L 106.7 809.8 L 108.4 808.6 L 110.2 807.3 L 112.0 806.0 L 113.8 804.7 L 115.6 803.4 L 117.5 802.1 L 119.4 800.9 L 121.4 799.6 L 123.4 798.3 L 125.4 797.0 L 127.4 795.7 L 129.5 794.4 L 131.6 793.0 L 133.7 791.7 L 135.8 790.4 L 138.0 789.1 L 140.2 787.8 L 142.5 786.5 L 144.7 785.2 L 147.0 783.9 L 149.3 782.6 L 151.7 781.2 L 154.0 779.9 L 156.4 778.6 L 158.9 777.3 L 161.3 776.0 L 163.8 774.7 L 166.3 773.4 L 168.8 772.1 L 171.4 770.8 L 173.9 769.5 L 176.5 768.2 L 179.2 766.9 L 181.8 765.6 L 184.5 764.3 L 187.2 763.0 L 189.9 761.8 L 192.7 760.5 L 195.4 759.2 L 198.2 757.9 L 201.1 756.7 L 203.9 755.4 L 206.8 754.1 L 209.7 752.9 L 212.6 751.6 L 215.5 750.4 L 218.5 749.2 L 221.5 747.9 L 224.5 746.7 L 227.5 745.5 L 230.6 744.3 L 233.6 743.1 L 236.7 741.9 L 239.9 740.7 L 243.0 739.5 L 246.2 738.3 L 249.4 737.1 L 252.6 736.0 L 255.8 734.8 L 259.0 733.6 L 262.3 732.5 L 265.6 731.4 L 268.9 730.2 L 272.3 729.1 L 275.6 728.0 L 279.0 726.9 L 282.4 725.8 L 285.9 724.7 L 289.3 723.7 L 292.8 722.6 L 296.3 721.5 L 299.8 720.5 L 303.3 719.5 L 306.8 718.4 L 310.4 717.4 L 314.0 716.4 L 317.6 715.4 L 321.2 714.4 L 324.9 713.5 L 328.6 712.5 L 332.3 711.5 L 336.0 710.6 L 339.7 709.7 L 343.4 708.8 L 347.2 707.9 L 351.0 707.0 L 354.8 706.1 L 358.6 705.2 L 362.5 704.4 L 366.3 703.5 L 370.2 702.7 L 374.1 701.9 L 378.1 701.1 L 382.0 700.3 L 385.9 699.5 L 389.9 698.8 L 393.9 698.0 L 397.9 697.3 L 402.0 696.6 L 406.0 695.9 L 410.1 695.2 L 414.2 694.5 L 418.3 693.8 L 422.4 693.2 L 426.5 692.6 L 430.7 691.9 L 434.9 691.3 L 439.1 690.8 L 443.3 690.2 L 447.5 689.6 L 451.7 689.1 L 456.0 688.6 L 460.3 688.1 L 464.6 687.6 L 468.9 687.1 L 473.2 686.7 L 477.5 686.2 L 481.9 685.8 L 486.3 685.4 L 490.6 685.0 L 495.1 684.6 L 499.5 684.3 L 503.9 684.0 L 508.4 683.6 L 512.8 683.3 L 517.3 683.1 L 521.8 682.8 L 526.3 682.6 L 530.9 682.3 L 535.4 682.1 L 540.0 681.9 L 544.5 681.8 L 549.1 681.6 L 553.7 681.5 L 558.3 681.4 L 563.0 681.3 L 567.6 681.2 L 572.3 681.2 L 577.0 681.1 L 581.6 681.1 L 586.4 681.1 L 591.1 681.2 L 595.8 681.2 L 600.5 681.3 L 605.3 681.4 L 610.1 681.5 L 614.8 681.6 L 619.6 681.7 L 624.4 681.9 L 629.3 682.1 L 634.1 682.3 L 638.9 682.6 L 643.8 682.8 L 648.7 683.1 L 653.5 683.4 L 658.4 683.7 L 663.3 684.1 L 668.3 684.4 L 673.2 684.8 L 678.1 685.2 L 683.1 685.6 L 688.0 686.1 L 693.0 686.6 L 698.0 687.1 L 703.0 687.6 L 708.0 688.1 L 713.0 688.7 L 718.0 689.3 L 723.1 689.9 L 728.1 690.5 L 733.2 691.2" fill="none" stroke="url(#trailFade)" stroke-width="4.5"
+                stroke-linecap="round" filter="url(#soft)" opacity=".4"/>
+          <path d="M 75.0 842.1 L 75.1 841.4 L 75.4 840.6 L 75.8 839.7 L 76.4 838.7 L 77.0 837.8 L 77.6 836.8 L 78.4 835.7 L 79.2 834.7 L 80.0 833.6 L 80.9 832.5 L 81.9 831.4 L 82.9 830.3 L 84.0 829.2 L 85.1 828.1 L 86.3 826.9 L 87.5 825.7 L 88.7 824.6 L 90.0 823.4 L 91.3 822.2 L 92.7 821.0 L 94.1 819.8 L 95.6 818.6 L 97.0 817.3 L 98.6 816.1 L 100.1 814.9 L 101.7 813.6 L 103.3 812.4 L 105.0 811.1 L 106.7 809.8 L 108.4 808.6 L 110.2 807.3 L 112.0 806.0 L 113.8 804.7 L 115.6 803.4 L 117.5 802.1 L 119.4 800.9 L 121.4 799.6 L 123.4 798.3 L 125.4 797.0 L 127.4 795.7 L 129.5 794.4 L 131.6 793.0 L 133.7 791.7 L 135.8 790.4 L 138.0 789.1 L 140.2 787.8 L 142.5 786.5 L 144.7 785.2 L 147.0 783.9 L 149.3 782.6 L 151.7 781.2 L 154.0 779.9 L 156.4 778.6 L 158.9 777.3 L 161.3 776.0 L 163.8 774.7 L 166.3 773.4 L 168.8 772.1 L 171.4 770.8 L 173.9 769.5 L 176.5 768.2 L 179.2 766.9 L 181.8 765.6 L 184.5 764.3 L 187.2 763.0 L 189.9 761.8 L 192.7 760.5 L 195.4 759.2 L 198.2 757.9 L 201.1 756.7 L 203.9 755.4 L 206.8 754.1 L 209.7 752.9 L 212.6 751.6 L 215.5 750.4 L 218.5 749.2 L 221.5 747.9 L 224.5 746.7 L 227.5 745.5 L 230.6 744.3 L 233.6 743.1 L 236.7 741.9 L 239.9 740.7 L 243.0 739.5 L 246.2 738.3 L 249.4 737.1 L 252.6 736.0 L 255.8 734.8 L 259.0 733.6 L 262.3 732.5 L 265.6 731.4 L 268.9 730.2 L 272.3 729.1 L 275.6 728.0 L 279.0 726.9 L 282.4 725.8 L 285.9 724.7 L 289.3 723.7 L 292.8 722.6 L 296.3 721.5 L 299.8 720.5 L 303.3 719.5 L 306.8 718.4 L 310.4 717.4 L 314.0 716.4 L 317.6 715.4 L 321.2 714.4 L 324.9 713.5 L 328.6 712.5 L 332.3 711.5 L 336.0 710.6 L 339.7 709.7 L 343.4 708.8 L 347.2 707.9 L 351.0 707.0 L 354.8 706.1 L 358.6 705.2 L 362.5 704.4 L 366.3 703.5 L 370.2 702.7 L 374.1 701.9 L 378.1 701.1 L 382.0 700.3 L 385.9 699.5 L 389.9 698.8 L 393.9 698.0 L 397.9 697.3 L 402.0 696.6 L 406.0 695.9 L 410.1 695.2 L 414.2 694.5 L 418.3 693.8 L 422.4 693.2 L 426.5 692.6 L 430.7 691.9 L 434.9 691.3 L 439.1 690.8 L 443.3 690.2 L 447.5 689.6 L 451.7 689.1 L 456.0 688.6 L 460.3 688.1 L 464.6 687.6 L 468.9 687.1 L 473.2 686.7 L 477.5 686.2 L 481.9 685.8 L 486.3 685.4 L 490.6 685.0 L 495.1 684.6 L 499.5 684.3 L 503.9 684.0 L 508.4 683.6 L 512.8 683.3 L 517.3 683.1 L 521.8 682.8 L 526.3 682.6 L 530.9 682.3 L 535.4 682.1 L 540.0 681.9 L 544.5 681.8 L 549.1 681.6 L 553.7 681.5 L 558.3 681.4 L 563.0 681.3 L 567.6 681.2 L 572.3 681.2 L 577.0 681.1 L 581.6 681.1 L 586.4 681.1 L 591.1 681.2 L 595.8 681.2 L 600.5 681.3 L 605.3 681.4 L 610.1 681.5 L 614.8 681.6 L 619.6 681.7 L 624.4 681.9 L 629.3 682.1 L 634.1 682.3 L 638.9 682.6 L 643.8 682.8 L 648.7 683.1 L 653.5 683.4 L 658.4 683.7 L 663.3 684.1 L 668.3 684.4 L 673.2 684.8 L 678.1 685.2 L 683.1 685.6 L 688.0 686.1 L 693.0 686.6 L 698.0 687.1 L 703.0 687.6 L 708.0 688.1 L 713.0 688.7 L 718.0 689.3 L 723.1 689.9 L 728.1 690.5 L 733.2 691.2" fill="none" stroke="url(#trailFade)" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M 743.3 692.5 L 753.4 693.9 L 763.5 695.4 L 773.6 696.8 L 783.7 698.3 L 793.8 699.9 L 803.8 701.5 L 813.9 703.1 L 824.0 704.8 L 834.0 706.5 L 844.1 708.3 L 854.1 710.1 L 864.2 711.9 L 874.2 713.8 L 884.2 715.7 L 894.2 717.7 L 904.2 719.7 L 914.2 721.7 L 924.2 723.8 L 934.2 725.9 L 944.2 728.0 L 954.1 730.2 L 964.1 732.5 L 974.0 734.7 L 984.0 737.1 L 993.9 739.4 L 1003.8 741.8 L 1013.7 744.3 L 1023.6 746.7" fill="none" stroke="#7fefff" stroke-opacity=".28" stroke-width="1"
+                stroke-linecap="round"/>
+          <circle cx="733.2" cy="691.2" r="8" fill="#c9fbff" opacity=".16" filter="url(#soft)"/>
+          <circle cx="733.2" cy="691.2" r="1.8" fill="#eafdff"/>
+        </g>
+
+        <rect width="800" height="1000" filter="url(#grain)" opacity=".05"/>
+        <rect width="800" height="1000" fill="url(#vignette)"/>
+      </g>
+    </svg>
   </aside>
 </div>
 
@@ -629,7 +590,8 @@
   const authView = $('auth'), accountView = $('account');
   const form = $('form'), banner = $('banner'), note = $('note'), submit = $('submit');
   const email = $('email'), password = $('password'), confirm = $('confirm');
-  const accountType = $('account-type');
+  const accountType = $('account-type');   // radiogroup container
+  const accountTypeValue = () => accountType.querySelector('input:checked')?.value ?? '';
   const org = $('org'), role = $('role'), country = $('country');
   const linkedin = $('linkedin'), dial = $('dial'), phone = $('phone');
   const confirmField = $('confirm-field'), profileBlock = $('profile');
@@ -709,15 +671,15 @@
     password.setAttribute('autocomplete', registering ? 'new-password' : 'current-password');
     note.textContent = registering ? 'Minimum 8 characters' : '';
     ALL_FIELDS.forEach(i => setError(i, ''));
-    [accountType, country, dial].forEach(markPlaceholder);
+    [country, dial].forEach(markPlaceholder);
     clearBanner();
   }
 
   tabSignin.addEventListener('click', () => setMode('signin'));
   tabRegister.addEventListener('click', () => setMode('register'));
   ALL_FIELDS.forEach(i => i.addEventListener('input', () => setError(i, '')));
-  [accountType, country, dial].forEach(sel =>
-    sel.addEventListener('change', () => markPlaceholder(sel)));
+  [country, dial].forEach(sel => sel.addEventListener('change', () => markPlaceholder(sel)));
+  accountType.addEventListener('change', () => setError(accountType, ''));
 
   // ─── submit ───────────────────────────────────────────────────────────────
 
@@ -734,7 +696,7 @@
         ok = setError(password, 'Use at least 8 characters.') && ok;
       }
       ok = setError(confirm, confirm.value === password.value ? '' : 'Passwords do not match.') && ok;
-      ok = setError(accountType, accountType.value ? '' : 'Account type is required.') && ok;
+      ok = setError(accountType, accountTypeValue() ? '' : 'Select what brings you here.') && ok;
       ok = setError(org, org.value.trim() ? '' : 'Organisation is required.') && ok;
       ok = setError(role, role.value.trim() ? '' : 'Role is required.') && ok;
       ok = setError(country, country.value ? '' : 'Operating country is required.') && ok;
@@ -749,7 +711,7 @@
     const payload = mode === 'register'
       ? {
           email: email.value, password: password.value,
-          accountType: accountType.value,
+          accountType: accountTypeValue(),
           organisation: org.value, role: role.value, country: country.value,
           linkedin: linkedin.value, dial: dial.value, phone: phone.value,
         }
@@ -768,7 +730,7 @@
 
     if (res.ok) {
       form.reset();
-      [accountType, country, dial].forEach(markPlaceholder);
+      [country, dial].forEach(markPlaceholder);
       return render(res.data.user);
     }
 
@@ -815,7 +777,26 @@
   async function loadOptions() {
     const { ok, data } = await api('/api/options');
     if (!ok) throw new Error('options');
-    for (const t of data.accountTypes) accountType.add(new Option(t.label, t.value));
+    for (const t of data.accountTypes) {
+      const card = document.createElement('label');
+      card.className = 'choice';
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'accountType';
+      radio.value = t.value;
+
+      const label = document.createElement('span');
+      label.className = 'choice-label';
+      label.textContent = t.label;
+
+      const help = document.createElement('span');
+      help.className = 'choice-help';
+      help.textContent = t.help;
+
+      card.append(radio, label, help);
+      accountType.appendChild(card);
+    }
     for (const c of data.countries) {
       country.add(new Option(`${c.flag}  ${c.name}`, c.name));
       // Flag and code first — the half-width select clips long country names.

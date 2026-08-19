@@ -93,8 +93,10 @@ const DUMMY_HASH = await hashPassword(newSessionToken());
 // ─── routes ─────────────────────────────────────────────────────────────────
 
 // Everything the register form needs to build its dropdowns.
+// no-cache, not max-age: the ETag makes repeat requests a cheap 304, and
+// editing the account types or country list can never leave a client stale.
 app.get('/api/options', (req, res) => {
-  res.set('Cache-Control', 'public, max-age=86400');
+  res.set('Cache-Control', 'no-cache');
   res.json({ countries: COUNTRIES, accountTypes: ACCOUNT_TYPES });
 });
 

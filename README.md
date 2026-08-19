@@ -52,7 +52,7 @@ any mapping.
 | Field                  | Required | Notes                                    |
 | ---------------------- | -------- | ---------------------------------------- |
 | Email address          | yes      | format-checked, must be unique           |
-| Account type           | yes      | launch provider / satellite operator / … |
+| What brings you here   | yes      | intent: need / sell / broker / supply     |
 | Password / Confirm     | yes      | 8-character minimum, must match          |
 | Organisation           | yes      |                                          |
 | Role                   | yes      |                                          |
@@ -74,16 +74,14 @@ the visual pane is hidden and the form goes full width.
 **to scale**: the planet radius is 2400 units for 6371 km, so one unit is
 2.655 km, and every altitude follows from that.
 
-- The Kármán line (100 km) and the 400 km mission orbit sit where they actually
-  sit relative to the surface — orbit hugs the limb, because that is what low
-  Earth orbit looks like.
+- The 400 km orbit sits where it actually sits relative to the surface — it hugs
+  the limb, because that is what low Earth orbit looks like.
 - The ascent is a gravity turn: vertical off the pad, pitching over, reaching a
   zero flight-path angle at insertion, so the trace meets the orbit tangentially
-  rather than crossing it. MECO is placed at its real altitude, below the
-  Kármán line.
-- The readout numbers are computed, not invented: 7.67 km/s and 92.4 min follow
-  from `v = √(μ/a)` and `T = 2π√(a³/μ)` at a = 6771 km.
-- A scale bar states the scale, since a viewer has no other way to check it.
+  rather than crossing it.
+It carries no labels, mission-clock stamps or telemetry readout on purpose: a
+login screen displaying invented mission data reads as costume, not product.
+The geometry is correct; the image just does not narrate itself.
 
 Re-run `python3 tools/gen_visual.py` after editing the geometry — it rewrites
 the `<svg>` block in `public/index.html` in place.
@@ -105,12 +103,29 @@ One account table, one login, with `account_type` on the user — not separate
 launcher and operator logins. What differs between a launch provider and a
 satellite operator is what they see *after* signing in, which is routing, not
 authentication; splitting the login surface doubles the reset flows and support
-load and produces the "wrong login page" failure. Segment on this column at
-sign-in instead, and it can be changed later without migrating accounts.
+load and produces the "wrong login page" failure.
 
-Types live in `lib/account-types.js`; adding one puts it in the dropdown and
-through validation. A database created before this column existed gets it added
-in place on the next start.
+Segmented by **intent, not identity**: a satellite manufacturer sometimes
+procures the launch and sometimes does not, so "satellite operator" does not
+reliably say which side of the market an account is on. "What brings you here"
+does, and it maps straight onto what to show them.
+
+| Slug              | On the form           | Shown on the account     |
+| ----------------- | --------------------- | ------------------------ |
+| `payload_owner`   | I need launch         | Payload owner            |
+| `launch_provider` | I sell launch         | Launch service provider  |
+| `broker`          | I broker launch       | Launch broker            |
+| `supplier`        | I supply the mission  | Mission supplier         |
+
+Brokers are kept separate from suppliers deliberately — an aggregator sitting
+between buyer and provider has nothing in common with an insurer or a bus
+manufacturer once matching exists. Finer detail (operator vs manufacturer vs
+agency) belongs in the profile after signup, not in front of the button.
+
+Types live in `lib/account-types.js`; adding one puts it in the radio group and
+through validation. Slugs are what the database stores, so labels can be
+reworded freely. A database created before this column existed gets it added in
+place on the next start.
 
 ## Country data
 
