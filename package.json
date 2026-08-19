@@ -1,0 +1,17 @@
+{
+  "name": "launch-discovery",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Access page for Aether mission management",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server.js"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
