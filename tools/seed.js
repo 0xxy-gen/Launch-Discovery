@@ -3,6 +3,7 @@
 //   npm run seed -- --reset   delete the demo accounts first, then recreate
 import { db, createUser, findUserByEmail, updateProfile } from '../lib/db.js';
 import { createMission, missionsForOwner } from '../lib/missions.js';
+import { createLaunch, launchesForOwner } from '../lib/launches.js';
 import { hashPassword } from '../lib/auth.js';
 
 const PASSWORD = 'aether-demo-2026';
@@ -50,6 +51,18 @@ const ACCOUNTS = [
     profile: { organisation: 'RocketCo', role: 'Head of Sales', country: 'United States',
                linkedin: '', dial: '+1', phone: '2025550143' },
     missions: [],
+    launches: [
+      { name: 'Transporter-14', vehicle: 'Falcon 9', site: 'Vandenberg SLC-4E',
+        orbitType: 'sso', altitudeKm: 525, inclinationDeg: 97.5, windowMonth: '2027-04',
+        capacityKg: 3500, committedKg: 2100,
+        notes: 'ESPA and 15-inch ports available. Integration cut-off L-8 weeks.', publish: true },
+      { name: 'RC-7 dedicated', vehicle: 'RocketCo Vega', site: 'Kourou ELV',
+        orbitType: 'leo_mid', altitudeKm: 500, inclinationDeg: 45, windowMonth: '2028-02',
+        capacityKg: 1200, committedKg: 300, notes: '', publish: true },
+      { name: 'Transporter-16', vehicle: 'Falcon 9', site: 'Cape Canaveral SLC-40',
+        orbitType: 'sso', altitudeKm: 560, inclinationDeg: 97.6, windowMonth: '2027-10',
+        capacityKg: 3500, committedKg: 0, notes: 'Manifest opening soon.', publish: false },
+    ],
   },
   {
     email: 'broker@demo.aether',
@@ -87,6 +100,11 @@ for (const account of ACCOUNTS) {
   if (missionsForOwner(user.id).length === 0) {
     for (const { publish, ...m } of account.missions) createMission(user.id, m, publish);
     if (account.missions.length) console.log(`        + ${account.missions.length} mission(s)`);
+  }
+
+  if (account.launches?.length && launchesForOwner(user.id).length === 0) {
+    for (const { publish, ...l } of account.launches) createLaunch(user.id, l, publish);
+    console.log(`        + ${account.launches.length} launch(es)`);
   }
 }
 

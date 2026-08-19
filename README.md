@@ -19,7 +19,7 @@ npm run seed       # demo accounts and sample data
 | `satco@demo.aether` | Payload owner | 2 missions, 1 published, leads a pool |
 | `cubes@demo.aether` | Payload owner | A 12U cubesat, in that pool |
 | `orbital@demo.aether` | Payload owner | A 45° LEO payload — incompatible with the pool |
-| `rocketco@demo.aether` | Launch provider | Browses Payloads |
+| `rocketco@demo.aether` | Launch provider | 3 launches, 2 published; browses Payloads |
 | `broker@demo.aether` | Broker | Sees both sides |
 
 Password for all of them: `aether-demo-2026`
@@ -39,6 +39,12 @@ Requires Node 22.5+; developed on 24.
 | POST   | `/api/logout`              | End the current session                              |
 | PUT    | `/api/profile`             | Organisation, role, country, contact details         |
 | GET    | `/api/payloads`            | Published requirements from others — banded, supply side only |
+| GET    | `/api/launches`            | Published launches, with which of your missions fit each |
+| GET    | `/api/my-launches`         | Your own launches — supply side only                  |
+| POST   | `/api/my-launches`         | List a launch                                         |
+| PUT    | `/api/my-launches/:id`     | Update one                                            |
+| POST   | `/api/my-launches/:id/status` | Publish or hide                                    |
+| DELETE | `/api/my-launches/:id`     | Delete one                                            |
 | GET    | `/api/pools`               | Open pools, with which of your missions could join each |
 | POST   | `/api/pools`               | Start a pool, seeded by one of your missions          |
 | POST   | `/api/pools/:id/join`      | Join with a compatible mission                        |
@@ -92,9 +98,10 @@ exist depends on the account, because access does:
 
 | | Payload owner | Launch provider | Broker |
 | --- | --- | --- | --- |
-| Browse | *(Launches, once provider capacity exists)* | Payloads | Payloads |
-| Coordinate | Aether Pooling | — | Aether Pooling |
+| Launches | ✓ | ✓ | ✓ |
+| Payloads | — | ✓ | ✓ |
 | Yours | My Missions | My Launches | My Missions |
+| Aether Pooling | ✓ | — | ✓ |
 
 **Payload owners cannot browse the payloads directory.** Other people's banded
 demand is competitor intelligence, and reading it is the exact leak the banding
@@ -102,8 +109,27 @@ exists to prevent — so browse is supply side only, enforced on the API and on
 the page route, not just hidden in the nav. `nav.js` renders nothing when an
 account only has one destination: a single tab is noise, not navigation.
 
-"Launches" is deliberately unused for now. It should mean actual flights with
-dates, vehicles and spare capacity, and those objects do not exist yet.
+**Supply and demand are not symmetric, and the app should not pretend they are.**
+A launch is a sales offering, so `Launches` names the provider, the vehicle and
+the site openly and is visible to every signed-in account. A requirement is
+competitive intelligence, so `Payloads` is banded and closed to the demand side.
+Same marketplace, opposite disclosure.
+
+## Launches
+
+The supply-side object: a real flight with a vehicle, a site, a date and spare
+mass. Providers list them under `My Launches` as draft or published; everyone
+else browses them under `Launches`, filtered by orbit, window and spare
+capacity.
+
+Each card tells a payload owner whether anything of theirs actually fits —
+using the same compatibility rules pooling uses, plus whether the payload's mass
+is under the spare capacity. When nothing fits, the card says which constraint
+each mission fails rather than staying silent.
+
+`lib/compatibility.js` holds those rules once, shared by launches and pools: a
+mission fits a target if the orbit type matches exactly, inclination is within
+1.5°, altitude within 150 km and the window within 3 months.
 
 ## Aether Pooling
 
@@ -253,6 +279,8 @@ public/missions.html + missions.js   the requirements app
 public/theme.css   shared tokens and form components
 tools/gen_visual.py  regenerates the launch graphic
 tools/seed.js      demo accounts and sample data
-lib/pools.js       pools, membership and compatibility
+lib/pools.js       pools and membership
+lib/launches.js    launches, capacity and the supply directory
+lib/compatibility.js  the orbit rules shared by pools and launches
 data/app.db        created on first run, gitignored
 ```

@@ -7,14 +7,19 @@ import { ACCOUNT_TYPES } from './lib/account-types.js';
 import { ORBIT_TYPES, RIDE_TYPES, FORM_FACTORS } from './lib/mission-options.js';
 import { ownerMission, previewMission, publicMission } from './lib/banding.js';
 import {
-  createPool, poolById, allPools, poolView, joinPool, leavePool, isMember, compatibility,
+  createPool, poolById, allPools, poolView, joinPool, leavePool, isMember,
 } from './lib/pools.js';
+import { compatibility } from './lib/compatibility.js';
+import {
+  createLaunch, updateLaunch, setLaunchStatus, launchById, launchesForOwner,
+  deleteLaunch, browseLaunches, launchView, ownerLaunch,
+} from './lib/launches.js';
 import {
   createMission, updateMission, setMissionStatus,
   missionById, missionsForOwner, deleteMission, browsePublished,
 } from './lib/missions.js';
 import {
-  validateRegistration, validateLogin, validateMission, validateProfile, validatePool,
+  validateRegistration, validateLogin, validateMission, validateProfile, validatePool, validateLaunch,
 } from './lib/validate.js';
 import { hashPassword, verifyPassword, newSessionToken, hashToken } from './lib/auth.js';
 import {
@@ -288,6 +293,84 @@ app.delete('/api/missions/:id', requireUser, (req, res) => {
   res.status(204).end();
 });
 
+// ─── launches ───────────────────────────────────────────────────────────────
+// Supply is advertised rather than redacted, so the directory is open to every
+// signed-in account and the provider is named on purpose.
+
+app.get('/api/launches', requireUser, (req, res) => {
+  const q = req.query;
+  const num = v => (v === undefined || v === '' ? null : Number(v));
+  const rows = browseLaunches({
+    orbitType: q.orbit, fromMonth: q.from, toMonth: q.to, minAvailable: num(q.minAvailable),
+  });
+
+  // for a payload owner, which of their missions could actually fly on each
+  const mine = missionsForOwner(req.user.id);
+  const launches = rows.map(l => ({
+    ...launchView(l),
+    candidates: mine.map(m => {
+      const { ok, reasons } = compatibility(l, m);
+      return { id: m.id, reference: m.reference, mass: m.payload_mass_kg, ok, reasons };
+    }),
+  }));
+
+  res.json({ launches });
+});
+
+const SELLS_LAUNCH = new Set(['launch_provider', 'broker']);
+function requireProvider(req, res, next) {
+  if (!SELLS_LAUNCH.has(req.user.account_type)) {
+    return res.status(403).json({ error: 'Not available on this account.' });
+  }
+  next();
+}
+
+function ownedLaunch(req, res) {
+  const launch = launchById(Number(req.params.id));
+  if (!launch || launch.user_id !== req.user.id) {
+    res.status(404).json({ error: 'Not found.' });
+    return undefined;
+  }
+  return launch;
+}
+
+app.get('/api/my-launches', requireUser, requireProvider, (req, res) => {
+  res.json({ launches: launchesForOwner(req.user.id).map(ownerLaunch) });
+});
+
+app.post('/api/my-launches', requireJson, requireUser, requireProvider, (req, res) => {
+  const { fields, values } = validateLaunch(req.body);
+  if (Object.keys(fields).length) return res.status(400).json({ fields });
+
+  const publish = req.body.publish === true;
+  if (publish && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
+
+  res.status(201).json({ launch: ownerLaunch(createLaunch(req.user.id, values, publish)) });
+});
+
+app.put('/api/my-launches/:id', requireJson, requireUser, requireProvider, (req, res) => {
+  if (!ownedLaunch(req, res)) return;
+  const { fields, values } = validateLaunch(req.body);
+  if (Object.keys(fields).length) return res.status(400).json({ fields });
+  res.json({ launch: ownerLaunch(updateLaunch(req.user.id, Number(req.params.id), values)) });
+});
+
+app.post('/api/my-launches/:id/status', requireJson, requireUser, requireProvider, (req, res) => {
+  if (!ownedLaunch(req, res)) return;
+  const status = req.body.status;
+  if (status !== 'published' && status !== 'draft') {
+    return res.status(400).json({ error: 'Status must be draft or published.' });
+  }
+  if (status === 'published' && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
+  res.json({ launch: ownerLaunch(setLaunchStatus(req.user.id, Number(req.params.id), status)) });
+});
+
+app.delete('/api/my-launches/:id', requireUser, requireProvider, (req, res) => {
+  if (!ownedLaunch(req, res)) return;
+  deleteLaunch(req.user.id, Number(req.params.id));
+  res.status(204).end();
+});
+
 // ─── pooling ────────────────────────────────────────────────────────────────
 // Owners coordinating with each other, which is the one place the anonymity
 // model inverts — so it is opt-in, and only members see who is inside.
@@ -375,6 +458,18 @@ app.get('/', (req, res, next) => {
 app.get('/missions', (req, res) => {
   if (!currentUser(req)) return res.redirect('/');
   res.sendFile(join(root, 'public', 'missions.html'));
+});
+
+app.get('/launches', (req, res) => {
+  if (!currentUser(req)) return res.redirect('/');
+  res.sendFile(join(root, 'public', 'launches.html'));
+});
+
+app.get('/my-launches', (req, res) => {
+  const user = currentUser(req);
+  if (!user) return res.redirect('/');
+  if (!SELLS_LAUNCH.has(user.account_type)) return res.redirect('/missions');
+  res.sendFile(join(root, 'public', 'my-launches.html'));
 });
 
 app.get('/pooling', (req, res) => {

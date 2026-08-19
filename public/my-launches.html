@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aether — My Launches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="app.css">
+<style>
+  .editor { max-width: 560px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  .hint { margin-top: 6px; font-size: 12px; color: var(--text-4); }
+
+  textarea {
+    width: 100%; min-height: 84px; padding: 11px 0;
+    background: transparent; border: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+    color: #fff; font-family: var(--font-sans); font-weight: 300; font-size: 16px;
+    outline: none; resize: vertical; transition: border-color .2s;
+  }
+  textarea:focus { border-bottom-color: var(--cyan); }
+  textarea::placeholder { color: var(--text-4); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+  .actions button { width: auto; margin: 0; padding: 12px 20px; }
+  .danger {
+    margin-left: auto; padding: 12px 18px;
+    background: transparent; border: 1px solid rgba(255, 107, 107, .4);
+    border-radius: var(--radius-btn); color: #ff8f8f;
+    font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+  }
+  .danger:hover { background: rgba(255, 107, 107, .1); }
+
+  .meter { margin: 14px 0 0; max-width: 320px; }
+  .meter-track { height: 6px; background: rgba(255, 255, 255, 0.09); border-radius: 999px; overflow: hidden; }
+  .meter-fill { height: 100%; background: var(--cyan); border-radius: 999px; }
+  .meter-legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12.5px; color: var(--text-3); }
+  .meter-legend b { color: #fff; font-weight: 600; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand">Aether <span>Launch Discovery</span></div>
+    <nav class="nav" id="nav"></nav>
+  </div>
+  <div class="whoami">
+    <span id="whoami"></span>
+    <button class="ghost-sm" id="signout">Sign out</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="banner" id="banner"></div>
+
+  <section id="list-view" hidden>
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">My Launches</p>
+        <h1><span class="lite">Your</span> <span class="bold">manifest</span></h1>
+        <p class="lede" id="list-lede"></p>
+      </div>
+      <button class="primary compact" id="new-launch">Add a launch</button>
+    </div>
+
+    <div class="empty" id="empty" hidden>
+      <h2><span class="lite">No launches</span> <b>listed</b></h2>
+      <p>List a flight with spare capacity and payload owners can find it. Everything here is advertised openly — supply is not anonymised.</p>
+      <button class="primary" id="empty-cta">Add a launch</button>
+    </div>
+
+    <div class="rows" id="rows"></div>
+  </section>
+
+  <section id="editor-view" hidden>
+    <div class="page-head">
+      <div>
+        <p class="eyebrow" id="editor-eyebrow">New launch</p>
+        <h1><span class="lite">Describe the</span> <span class="bold">flight</span></h1>
+        <p class="lede">Owners match against orbit, window and spare mass, so those four decide who finds you.</p>
+      </div>
+      <button class="ghost-sm" id="cancel">Back</button>
+    </div>
+
+    <form class="editor" id="launch-form" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" type="text" placeholder="e.g. Transporter-14" autocomplete="off">
+        <div class="err" id="name-err"></div>
+      </div>
+
+      <div class="pair">
+        <div class="field">
+          <label for="vehicle">Vehicle</label>
+          <input id="vehicle" type="text" placeholder="e.g. Falcon 9">
+          <div class="err" id="vehicle-err"></div>
+        </div>
+        <div class="field">
+          <label for="site">Launch site</label>
+          <input id="site" type="text" placeholder="e.g. Vandenberg SLC-4E">
+          <div class="err" id="site-err"></div>
+        </div>
+      </div>
+
+      <p class="section">Target orbit</p>
+
+      <div class="field">
+        <label for="orbitType">Orbit</label>
+        <select id="orbitType"><option value="">Select an orbit</option></select>
+        <div class="err" id="orbitType-err"></div>
+      </div>
+
+      <div class="pair">
+        <div class="field">
+          <label for="altitudeKm">Altitude (km)</label>
+          <input id="altitudeKm" type="number" min="150" step="1" placeholder="525">
+          <div class="err" id="altitudeKm-err"></div>
+        </div>
+        <div class="field">
+          <label for="inclinationDeg">Inclination (°)</label>
+          <input id="inclinationDeg" type="number" min="0" max="180" step="0.1" placeholder="97.5">
+          <div class="err" id="inclinationDeg-err"></div>
+        </div>
+      </div>
+
+      <p class="section">Capacity</p>
+
+      <div class="field">
+        <label for="windowMonth">Launch month</label>
+        <input id="windowMonth" type="month">
+        <div class="err" id="windowMonth-err"></div>
+      </div>
+
+      <div class="pair">
+        <div class="field">
+          <label for="capacityKg">Rideshare capacity (kg)</label>
+          <input id="capacityKg" type="number" min="1" step="1" placeholder="3500">
+          <div class="err" id="capacityKg-err"></div>
+        </div>
+        <div class="field">
+          <label for="committedKg">Already committed (kg)</label>
+          <input id="committedKg" type="number" min="0" step="1" placeholder="0">
+          <p class="hint">Spare mass is the difference.</p>
+          <div class="err" id="committedKg-err"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="notes">Notes</label>
+        <textarea id="notes" placeholder="Deployer options, separation systems, integration deadlines"></textarea>
+        <div class="err" id="notes-err"></div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit" id="save-publish">Publish</button>
+        <button class="alt" type="button" id="save-draft">Save as draft</button>
+        <button class="danger" type="button" id="delete" hidden>Delete</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script src="nav.js"></script>
+<script src="my-launches.js"></script>
+</body>
+</html>
