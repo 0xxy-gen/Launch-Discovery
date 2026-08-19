@@ -5,10 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { COUNTRIES } from './lib/countries.js';
 import { ACCOUNT_TYPES } from './lib/account-types.js';
 import { ORBIT_TYPES, RIDE_TYPES, FORM_FACTORS } from './lib/mission-options.js';
-import { ownerMission, previewMission } from './lib/banding.js';
+import { ownerMission, previewMission, publicMission } from './lib/banding.js';
 import {
   createMission, updateMission, setMissionStatus,
-  missionById, missionsForOwner, deleteMission,
+  missionById, missionsForOwner, deleteMission, browsePublished,
 } from './lib/missions.js';
 import {
   validateRegistration, validateLogin, validateMission, validateProfile,
@@ -208,6 +208,26 @@ app.put('/api/profile', requireJson, requireUser, (req, res) => {
   res.json({ user: publicUser(updateProfile(req.user.id, values)) });
 });
 
+// Browsing other people's demand is competitor intelligence, which is the
+// exact leak the banding exists to prevent — so the supply side only.
+const CAN_BROWSE = new Set(['launch_provider', 'broker']);
+const canBrowse = user => CAN_BROWSE.has(user.account_type);
+
+app.get('/api/payloads', requireUser, (req, res) => {
+  if (!canBrowse(req.user)) return res.status(403).json({ error: 'Not available on this account.' });
+
+  const q = req.query;
+  const num = v => (v === undefined || v === '' ? null : Number(v));
+  const rows = browsePublished(req.user.id, {
+    orbitType: q.orbit, rideType: q.ride, formFactor: q.form,
+    massMin: num(q.massMin), massMax: num(q.massMax),
+    fromMonth: q.from, toMonth: q.to,
+  });
+
+  // Only ever the banded view — the exact figures are not in this response.
+  res.json({ payloads: rows.map(m => publicMission(m, { country: m.owner_country })) });
+});
+
 app.get('/api/missions', requireUser, (req, res) => {
   const missions = missionsForOwner(req.user.id).map(m => ownerMission(m, req.user));
   res.json({ missions });
@@ -275,6 +295,13 @@ app.get('/', (req, res, next) => {
 app.get('/missions', (req, res) => {
   if (!currentUser(req)) return res.redirect('/');
   res.sendFile(join(root, 'public', 'missions.html'));
+});
+
+app.get('/payloads', (req, res) => {
+  const user = currentUser(req);
+  if (!user) return res.redirect('/');
+  if (!canBrowse(user)) return res.redirect('/missions');
+  res.sendFile(join(root, 'public', 'payloads.html'));
 });
 
 app.use(express.static(join(root, 'public'), { extensions: ['html'] }));

@@ -24,6 +24,7 @@ Requires Node 22.5+; developed on 24.
 | POST   | `/api/login`               | Start a session                                      |
 | POST   | `/api/logout`              | End the current session                              |
 | PUT    | `/api/profile`             | Organisation, role, country, contact details         |
+| GET    | `/api/payloads`            | Published requirements from others — banded, supply side only |
 | GET    | `/api/missions`            | Your requirements, private figures and public view   |
 | POST   | `/api/missions`            | Create one                                           |
 | POST   | `/api/missions/preview`    | Band a draft without saving — drives the live preview |
@@ -65,6 +66,25 @@ the moment they are first needed — publishing a requirement, which carries the
 owner's jurisdiction — and contact details stay optional until a match is
 accepted. Asking for all of it up front costs signups and asks for identifying
 detail before anyone has decided to trust you.
+
+## Navigation
+
+Object-named browse tabs plus one "mine" tab, the shape Qasa uses. Which tabs
+exist depends on the account, because access does:
+
+| | Payload owner | Launch provider or broker |
+| --- | --- | --- |
+| Browse | *(Launches, once provider capacity exists)* | Payloads |
+| Yours | My Missions | My Launches |
+
+**Payload owners cannot browse the payloads directory.** Other people's banded
+demand is competitor intelligence, and reading it is the exact leak the banding
+exists to prevent — so browse is supply side only, enforced on the API and on
+the page route, not just hidden in the nav. `nav.js` renders nothing when an
+account only has one destination: a single tab is noise, not navigation.
+
+"Launches" is deliberately unused for now. It should mean actual flights with
+dates, vehicles and spare capacity, and those objects do not exist yet.
 
 ## Launch requirements
 

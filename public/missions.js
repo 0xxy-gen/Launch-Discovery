@@ -316,6 +316,7 @@
 
     me = meRes.data.user;
     $('whoami').textContent = `${me.email} · ${me.accountTypeLabel}`;
+    renderNav(me, 'missions');
 
     const fill = (id, list) => {
       for (const o of list) $(id).add(new Option(o.label, o.value));
