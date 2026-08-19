@@ -2,6 +2,8 @@
   const $ = id => document.getElementById(id);
   const rows = $('rows'), empty = $('empty');
 
+  let flags = new Map();
+
   async function api(path, { method = 'GET' } = {}) {
     const res = await fetch(path, { method, credentials: 'same-origin' });
     if (res.status === 401) { location.href = '/'; throw new Error('signed out'); }
@@ -29,7 +31,11 @@
 
     const right = el('div');
     right.style.textAlign = 'right';
-    right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+    const provider = el('div', 'provider');
+    const flag = flags.get(l.providerCountry);
+    if (flag) provider.append(el('span', 'provider-flag', flag));
+    provider.append(document.createTextNode(l.provider || 'Unnamed provider'));
+    right.append(provider);
     const fav = el('button', 'fav on');
     fav.type = 'button';
     fav.title = 'Remove from saved';
@@ -46,8 +52,8 @@
 
     const tags = el('div', 'tags');
     tags.style.marginTop = '14px';
-    [l.vehicle, l.site, l.providerCountry].filter(Boolean)
-      .forEach(t => tags.append(el('span', 'tag', t)));
+    [l.vehicle, l.site, l.providerCountry && `${flags.get(l.providerCountry) ?? ''} ${l.providerCountry}`.trim()]
+      .filter(Boolean).forEach(t => tags.append(el('span', 'tag', t)));
     card.append(tags);
 
     const pct = Math.min(100, Math.round(((l.capacityKg - l.availableKg) / l.capacityKg) * 100));
@@ -76,8 +82,9 @@
   }
 
   (async function init() {
-    const me = await api('/api/me');
+    const [me, options] = await Promise.all([api('/api/me'), api('/api/options')]);
     if (!me.ok) return;
+    flags = new Map(options.data.countries.map(c => [c.name, c.flag]));
     renderAccount(me.data.user);
     renderNav(me.data.user, 'saved');
     load();

@@ -8,7 +8,9 @@
     "start": "node --disable-warning=ExperimentalWarning server.js",
     "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
     "seed": "node --disable-warning=ExperimentalWarning tools/seed.js",
-    "seed:slots": "node --disable-warning=ExperimentalWarning tools/seed-slots.js"
+    "seed:slots": "node --disable-warning=ExperimentalWarning tools/seed-slots.js",
+    "seed:demo": "node --disable-warning=ExperimentalWarning tools/seed-demo.js",
+    "demo:reset": "rm -f data/app.db data/app.db-wal data/app.db-shm && npm run seed && npm run seed:slots && npm run seed:demo"
   },
   "engines": {
     "node": ">=22.5"

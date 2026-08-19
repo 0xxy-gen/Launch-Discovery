@@ -9,6 +9,8 @@
     return { ok: res.ok, status: res.status, data: await res.json().catch(() => ({})) };
   }
 
+  let flags = new Map();
+
   const heart = on => `<svg viewBox="0 0 20 20" width="18" height="18" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M10 16.5S3.5 12.6 3.5 8.2A3.7 3.7 0 0110 6a3.7 3.7 0 016.5 2.2c0 4.4-6.5 8.3-6.5 8.3z"/></svg>`;
 
   const el = (tag, className, text) => {
@@ -28,7 +30,11 @@
       `${l.orbitType} · ${l.altitudeKm} km · ${l.inclinationDeg}° · ${l.windowMonth}`));
     head.append(left);
     const right = el('div', 'launch-right');
-    right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+    const provider = el('div', 'provider');
+    const flag = flags.get(l.providerCountry);
+    if (flag) provider.append(el('span', 'provider-flag', flag));
+    provider.append(document.createTextNode(l.provider || 'Unnamed provider'));
+    right.append(provider);
 
     const save = el('button', 'fav' + (l.saved ? ' on' : ''));
     save.type = 'button';
@@ -57,7 +63,9 @@
     const tags = el('div', 'tags');
     tags.style.marginTop = '14px';
     tags.append(el('span', 'tag', l.vehicle), el('span', 'tag', l.site));
-    if (l.providerCountry) tags.append(el('span', 'tag', l.providerCountry));
+    if (l.providerCountry) {
+      tags.append(el('span', 'tag', `${flags.get(l.providerCountry) ?? ''} ${l.providerCountry}`.trim()));
+    }
     card.append(tags);
 
     const used = l.capacityKg - l.availableKg;
@@ -134,6 +142,7 @@
     renderAccount(me.data.user);
     renderNav(me.data.user, 'launches');
     for (const o of options.data.orbitTypes) $('orbit').add(new Option(o.label, o.value));
+    flags = new Map(options.data.countries.map(c => [c.name, c.flag]));
     load();
   })();
 })();

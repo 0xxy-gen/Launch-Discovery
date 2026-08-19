@@ -11,6 +11,29 @@ npm start          # http://localhost:3100   (npm run dev to watch)
 npm run seed       # demo accounts and sample data
 ```
 
+### Demo data
+
+```
+npm run demo:reset     # wipe and rebuild the whole demo in one command
+```
+
+That runs the three seeds in order: accounts, the real launch slots, then the
+demand side — 9 operators, 16 satellites, 2 constellations, 2 pools with
+conversations already in them, and a couple of shortlisted flights.
+
+**The operators are invented; the launches are not.** A launch manifest is
+public information, so `seed-slots.js` uses the real one. A launch *requirement*
+is not public: putting a real company's name on a fabricated requirement would
+be inventing a competitor's commercial intent, which is indefensible at an
+industry event where those people are in the room. So every operator in
+`seed-demo.js` is fictional, with realistic profiles, and the satellites are
+clustered on purpose — several heading for the same shell in the same quarter,
+which is what makes pooling and the fit checks show anything.
+
+Sign in as `kestrel@demo.aether` to see the fullest picture: two satellites in a
+constellation, a pool with four members mid-conversation, two shortlisted
+flights.
+
 `npm run seed:slots` loads real available-launch-slot data transcribed from a
 supplied spreadsheet — 14 slots across SpaceX, ISRO, Rocket Lab and ExPace. The
 source gives mission, capacity, deployer, window, launcher and company; it does
