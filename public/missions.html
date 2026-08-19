@@ -120,7 +120,8 @@
     border-radius: 12px;
   }
   .preview-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
-  .preview-ref { font-size: 15px; font-weight: 600; letter-spacing: 0.04em; }
+  .preview-ref { font-size: clamp(16px, 1.2vw, 21px); font-weight: 600; letter-spacing: 0.04em; }
+  .preview-refnote { margin: 4px 0 0; font-size: clamp(12.5px, .9vw, 16px); color: var(--text-4); }
   .preview-jur { font-size: 12px; color: var(--text-4); }
   .spec { display: grid; grid-template-columns: auto 1fr; gap: 9px 16px; font-size: 13px; }
   .spec dt { color: var(--text-4); }
@@ -343,7 +344,10 @@
         <p class="eyebrow">What providers see</p>
         <div class="preview-card">
           <div class="preview-head">
-            <span class="preview-ref" id="p-ref">LD-••••</span>
+            <div>
+              <span class="preview-ref" id="p-ref">LD-••••</span>
+              <p class="preview-refnote" id="p-refnote">Reference, assigned when you publish</p>
+            </div>
             <span class="preview-jur" id="p-jur"></span>
           </div>
           <dl class="spec">

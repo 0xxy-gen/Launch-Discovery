@@ -83,3 +83,76 @@ window.confirmPublish = function confirmPublish({ title, lead, visible, hidden, 
     document.addEventListener('keydown', onKey);
   });
 };
+
+// An in-page replacement for window.prompt, which is a native browser dialog:
+// it looks nothing like the app and blocks the page while it is open.
+window.promptDialog = function promptDialog({ title, lead, label, value = '', placeholder = '', action = 'Save' }) {
+  return new Promise(resolve => {
+    const back = document.createElement('div');
+    back.className = 'modal-back';
+
+    const box = document.createElement('form');
+    box.className = 'modal';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+
+    const h = document.createElement('h2');
+    h.textContent = title;
+    box.append(h);
+
+    if (lead) {
+      const p = document.createElement('p');
+      p.className = 'modal-lead';
+      p.textContent = lead;
+      box.append(p);
+    }
+
+    const field = document.createElement('div');
+    field.className = 'field';
+    const lab = document.createElement('label');
+    lab.textContent = label;
+    lab.htmlFor = 'prompt-input';
+    const input = document.createElement('input');
+    input.id = 'prompt-input';
+    input.type = 'text';
+    input.value = value;
+    input.placeholder = placeholder;
+    input.autocomplete = 'off';
+    field.append(lab, input);
+    box.append(field);
+
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions';
+    const cancel = document.createElement('button');
+    cancel.className = 'ghost-sm';
+    cancel.type = 'button';
+    cancel.textContent = 'Cancel';
+    const go = document.createElement('button');
+    go.className = 'primary';
+    go.type = 'submit';
+    go.textContent = action;
+    actions.append(cancel, go);
+    box.append(actions);
+
+    back.append(box);
+    document.body.append(back);
+    input.focus();
+    input.select();
+
+    const close = answer => {
+      document.removeEventListener('keydown', onKey);
+      back.remove();
+      resolve(answer);
+    };
+    const onKey = e => { if (e.key === 'Escape') close(null); };
+
+    box.addEventListener('submit', e => {
+      e.preventDefault();
+      const trimmed = input.value.trim();
+      close(trimmed || null);
+    });
+    cancel.addEventListener('click', () => close(null));
+    back.addEventListener('click', e => { if (e.target === back) close(null); });
+    document.addEventListener('keydown', onKey);
+  });
+};

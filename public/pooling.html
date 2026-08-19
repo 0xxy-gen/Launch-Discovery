@@ -11,84 +11,210 @@
 <script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
-  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 34px 0 14px; }
-  .section-head h2 { margin: 0; font-size: clamp(20px, 1.55vw, 28px); font-weight: 600; letter-spacing: -0.01em; }
-  .section-head span { font-size: clamp(14px, 1vw, 18px); color: var(--text-3); }
+  .pool-layout {
+    display: grid;
+    grid-template-columns: clamp(300px, 22vw, 400px) minmax(0, 1fr);
+    gap: clamp(28px, 2.6vw, 56px);
+    align-items: start;
+  }
+  @media (max-width: 980px) { .pool-layout { grid-template-columns: 1fr; } }
 
-  .dests { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(310px, 23vw, 500px), 1fr)); gap: clamp(18px, 1.5vw, 28px); }
-
-  .dest {
+  /* ── sidebar ──────────────────────────────────────────────────────────── */
+  .side { position: sticky; top: 28px; display: grid; gap: 16px; }
+  .side-card {
+    padding: clamp(20px, 1.6vw, 30px);
     background: var(--surface);
     border: 1px solid var(--surface-line);
-    border-radius: 16px;
+    border-radius: 18px;
+  }
+  .side-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .side-head h2 {
+    margin: 0;
+    font-size: clamp(15px, 1.1vw, 19px);
+    font-weight: 600;
+  }
+  .side-head span { font-size: clamp(13px, .95vw, 17px); color: var(--text-4); }
+
+  .whoami-row { display: flex; align-items: center; gap: 14px; }
+  .whoami-avatar {
+    width: clamp(46px, 3.4vw, 64px); height: clamp(46px, 3.4vw, 64px);
+    display: grid; place-items: center;
+    background: var(--cyan); border-radius: 50%;
+    color: #04181d; font-weight: 700; font-size: clamp(15px, 1.1vw, 20px);
+    overflow: hidden; flex: none;
+  }
+  .whoami-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .whoami-name { font-size: clamp(16px, 1.15vw, 21px); font-weight: 600; }
+  .whoami-sub { margin-top: 3px; font-size: clamp(13.5px, .98vw, 17px); color: var(--text-3); }
+
+  .side-list { display: grid; gap: 2px; }
+  .side-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 10px;
+    border-radius: 12px;
+    background: none;
+    border: 0;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .side-item:hover { background: var(--tint); }
+  .side-glyph {
+    width: clamp(40px, 2.9vw, 54px); height: clamp(40px, 2.9vw, 54px);
+    display: grid; place-items: center;
+    background: linear-gradient(180deg, #01060a, #06202b);
+    border: 1px solid var(--surface-line);
+    border-radius: 12px;
+    color: var(--cyan);
+    flex: none;
+  }
+  .side-title { font-size: clamp(14.5px, 1.05vw, 18px); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .side-sub { margin-top: 2px; font-size: clamp(13px, .92vw, 16px); color: var(--text-4); }
+  .side-count { font-size: clamp(13px, .92vw, 16px); color: var(--text-4); }
+  .side-empty { font-size: clamp(14px, 1vw, 18px); color: var(--text-4); line-height: 1.6; }
+
+  /* ── main column ──────────────────────────────────────────────────────── */
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 0 0 18px;
+  }
+  .section-head h2 { margin: 0; font-size: clamp(21px, 1.65vw, 30px); font-weight: 700; letter-spacing: -0.02em; }
+  .section-head span { font-size: clamp(14px, 1vw, 18px); color: var(--text-3); }
+  .stack { display: grid; gap: clamp(24px, 2.2vw, 44px); }
+
+  /* the hero, TripBFF's trip card */
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 20px;
     overflow: hidden;
   }
-  .dest.mine { border-color: rgba(34, 211, 238, .45); }
-
-  /* the orbit band stands in for the trip photo */
-  .dest-banner {
+  .hero.mine { border-color: rgba(34, 211, 238, .45); }
+  .hero-banner {
     position: relative;
-    padding: 34px 28px 30px;
+    min-height: clamp(180px, 15vw, 280px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: clamp(24px, 2vw, 40px);
     background:
-      radial-gradient(120% 90% at 50% 140%, rgba(34, 211, 238, .30), transparent 60%),
+      radial-gradient(130% 100% at 50% 150%, rgba(34, 211, 238, .34), transparent 62%),
       linear-gradient(180deg, #01060a, #04141b);
-    border-bottom: 1px solid var(--surface-line);
   }
-  .dest-banner svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .dest-banner > * { position: relative; }
-  .dest-orbit { margin: 0; font-size: clamp(19px, 1.4vw, 25px); font-weight: 600; color: #fff; }
-  .dest-alt { margin: 7px 0 0; font-size: clamp(15px, 1.05vw, 18px); color: rgba(255, 255, 255, .6); }
-  .dest-window {
-    position: absolute; top: 20px; right: 20px;
-    font-size: 12px; font-weight: 600; letter-spacing: .04em;
-    color: rgba(255, 255, 255, .8);
+  .hero-banner svg.arcs { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hero-banner > p { position: relative; }
+  .hero-window {
+    position: absolute; z-index: 2;
+    top: clamp(20px, 1.7vw, 34px); right: clamp(24px, 2vw, 40px);
+    padding: 7px 15px;
+    background: rgba(255, 255, 255, .12);
+    border-radius: 999px;
+    color: #fff;
+    font-size: clamp(13px, .98vw, 17px);
+    font-weight: 600;
   }
+  .hero-orbit { margin: 0; font-size: clamp(24px, 2vw, 36px); font-weight: 700; letter-spacing: -0.02em; color: #fff; }
+  .hero-alt { margin: 8px 0 0; font-size: clamp(15px, 1.1vw, 20px); color: rgba(255, 255, 255, .68); }
 
-  .dest-body { padding: 26px 28px 30px; }
-  .going { display: flex; align-items: center; gap: 12px; }
+  .hero-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: clamp(18px, 1.5vw, 28px) clamp(24px, 2vw, 40px);
+  }
+  .going { display: flex; align-items: center; gap: 14px; }
   .flags { display: flex; }
   .flag {
-    width: 34px; height: 34px;
+    width: clamp(34px, 2.4vw, 46px); height: clamp(34px, 2.4vw, 46px);
     display: grid; place-items: center;
-    margin-left: -8px;
+    margin-left: -10px;
     background: var(--surface);
-    border: 1px solid var(--surface-line);
+    border: 2px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--surface-line);
     border-radius: 50%;
-    font-size: 17px;
+    font-size: clamp(17px, 1.2vw, 22px);
   }
   .flag:first-child { margin-left: 0; }
-  .flag.more { font-size: 11px; font-weight: 600; color: var(--text-3); }
-  .going-text { font-size: clamp(15px, 1.05vw, 19px); color: var(--text-2); }
-  .going-text b { font-weight: 600; color: var(--text); }
+  .flag.more { font-size: clamp(12px, .85vw, 15px); font-weight: 700; color: var(--text-3); }
+  .going-text { font-size: clamp(15px, 1.08vw, 19px); color: var(--text-2); }
+  .going-text b { font-weight: 700; color: var(--text); }
+  .yours-flag { font-size: clamp(14px, 1vw, 18px); color: var(--cyan); font-weight: 500; }
 
-  .yours-line { margin: 14px 0 0; font-size: clamp(14px, 1vw, 18px); color: var(--cyan); }
-
-  .groups { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
-  .group-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 14px;
-    padding: clamp(12px, 1vw, 18px) clamp(14px, 1.1vw, 20px);
-    background: var(--tint);
-    border-radius: 10px;
+  /* groups within a destination, TripBFF's group rows */
+  .groups { padding: 0 clamp(24px, 2vw, 40px) clamp(20px, 1.7vw, 32px); }
+  .groups-head {
+    margin: 0 0 12px;
     font-size: clamp(14px, 1vw, 18px);
+    font-weight: 600;
+    color: var(--text-3);
   }
-  .group-row b { font-weight: 500; }
-  .group-meta { font-size: 12px; color: var(--text-3); }
+  .group-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: clamp(14px, 1.1vw, 20px) clamp(16px, 1.3vw, 22px);
+    margin-bottom: 10px;
+    background: var(--tint);
+    border-radius: 14px;
+  }
+  .group-glyph {
+    width: clamp(44px, 3.1vw, 58px); height: clamp(44px, 3.1vw, 58px);
+    display: grid; place-items: center;
+    background: linear-gradient(180deg, #01060a, #06202b);
+    border-radius: 12px;
+    color: var(--cyan);
+  }
+  .group-name { font-size: clamp(15.5px, 1.12vw, 20px); font-weight: 600; }
+  .group-meta { margin-top: 3px; font-size: clamp(13.5px, .98vw, 17px); color: var(--text-3); }
 
   .add-group {
     width: 100%;
-    margin-top: 12px;
-    padding: clamp(12px, .95vw, 18px);
+    padding: clamp(14px, 1.15vw, 21px);
     background: transparent;
-    border: 1px dashed var(--line-strong);
-    border-radius: 10px;
-    color: var(--text-3);
+    border: 1px solid var(--cyan);
+    border-radius: 14px;
+    color: var(--cyan);
     font: inherit;
-    font-size: clamp(14px, 1vw, 18px);
+    font-size: clamp(15px, 1.08vw, 19px);
+    font-weight: 500;
     cursor: pointer;
   }
-  .add-group:hover { border-color: var(--cyan); color: var(--cyan); }
+  .add-group:hover { background: rgba(34, 211, 238, .08); }
 
-  .empty p { max-width: 460px; }
+  /* the smaller cards for everywhere else */
+  .others { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(280px, 20vw, 400px), 1fr)); gap: clamp(18px, 1.5vw, 28px); }
+  .mini {
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .mini-banner {
+    position: relative;
+    min-height: clamp(110px, 8vw, 160px);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: clamp(18px, 1.4vw, 26px);
+    background:
+      radial-gradient(130% 100% at 50% 150%, rgba(34, 211, 238, .26), transparent 62%),
+      linear-gradient(180deg, #01060a, #04141b);
+  }
+  .mini-banner svg.arcs { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .mini-banner > p { position: relative; }
+  .mini-orbit { margin: 0; font-size: clamp(17px, 1.25vw, 23px); font-weight: 700; color: #fff; }
+  .mini-alt { margin: 5px 0 0; font-size: clamp(13.5px, .98vw, 17px); color: rgba(255, 255, 255, .65); }
+  .mini-window {
+    position: absolute; z-index: 2;
+    top: clamp(14px, 1.1vw, 22px); right: clamp(18px, 1.4vw, 26px);
+    font-size: clamp(12.5px, .92vw, 16px); font-weight: 600; color: rgba(255, 255, 255, .8);
+  }
+  .mini-foot { padding: clamp(16px, 1.3vw, 24px); }
 </style>
 </head>
 <body>
@@ -108,36 +234,69 @@
       <p class="eyebrow">Aether Pooling</p>
       <h1><span class="lite">Who else is going</span> <span class="bold">your way</span></h1>
       <p class="lede">
-        Orbit and launch window, nothing else for now. Anyone with a satellite headed for the
-        same shell in the same quarter shows up together — you do not have to open a group to
-        find out. Counts are public; who they are stays hidden until you join a group with them.
+        Orbit and launch window, nothing else for now. Anyone with a satellite headed for the same
+        shell in the same quarter shows up together — counts are public, who they are stays hidden
+        until you join a group with them.
       </p>
     </div>
   </div>
 
-  <section id="yours-section" hidden>
-    <div class="section-head">
-      <h2>Where you are going</h2>
-      <span id="yours-count"></span>
-    </div>
-    <div class="dests" id="yours"></div>
-  </section>
+  <div class="pool-layout">
+    <aside class="side">
+      <div class="side-card">
+        <div class="whoami-row">
+          <div class="whoami-avatar" id="side-avatar">—</div>
+          <div>
+            <div class="whoami-name" id="side-name"></div>
+            <div class="whoami-sub" id="side-sub"></div>
+          </div>
+        </div>
+      </div>
 
-  <section id="others-section" hidden>
-    <div class="section-head">
-      <h2>Everywhere else</h2>
-      <span id="others-count"></span>
-    </div>
-    <div class="dests" id="others"></div>
-  </section>
+      <div class="side-card">
+        <div class="side-head">
+          <h2>Your orbits</h2>
+          <span id="side-orbit-count"></span>
+        </div>
+        <div class="side-list" id="side-orbits"></div>
+      </div>
 
-  <div class="empty" id="empty" hidden>
-    <h2><span class="lite">Nothing published</span> <b>yet</b></h2>
-    <p>Destinations appear as soon as satellites are published. Publish one and anybody heading for the same orbit in the same quarter will see it.</p>
+      <div class="side-card">
+        <div class="side-head">
+          <h2>Your groups</h2>
+          <span id="side-group-count"></span>
+        </div>
+        <div class="side-list" id="side-groups"></div>
+      </div>
+    </aside>
+
+    <div>
+      <section id="yours-section" hidden>
+        <div class="section-head">
+          <h2>Where you are going</h2>
+          <span id="yours-count"></span>
+        </div>
+        <div class="stack" id="yours"></div>
+      </section>
+
+      <section id="others-section" hidden style="margin-top: clamp(40px, 3.4vw, 72px)">
+        <div class="section-head">
+          <h2>Everywhere else</h2>
+          <span id="others-count"></span>
+        </div>
+        <div class="others" id="others"></div>
+      </section>
+
+      <div class="empty" id="empty" hidden>
+        <h2><span class="lite">Nothing published</span> <b>yet</b></h2>
+        <p>Orbits appear as soon as satellites are published. Publish one and anybody heading for the same shell in the same quarter will see it.</p>
+      </div>
+    </div>
   </div>
 </main>
 
 <script src="nav.js"></script>
+<script src="confirm.js"></script>
 <script src="pooling.js"></script>
 </body>
 </html>

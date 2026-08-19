@@ -173,16 +173,15 @@ two operators are heading for the same place at the same time they see that
 without either having opened a group first, which is the whole point — a pool
 you have to create before you can discover anyone is a pool nobody starts.
 
-Counts are public, identities are not. A destination card shows how many
-satellites, how many operators and which jurisdictions; who they are stays
-hidden until you join a group with them. The "avatars" on each card are the
-flags of the countries going, which is both meaningful and anonymous.
+The layout borrows from both references it was asked to sit between: a Meetup
+sidebar (who you are, your orbits, your groups) beside TripBFF's hero card — the
+orbit as the destination band, the quarter as the dates, jurisdiction flags as
+the faces, group rows underneath and an outlined *Start a group*. Orbits you are
+not going to sit below as smaller cards.
 
-Groups sit inside a destination for people who actually want to coordinate.
-Compatibility is still enforced on the API — orbit type exact, inclination
-within 1.5°, altitude within 150 km, window within 3 months — but capacity
-targets are no longer required, because this is about who is going where and
-when rather than tonnage.
+Counts are public, identities are not. A card shows how many satellites, how
+many operators and which jurisdictions; who they are stays hidden until you join
+a group with them.
 
 ## Missions
 
@@ -340,6 +339,13 @@ A fixed card width cannot hold that ratio: on a 2268px monitor a 350px card is
 gaps, padding and headings are `clamp()`-ed against `vw`, which keeps the
 proportion roughly constant. At 2268px the payload card lands at 555px — 24.5%
 of the viewport, slightly more generous than Qasa.
+
+## No native dialogs
+
+`window.prompt` and `window.confirm` are browser chrome: they look nothing like
+the app, say *localhost:3100 says*, and block the page while open. Everything
+that needs an answer — naming a constellation, renaming one, starting a pool
+group, confirming a publish — uses the in-page dialogs in `public/confirm.js`.
 
 ## Theming
 

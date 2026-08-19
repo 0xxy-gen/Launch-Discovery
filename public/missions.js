@@ -83,6 +83,10 @@
       el.classList.toggle('blank', !value);
     };
     $('p-ref').textContent = p.ref;
+    // the real reference only exists once the row does
+    $('p-refnote').textContent = p.ref.includes('•')
+      ? 'Reference, assigned when you publish'
+      : 'What providers call it instead of your name for it';
     $('p-jur').textContent = p.jurisdiction;
     put('p-orbit', p.orbitType);
     put('p-alt', p.altitudeBand);
@@ -212,10 +216,15 @@
       const rename = el('button', 'ghost-sm', 'Rename');
       rename.addEventListener('click', async e => {
         e.stopPropagation();
-        const name = prompt('Constellation name', group.name);
-        if (!name || name.trim() === group.name) return;
+        const name = await promptDialog({
+          title: 'Rename constellation',
+          label: 'Constellation name',
+          value: group.name,
+          action: 'Rename',
+        });
+        if (!name || name === group.name) return;
         const { ok } = await api(`/api/constellations/${group.id}`,
-          { method: 'PUT', body: { name: name.trim(), notes: group.notes } });
+          { method: 'PUT', body: { name, notes: group.notes } });
         if (ok) loadList();
       });
 
@@ -417,9 +426,15 @@
   });
 
   $('new-constellation').addEventListener('click', async () => {
-    const name = prompt('Name this constellation', '');
-    if (!name || !name.trim()) return;
-    const { ok, data } = await api('/api/constellations', { method: 'POST', body: { name: name.trim() } });
+    const name = await promptDialog({
+      title: 'New constellation',
+      lead: 'A group for satellites flown as one programme. Private — providers never see the grouping.',
+      label: 'Constellation name',
+      placeholder: 'e.g. Aurora',
+      action: 'Create',
+    });
+    if (!name) return;
+    const { ok, data } = await api('/api/constellations', { method: 'POST', body: { name } });
     if (!ok) return showBanner(data.fields?.['constellation-name'] ?? 'Could not create that.', 'bad');
     showBanner(`${data.constellation.name} created`, 'ok');
     loadList();
