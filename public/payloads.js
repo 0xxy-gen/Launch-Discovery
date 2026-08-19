@@ -136,7 +136,7 @@
   async function load() {
     const { ok, data } = await api('/api/payloads?' + query());
     if (!ok) {
-      banner.textContent = data.error ?? 'Could not load requirements.';
+      banner.textContent = data.error ?? 'Could not load missions.';
       banner.className = 'banner show bad';
       return;
     }
@@ -145,7 +145,7 @@
     rows.append(ctaCard());
     list.forEach(p => rows.append(card(p)));
     empty.hidden = list.length > 0;
-    $('count').textContent = `${list.length} requirement${list.length === 1 ? '' : 's'}`;
+    $('count').textContent = `${list.length} mission${list.length === 1 ? '' : 's'}`;
   }
 
   FILTERS.forEach(id => {

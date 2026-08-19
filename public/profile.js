@@ -46,7 +46,7 @@
     });
 
     $('id-note').textContent = me.profileComplete
-      ? 'Complete — you can publish requirements and launches.'
+      ? 'Complete — you can publish missions and launches.'
       : 'Add an organisation and a country before publishing anything.';
   }
 

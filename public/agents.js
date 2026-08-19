@@ -10,7 +10,7 @@
     {
       icon: 'M9 2.5v13M2.5 9h13',
       title: 'Find pool partners',
-      body: 'Notice when somebody else publishes a requirement compatible with yours, and suggest opening a pool before either of you has committed to a provider.',
+      body: 'Notice when somebody else publishes a mission compatible with yours, and suggest opening a pool before either of you has committed to a provider.',
     },
     {
       icon: 'M2.5 9h13M9 2.5l6.5 6.5L9 15.5',

@@ -159,7 +159,7 @@
   function summaryLine(s) {
     if (!s) return 'No missions yet';
     return [
-      `${s.count} mission${s.count === 1 ? '' : 's'}`,
+      `${s.count} satellite${s.count === 1 ? '' : 's'}`,
       `${s.totalMassKg} kg total`,
       s.altitude,
       s.inclination,
@@ -175,8 +175,8 @@
 
     const published = missions.filter(m => m.status === 'published').length;
     $('list-lede').textContent = missions.length
-      ? `${missions.length} requirement${missions.length === 1 ? '' : 's'} · ${published} visible to providers`
-      : 'Publish a requirement and providers can find it without learning who you are.';
+      ? `${missions.length} mission${missions.length === 1 ? '' : 's'} · ${published} visible to providers`
+      : 'Add a satellite and providers can find it without learning who you are.';
 
     // one container per constellation, then whatever is not in one
     for (const group of groups) {
@@ -230,7 +230,7 @@
         members.forEach(m => body.append(missionCard(m)));
       } else {
         body.append(el('div', 'group-empty',
-          'Nothing filed here yet — set the constellation on a requirement, or duplicate one into it.'));
+          'No satellites here yet — set the constellation on a mission, or duplicate one into it.'));
       }
 
       head.addEventListener('click', () => block.classList.toggle('collapsed'));
@@ -264,7 +264,7 @@
       if (data.needsProfile) return showProfile(() => setStatus(id, status));
       return showBanner(data.error ?? 'Could not change that.', 'bad');
     }
-    showBanner(status === 'published' ? 'Requirement published' : 'Requirement hidden from providers', 'ok');
+    showBanner(status === 'published' ? 'Mission published' : 'Mission hidden from providers', 'ok');
     loadList();
   }
 
@@ -300,7 +300,7 @@
     clearErrors();
     clearBanner();
     fillForm(mission);
-    $('editor-eyebrow').textContent = mission ? 'Edit requirement' : 'New requirement';
+    $('editor-eyebrow').textContent = mission ? 'Edit mission' : 'New mission';
     $('save-publish').textContent = mission?.status === 'published' ? 'Save changes' : 'Publish';
     $('delete').hidden = !mission;
     listView.hidden = true;
@@ -329,7 +329,7 @@
         for (const [id, msg] of Object.entries(res.data.fields)) if ($(id)) setError(id, msg);
         showBanner('Check the highlighted fields.', 'bad');
       } else if (res.data.needsProfile) {
-        showProfile(() => { showBanner('Now publish your requirement.', 'ok'); openEditorAgain(); });
+        showProfile(() => { showBanner('Now publish your mission.', 'ok'); openEditorAgain(); });
       } else {
         showBanner(res.data.error ?? 'Could not save that.', 'bad');
       }
@@ -341,7 +341,7 @@
     if (publish && saved.status !== 'published') {
       await api(`/api/missions/${saved.id}/status`, { method: 'POST', body: { status: 'published' } });
     }
-    showBanner(publish ? 'Requirement published' : 'Saved as a draft', 'ok');
+    showBanner(publish ? 'Mission published' : 'Saved as a draft', 'ok');
     showList();
   }
 
@@ -351,7 +351,7 @@
   $('delete').addEventListener('click', async () => {
     if (!editingId) return;
     const { ok } = await api(`/api/missions/${editingId}`, { method: 'DELETE' });
-    if (ok) { showBanner('Requirement deleted', 'ok'); showList(); }
+    if (ok) { showBanner('Mission deleted', 'ok'); showList(); }
   });
 
   $('new-constellation').addEventListener('click', async () => {

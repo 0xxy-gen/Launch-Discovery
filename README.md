@@ -209,11 +209,17 @@ The grouping is private. A provider sees each requirement on its own, banded,
 with no signal that several belong to one programme — the fact that you are
 building a constellation is itself commercially sensitive.
 
-## Launch requirements
+## Missions
 
-A payload owner publishes what they need flown; providers find it without
-learning who they are. `/missions` holds the whole flow: the list, the editor,
-and a live "what providers see" panel beside the form.
+One record per satellite. A payload owner adds the satellites they need flown;
+providers find them without learning who they are. `/missions` holds the whole
+flow: the list, the editor, and a live "what providers see" panel beside the
+form.
+
+The word **requirement** is deliberately absent from the interface — it does not
+say whether you are looking at one satellite or a whole programme. On screen it
+is a *mission*, a constellation groups *satellites*, and `New mission` creates
+exactly one satellite's record.
 
 **Banding is the anonymity mechanism.** Exact values are fingerprints — "180 kg
 to 550 km SSO in March 2027" names a specific company to anyone in the industry

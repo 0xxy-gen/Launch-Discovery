@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aether — Launch requirements</title>
+<title>Aether — Missions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
@@ -172,7 +172,7 @@
       <div>
         <p class="eyebrow">One more thing</p>
         <h1><span class="lite">Who is</span> <span class="bold">publishing?</span></h1>
-        <p class="lede">A published requirement shows the country it is licensed from. Nothing else here is ever public.</p>
+        <p class="lede">A published mission shows the country it is licensed from. Nothing else here is ever public.</p>
       </div>
     </div>
 
@@ -193,7 +193,7 @@
       <div class="field">
         <label for="country">Main operating country</label>
         <select id="country"><option value="">Select a country</option></select>
-        <p class="hint">Shown on your published requirements as the jurisdiction.</p>
+        <p class="hint">Shown on your published missions as the jurisdiction.</p>
         <div class="err" id="country-err"></div>
       </div>
 
@@ -227,24 +227,24 @@
   <section id="list-view" hidden>
     <div class="page-head">
       <div>
-        <p class="eyebrow">Launch requirements</p>
+        <p class="eyebrow">Satellite missions</p>
         <h1><span class="lite">Your</span> <span class="bold">missions</span></h1>
         <p class="lede" id="list-lede"></p>
       </div>
       <div class="head-actions">
         <button class="ghost-sm" id="new-constellation">New constellation</button>
-        <button class="primary compact" id="new-mission">New requirement</button>
+        <button class="primary compact" id="new-mission">New mission</button>
       </div>
     </div>
 
     <div class="empty" id="empty" hidden>
       <h2><span class="lite">Nothing published</span> <b>yet</b></h2>
       <p>
-        Publish what you need flown and launch providers can find it — as an
-        anonymous requirement. They see the shape of the mission, not your
-        numbers, your name or your organisation, until you accept a match.
+        Add a satellite you need flown and launch providers can find it —
+        anonymously. They see the shape of the mission, not your numbers, your
+        name or your organisation, until you accept a match.
       </p>
-      <button class="primary" id="empty-cta">Publish a requirement</button>
+      <button class="primary" id="empty-cta">Add a mission</button>
     </div>
 
     <div id="groups"></div>
@@ -255,8 +255,8 @@
   <section id="editor-view" hidden>
     <div class="page-head">
       <div>
-        <p class="eyebrow" id="editor-eyebrow">New requirement</p>
-        <h1><span class="lite">Describe the</span> <span class="bold">mission</span></h1>
+        <p class="eyebrow" id="editor-eyebrow">New mission</p>
+        <h1><span class="lite">Describe the</span> <span class="bold">satellite</span></h1>
         <p class="lede">Exact figures stay private. The panel on the right is precisely what a provider sees.</p>
       </div>
       <button class="ghost-sm" id="cancel">Back</button>
@@ -276,9 +276,9 @@
         </div>
 
         <div class="field">
-          <label for="reference">Internal name</label>
+          <label for="reference">Satellite name</label>
           <input id="reference" name="reference" type="text" placeholder="e.g. Mission A" autocomplete="off">
-          <p class="hint">Private. Providers never see this.</p>
+          <p class="hint">Private — providers see a pseudonym instead. One record per satellite.</p>
           <div class="err" id="reference-err"></div>
         </div>
 
