@@ -6,7 +6,7 @@
 <title>Aether — Access</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
 <style>
   /* Palette from mission-management/app/globals.css,
      type + button treatment from aetherspace.tech */
@@ -25,7 +25,6 @@
     --text-3: rgba(255, 255, 255, 0.62);   /* labels, eyebrows */
     --text-4: rgba(255, 255, 255, 0.42);   /* placeholders, fine print */
     --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 
   * { box-sizing: border-box; }
@@ -81,15 +80,14 @@
     position: absolute;
     left: 30px;
     bottom: 28px;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: 10.5px;
-    line-height: 2;
-    letter-spacing: 0.28em;
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1.9;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.6);
   }
-  .visual-caption span { display: block; color: rgba(255, 255, 255, 0.3); letter-spacing: 0.2em; }
+  .visual-caption span { display: block; font-weight: 400; letter-spacing: 0.08em; color: rgba(255, 255, 255, 0.32); }
 
   /* The pane is the card now — the form itself sits flat inside it */
   .panel { background: transparent; border: 0; }
@@ -99,10 +97,9 @@
   /* Micro eyebrow — the site's mono/heavy-tracking label idiom */
   .eyebrow {
     margin: 0 0 12px;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: 10.5px;
-    letter-spacing: 0.3em;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--text-3);
   }
@@ -132,11 +129,10 @@
     background: none;
     border: 0;
     border-bottom: 2px solid transparent;
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-weight: 500;
-    font-size: 11.5px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0;
     color: var(--text-3);
     cursor: pointer;
     transition: color .2s;
@@ -150,11 +146,8 @@
     display: none;
     padding: 12px 14px;
     margin-bottom: 26px;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: 10.5px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-weight: 400;
+    font-size: 13.5px;
   }
   .banner { border-radius: 8px; }
   .banner.show { display: block; }
@@ -166,10 +159,9 @@
     margin: 34px 0 26px;
     padding-top: 24px;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: 11.5px;
-    letter-spacing: 0.22em;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--rule);
   }
@@ -178,15 +170,13 @@
 
   label {
     display: block;
-    margin-bottom: 8px;
-    font-family: var(--font-mono);
+    margin-bottom: 6px;
     font-weight: 500;
-    font-size: 10.5px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-3);
+    font-size: 13.5px;
+    letter-spacing: 0;
+    color: var(--text-2);
   }
-  label .opt { margin-left: 8px; letter-spacing: 0.12em; color: var(--text-4); }
+  label .opt { margin-left: 6px; font-weight: 400; color: var(--text-4); }
 
   input,
   select {
@@ -226,13 +216,10 @@
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
   .err {
-    min-height: 15px;
-    margin-top: 8px;
-    font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: 10.5px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    min-height: 16px;
+    margin-top: 7px;
+    font-weight: 400;
+    font-size: 12.5px;
     color: #ff8f8f;
   }
 
@@ -260,11 +247,8 @@
 
   .note {
     margin: 18px 0 0;
-    font-family: var(--font-mono);
     font-weight: 400;
-    font-size: 10.5px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-size: 12.5px;
     color: var(--text-4);
     text-align: center;
   }
@@ -279,18 +263,16 @@
     background: var(--cyan);
     border-radius: 14px;
     color: #000;
-    font-family: var(--font-mono);
-    font-weight: 500;
+    font-weight: 600;
     font-size: 19px;
-    letter-spacing: 0.04em;
+    letter-spacing: 0;
   }
   .granted .eyebrow { margin-bottom: 10px; }
   .granted h1 { font-size: 30px; }
   .granted .who {
     margin: 16px 0 0;
-    font-family: var(--font-mono);
     font-weight: 400;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-2);
     word-break: break-all;
   }
@@ -298,12 +280,9 @@
     margin: 20px 0 28px;
     padding-top: 18px;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
-    font-family: var(--font-mono);
     font-weight: 400;
-    font-size: 11px;
-    line-height: 2;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 13px;
+    line-height: 1.9;
     color: var(--text-3);
   }
   .granted .meta:empty { display: none; }
@@ -313,10 +292,8 @@
     background: none;
     border: 0;
     color: var(--text-4);
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-family: var(--font-sans);
+    font-size: 12.5px;
     text-decoration: underline;
     text-underline-offset: 4px;
     cursor: pointer;
@@ -331,12 +308,9 @@
 
   .disclaimer {
     margin: 40px 0 0;
-    font-family: var(--font-mono);
-    font-weight: 400;
-    font-size: 10px;
-    line-height: 1.8;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-weight: 300;
+    font-size: 12px;
+    line-height: 1.7;
     color: var(--text-4);
     text-align: center;
   }
@@ -365,7 +339,7 @@
 
       <form id="form" novalidate>
         <div class="field">
-          <label for="email">Email Address</label>
+          <label for="email">Email address</label>
           <input id="email" name="email" type="email" autocomplete="email" placeholder="you@organisation.com" required>
           <div class="err" id="email-err"></div>
         </div>
@@ -377,7 +351,7 @@
         </div>
 
         <div class="field" id="confirm-field" hidden>
-          <label for="confirm">Confirm Password</label>
+          <label for="confirm">Confirm password</label>
           <input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="••••••••">
           <div class="err" id="confirm-err"></div>
         </div>
@@ -399,7 +373,7 @@
           </div>
 
           <div class="field">
-            <label for="country">Main Operating Country</label>
+            <label for="country">Main operating country</label>
             <select id="country" name="country" autocomplete="country-name" required>
               <option value="" selected>Select a country</option>
             </select>
@@ -409,14 +383,14 @@
           <p class="section">Contact</p>
 
           <div class="field">
-            <label for="linkedin">LinkedIn <span class="opt">Optional</span></label>
+            <label for="linkedin">LinkedIn <span class="opt">optional</span></label>
             <input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/yourname">
             <div class="err" id="linkedin-err"></div>
           </div>
 
           <div class="row">
             <div class="field">
-              <label for="dial">Country Code</label>
+              <label for="dial">Country code</label>
               <select id="dial" name="dial" required>
                 <option value="" selected>Select a code</option>
               </select>
@@ -424,7 +398,7 @@
             </div>
 
             <div class="field">
-              <label for="phone">Phone Number</label>
+              <label for="phone">Phone number</label>
               <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="7700 900000">
               <div class="err" id="phone-err"></div>
             </div>

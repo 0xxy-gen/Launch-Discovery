@@ -44,9 +44,10 @@ To use a photograph instead, replace the `<svg>` inside `.visual-pane` with
 ## Theme
 
 Palette comes from `mission-management/app/globals.css` (black ground, cyan
-accent, zero border radius). Type and buttons follow aetherspace.tech: Inter
-with `tracking-tighter` mixed-weight headlines, JetBrains Mono for uppercase
-micro-labels, and solid black-on-colour button fills.
+accent). Buttons follow aetherspace.tech: solid black-on-colour fills. Type is
+Inter throughout — `tracking-tighter` mixed-weight headlines, sentence-case
+field labels, and light letterspaced uppercase only for the small kickers and
+section titles.
 
 ## Storage
 
