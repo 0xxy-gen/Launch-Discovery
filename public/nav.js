@@ -84,11 +84,8 @@ window.renderAccount = function renderAccount(user) {
     chat.classList.add('unread');
     chat.title = `Inbox (${user.unreadCount} unread)`;
   }
-  const saved = icon('/saved', 'Saved launch opportunities', HEART, Boolean(user.savedCount));
-  if (user.savedCount) {
-    saved.classList.add('on');
-    saved.title = `Saved launch opportunities (${user.savedCount})`;
-  }
+  const saved = icon('/saved', 'Saved launch opportunities', HEART);
+  if (user.savedCount) saved.title = `Saved launch opportunities (${user.savedCount})`;
 
   // ── the menu ──────────────────────────────────────────────────────────────
   const wrap = document.createElement('div');

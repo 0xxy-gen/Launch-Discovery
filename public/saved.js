@@ -31,11 +31,7 @@
 
     const right = el('div');
     right.style.textAlign = 'right';
-    const provider = el('div', 'provider');
-    const flag = flags.get(l.providerCountry);
-    if (flag) provider.append(el('span', 'provider-flag', flag));
-    provider.append(document.createTextNode(l.provider || 'Unnamed provider'));
-    right.append(provider);
+    right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
     const fav = el('button', 'fav on');
     fav.type = 'button';
     fav.title = 'Remove from saved';

@@ -26,7 +26,7 @@ import {
 } from './lib/constellations.js';
 import {
   createLaunch, updateLaunch, setLaunchStatus, launchById, launchesForOwner,
-  deleteLaunch, browseLaunches, launchView, ownerLaunch,
+  deleteLaunch, browseLaunches, launchView, ownerLaunch, launchCountries,
 } from './lib/launches.js';
 import {
   createMission, updateMission, setMissionStatus,
@@ -528,7 +528,8 @@ app.get('/api/launches', requireUser, (req, res) => {
   const q = req.query;
   const num = v => (v === undefined || v === '' ? null : Number(v));
   const rows = browseLaunches({
-    orbitType: q.orbit, fromMonth: q.from, toMonth: q.to, minAvailable: num(q.minAvailable),
+    orbitType: q.orbit, fromMonth: q.from, toMonth: q.to,
+    minAvailable: num(q.minAvailable), country: q.country,
   });
 
   // for a payload owner, which of their missions could actually fly on each
@@ -543,7 +544,7 @@ app.get('/api/launches', requireUser, (req, res) => {
     }),
   }));
 
-  res.json({ launches });
+  res.json({ launches, countries: launchCountries() });
 });
 
 // ─── saved launches ─────────────────────────────────────────────────────────

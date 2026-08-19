@@ -130,7 +130,6 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   transition: color .2s, background .2s;
 }
 .icon-link:hover { color: var(--text); background: var(--tint); }
-.icon-link.on { color: var(--heart); }
 .icon-link.unread { color: var(--cyan); }
 .icon-link.unread::after {
   content: '';

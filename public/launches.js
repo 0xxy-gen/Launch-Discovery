@@ -1,7 +1,7 @@
 (function () {
   const $ = id => document.getElementById(id);
   const rows = $('rows'), empty = $('empty'), banner = $('banner');
-  const FILTERS = ['orbit', 'minAvailable', 'from', 'to'];
+  const FILTERS = ['orbit', 'country', 'minAvailable', 'from', 'to'];
 
   async function api(path) {
     const res = await fetch(path, { credentials: 'same-origin' });
@@ -30,11 +30,7 @@
       `${l.orbitType} · ${l.altitudeKm} km · ${l.inclinationDeg}° · ${l.windowMonth}`));
     head.append(left);
     const right = el('div', 'launch-right');
-    const provider = el('div', 'provider');
-    const flag = flags.get(l.providerCountry);
-    if (flag) provider.append(el('span', 'provider-flag', flag));
-    provider.append(document.createTextNode(l.provider || 'Unnamed provider'));
-    right.append(provider);
+    right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
 
     const save = el('button', 'fav' + (l.saved ? ' on' : ''));
     save.type = 'button';
@@ -120,6 +116,16 @@
       banner.className = 'banner show bad';
       return;
     }
+    // options come from the data, with a count, so nothing offered is empty
+    const select = $('country');
+    if (!select.dataset.filled && data.countries) {
+      select.dataset.filled = '1';
+      for (const c of data.countries) {
+        const flag = flags.get(c.country);
+        select.add(new Option(`${flag ? flag + '  ' : ''}${c.country} (${c.n})`, c.country));
+      }
+    }
+
     rows.textContent = '';
     data.launches.forEach(l => rows.append(card(l)));
     empty.hidden = data.launches.length > 0;
