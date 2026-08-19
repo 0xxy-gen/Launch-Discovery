@@ -1,5 +1,5 @@
 .topbar, .account { --chip: clamp(38px, 2.9vw, 54px); }
-.icon-link svg, .menu-button svg { width: 46%; height: 46%; }
+.icon-link svg, .menu-button svg { width: 62%; height: 62%; }
 
 /* Chrome shared by every signed-in page. */
 body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
@@ -162,13 +162,13 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   width: var(--chip); height: var(--chip);
   padding: 0;
   background: transparent;
-  border: 1px solid var(--surface-line);
+  border: 0;
   border-radius: 10px;
-  color: var(--text-2);
+  color: var(--text-3);
   cursor: pointer;
-  transition: color .2s, border-color .2s;
+  transition: color .2s, background .2s;
 }
-.menu-button:hover { color: var(--text); border-color: var(--field-line); }
+.menu-button:hover { color: var(--text); background: var(--tint); }
 
 .menu {
   position: absolute;

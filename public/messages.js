@@ -1,6 +1,6 @@
 (function () {
   const $ = id => document.getElementById(id);
-  let me = null, threads = [], filter = 'all', current = null;
+  let me = null, threads = [], filter = 'all', current = null, query = '';
 
   async function api(path, { method = 'GET', body } = {}) {
     const res = await fetch(path, {
@@ -42,37 +42,135 @@
     glyph.innerHTML = ORBIT_GLYPH;
     row.append(glyph);
 
-    row.append(el('div', 'thread-context', t.context));
-    row.append(t.unread ? el('span', 'thread-dot') : el('span'));
+    row.append(highlight(el('div', 'thread-context'), t.context));
+    if (t.unread) row.append(el('span', 'thread-dot'));
 
-    row.append(el('div', 'thread-name', t.name));
-    row.append(el('span'));
+    row.append(highlight(el('div', 'thread-name'), t.name));
 
     const last = t.last
       ? `${t.last.mine ? 'You' : t.last.organisation}: ${t.last.body}`
       : `${t.members} member${t.members === 1 ? '' : 's'} · no messages yet`;
-    row.append(el('div', 'thread-last', last));
+    row.append(highlight(el('div', 'thread-last'), last));
     row.append(el('div', 'thread-time', when(t.last?.at)));
 
     row.addEventListener('click', () => openThread(t));
     return row;
   }
 
+  const matches = t => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return t.name.toLowerCase().includes(q)
+      || t.context.toLowerCase().includes(q)
+      || (t.last?.body ?? '').toLowerCase().includes(q)
+      || (t.last?.organisation ?? '').toLowerCase().includes(q);
+  };
+
+  // highlight the matched run rather than leaving the reader to find it
+  function highlight(node, text) {
+    node.textContent = '';
+    const q = query.toLowerCase();
+    const at = q ? text.toLowerCase().indexOf(q) : -1;
+    if (at === -1) { node.textContent = text; return node; }
+    node.append(document.createTextNode(text.slice(0, at)));
+    const mark = document.createElement('mark');
+    mark.textContent = text.slice(at, at + q.length);
+    node.append(mark, document.createTextNode(text.slice(at + q.length)));
+    return node;
+  }
+
   function renderThreads() {
     const host = $('threads');
     host.textContent = '';
-    const shown = filter === 'unread' ? threads.filter(t => t.unread) : threads;
+    const shown = threads.filter(t => (filter === 'unread' ? t.unread : true)).filter(matches);
 
     if (!shown.length) {
-      const empty = el('p', 'thread-context');
-      empty.style.padding = '18px 12px';
-      empty.textContent = filter === 'unread'
-        ? 'Nothing unread.'
-        : 'No conversations yet. Join a pool and its group chat appears here.';
-      host.append(empty);
+      host.append(el('p', 'thread-none',
+        query ? `Nothing matches “${query}”.`
+        : filter === 'unread' ? 'Nothing unread.'
+        : 'No conversations yet. Join a pool and its group chat appears here.'));
       return;
     }
     shown.forEach(t => host.append(threadRow(t)));
+  }
+
+  async function renderDetail(threadId) {
+    const pane = $('detail');
+    const { ok, data } = await api(`/api/threads/${threadId}/detail`);
+    if (!ok) return;
+    const pool = data.pool;
+
+    pane.textContent = '';
+
+    const hero = el('div', 'detail-hero');
+    const glyph = el('div', 'detail-glyph');
+    glyph.innerHTML = ORBIT_GLYPH;
+    const heroText = el('div');
+    heroText.append(el('div', 'detail-orbit', pool.orbitType));
+    heroText.append(el('div', 'detail-where',
+      `${pool.altitudeKm} km · ${pool.inclinationDeg}° · ${pool.windowMonth}`));
+    hero.append(glyph, heroText);
+    pane.append(hero);
+
+    const totals = el('div', 'detail-section');
+    totals.append(el('h3', undefined, 'This group'));
+    const row = (label, value) => {
+      const r = el('div', 'detail-row');
+      r.append(el('span', undefined, label), el('b', undefined, value));
+      return r;
+    };
+    totals.append(row('Members', String(pool.memberCount)));
+    totals.append(row('Combined mass', `${pool.totalMassKg} kg`));
+    totals.append(row('Jurisdictions', pool.jurisdictions.join(', ') || '—'));
+    if (pool.isLead) totals.append(row('Your role', 'Started this group'));
+    pane.append(totals);
+
+    const members = el('div', 'detail-section');
+    members.append(el('h3', undefined, 'Who is in it'));
+    for (const m of pool.members) {
+      const card = el('div', 'member');
+      const top = el('div', 'member-top');
+      const org = el('div', 'member-org');
+      org.textContent = m.organisation || 'Unnamed organisation';
+      if (m.isYou) org.append(el('span', 'member-you', 'You'));
+      top.append(org, el('span', 'member-country', m.country || ''));
+      card.append(top);
+      card.append(el('div', 'member-figures',
+        `${m.payloadMassKg} kg · ${m.altitudeKm} km · ${m.inclinationDeg}° · ${m.windowMonth}`));
+      members.append(card);
+    }
+    pane.append(members);
+
+    const actions = el('div', 'detail-actions');
+    const go = el('a', 'go', 'Open in Aether Pooling');
+    go.href = '/pooling';
+    actions.append(go);
+
+    const leave = el('button', 'leave', 'Leave this group');
+    leave.type = 'button';
+    leave.addEventListener('click', async () => {
+      const sure = await confirmPublish({
+        title: `Leave ${pool.name}?`,
+        lead: 'You stop seeing the group chat and the other members stop seeing your figures.',
+        audience: 'What happens',
+        visible: [
+          'Your satellite is removed from the group',
+          'The conversation disappears from your inbox',
+          'Your satellite stays published and stays yours',
+        ],
+        action: 'Leave',
+      });
+      if (!sure) return;
+      const res = await api(`/api/pools/${pool.id}/leave`, { method: 'POST', body: {} });
+      if (!res.ok) return;
+      current = null;
+      $('detail').textContent = '';
+      $('detail').append(el('p', 'detail-empty', 'You left the group.'));
+      await load();
+      location.reload();
+    });
+    actions.append(leave);
+    pane.append(actions);
   }
 
   async function openThread(t) {
@@ -98,6 +196,8 @@
     send.type = 'submit';
     composer.append(box, send);
     pane.append(composer);
+
+    renderDetail(t.id);
 
     const { ok, data } = await api(`/api/threads/${t.id}`);
     if (ok) {
@@ -136,6 +236,19 @@
     });
     box.focus();
   }
+
+  $('search').addEventListener('input', e => {
+    query = e.target.value.trim();
+    $('search-clear').hidden = !query;
+    renderThreads();
+  });
+  $('search-clear').addEventListener('click', () => {
+    $('search').value = '';
+    query = '';
+    $('search-clear').hidden = true;
+    renderThreads();
+    $('search').focus();
+  });
 
   document.querySelectorAll('.pill-btn').forEach(button => {
     button.addEventListener('click', () => {

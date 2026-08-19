@@ -11,89 +11,249 @@
 <script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
-  body { height: 100vh; overflow: hidden; }
-  .inbox { display: grid; grid-template-columns: clamp(360px, 26vw, 520px) minmax(0, 1fr); height: calc(100vh - 67px); }
+  /* the page is a column: topbar, then the inbox fills whatever is left.
+     no magic offset for the header height, which changes with the viewport */
+  body { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  .topbar { flex: none; }
+
+  .inbox {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: clamp(320px, 23vw, 460px) minmax(0, 1fr) clamp(300px, 22vw, 420px);
+  }
+  @media (max-width: 1250px) { .inbox { grid-template-columns: clamp(320px, 30vw, 460px) minmax(0, 1fr); } .detail-pane { display: none; } }
   @media (max-width: 860px) { .inbox { grid-template-columns: 1fr; } .thread-pane { display: none; } }
 
   /* ── list ─────────────────────────────────────────────────────────────── */
-  .list-pane { border-right: 1px solid var(--surface-line); display: flex; flex-direction: column; min-height: 0; }
-  .list-head { padding: 22px 22px 14px; }
-  .list-head h1 { font-size: clamp(28px, 2.1vw, 40px); letter-spacing: -0.03em; }
-  .pills { display: flex; gap: 8px; margin-top: 16px; }
+  .list-pane { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--surface-line); }
+  .list-head { flex: none; padding: clamp(20px, 1.7vw, 30px) clamp(18px, 1.5vw, 26px) clamp(14px, 1.1vw, 20px); }
+  .list-head h1 { font-size: clamp(26px, 2vw, 38px); }
+
+  .search {
+    position: relative;
+    margin-top: clamp(14px, 1.2vw, 22px);
+  }
+  .search svg {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-4);
+    pointer-events: none;
+  }
+  .search input {
+    width: 100%;
+    padding: clamp(11px, .9vw, 16px) 40px clamp(11px, .9vw, 16px) 42px;
+    background: var(--tint);
+    border: 1px solid var(--surface-line);
+    border-bottom: 1px solid var(--surface-line);
+    border-radius: 999px;
+    font-size: clamp(14.5px, 1.05vw, 18px);
+  }
+  .search input:focus { border-color: var(--cyan); }
+  .search-clear {
+    position: absolute;
+    right: 10px; top: 50%;
+    transform: translateY(-50%);
+    padding: 4px 8px;
+    background: none;
+    border: 0;
+    color: var(--text-4);
+    font: inherit;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .search-clear:hover { color: var(--text); }
+
+  .pills { display: flex; gap: 8px; margin-top: clamp(12px, 1vw, 18px); }
   .pill-btn {
-    padding: 7px 15px;
+    padding: clamp(7px, .6vw, 11px) clamp(14px, 1.1vw, 20px);
     background: transparent;
     border: 1px solid var(--line-strong);
     border-radius: 999px;
     color: var(--text-3);
-    font: inherit; font-size: clamp(14px, 1vw, 18px);
+    font: inherit;
+    font-size: clamp(13.5px, 1vw, 17px);
     cursor: pointer;
   }
   .pill-btn.on { border-color: var(--text); color: var(--text); }
 
-  .threads { flex: 1; overflow-y: auto; padding: 6px 10px 20px; }
+  .threads { flex: 1; min-height: 0; overflow-y: auto; padding: 6px clamp(10px, .9vw, 16px) 24px; }
+
+  /* glyph on the left, everything else stacked beside it, time top-right */
   .thread {
     display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    gap: 0 12px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 14px;
     width: 100%;
-    padding: 12px;
+    padding: clamp(12px, 1vw, 18px);
     background: none;
     border: 0;
-    border-radius: 12px;
+    border-radius: 14px;
     text-align: left;
-    cursor: pointer;
     font: inherit;
+    color: inherit;
+    cursor: pointer;
   }
-  .thread:hover { background: var(--tint); }
-  .thread.current { background: var(--tint); }
+  .thread:hover, .thread.current { background: var(--tint); }
+
   .thread-glyph {
-    grid-row: span 3;
-    width: 44px; height: 44px;
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    align-self: start;
+    width: clamp(46px, 3.2vw, 62px); height: clamp(46px, 3.2vw, 62px);
     display: grid; place-items: center;
     background: linear-gradient(180deg, #01060a, #06202b);
     border: 1px solid var(--surface-line);
-    border-radius: 12px;
+    border-radius: 14px;
     color: var(--cyan);
   }
-  .thread-context { font-size: clamp(13px, .92vw, 16px); color: var(--text-4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .thread-name { font-size: clamp(16px, 1.15vw, 21px); font-weight: 500; color: var(--text); }
-  .thread-last { font-size: clamp(14.5px, 1.02vw, 18px); color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .thread-time { grid-row: 3; font-size: 12px; color: var(--text-4); white-space: nowrap; }
-  .thread-dot { grid-row: 1; width: 8px; height: 8px; margin-top: 4px; border-radius: 50%; background: var(--cyan); }
+  .thread-context {
+    grid-column: 2; grid-row: 1;
+    font-size: clamp(12.5px, .92vw, 16px);
+    color: var(--text-4);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .thread-time {
+    grid-column: 3; grid-row: 1;
+    font-size: clamp(12.5px, .92vw, 16px);
+    color: var(--text-4);
+    white-space: nowrap;
+    padding-left: 10px;
+  }
+  .thread-name {
+    grid-column: 2 / span 2; grid-row: 2;
+    margin: 3px 0;
+    font-size: clamp(15.5px, 1.15vw, 20px);
+    font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .thread-last {
+    grid-column: 2; grid-row: 3;
+    font-size: clamp(14px, 1.02vw, 18px);
+    color: var(--text-3);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .thread-dot {
+    grid-column: 3; grid-row: 3;
+    justify-self: end; align-self: center;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--cyan);
+  }
+  .thread-none { padding: 20px 14px; font-size: clamp(14.5px, 1.05vw, 18px); color: var(--text-4); line-height: 1.6; }
+  .thread mark { background: rgba(34, 211, 238, .22); color: inherit; border-radius: 3px; }
 
   /* ── conversation ─────────────────────────────────────────────────────── */
   .thread-pane { display: flex; flex-direction: column; min-height: 0; }
-  .thread-head { padding: 20px 28px; border-bottom: 1px solid var(--surface-line); }
-  .thread-head h2 { margin: 0; font-size: clamp(20px, 1.5vw, 27px); font-weight: 600; }
-  .thread-head p { margin: 4px 0 0; font-size: 13px; color: var(--text-3); }
+  .thread-head { flex: none; padding: clamp(18px, 1.5vw, 28px) clamp(24px, 2vw, 40px); border-bottom: 1px solid var(--surface-line); }
+  .thread-head h2 { margin: 0; font-size: clamp(19px, 1.45vw, 26px); font-weight: 600; }
+  .thread-head p { margin: 5px 0 0; font-size: clamp(14px, 1.02vw, 18px); color: var(--text-3); }
 
-  .messages { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 14px; }
-  .msg { max-width: 68%; }
+  .messages {
+    flex: 1; min-height: 0; overflow-y: auto;
+    padding: clamp(22px, 1.8vw, 36px) clamp(24px, 2vw, 40px);
+    display: flex; flex-direction: column; gap: clamp(14px, 1.2vw, 22px);
+  }
+  .msg { max-width: min(68%, 640px); }
   .msg.mine { align-self: flex-end; }
-  .msg-who { margin-bottom: 5px; font-size: 12px; color: var(--text-4); }
+  .msg-who { margin-bottom: 6px; font-size: clamp(12.5px, .92vw, 16px); color: var(--text-4); }
   .msg.mine .msg-who { text-align: right; }
   .msg-body {
-    padding: 11px 14px;
+    padding: clamp(12px, .95vw, 18px) clamp(15px, 1.2vw, 22px);
     background: var(--surface);
     border: 1px solid var(--surface-line);
-    border-radius: 14px;
-    font-size: clamp(15.5px, 1.1vw, 20px);
+    border-radius: 18px;
+    font-size: clamp(15.5px, 1.12vw, 20px);
     line-height: 1.55;
     white-space: pre-wrap;
     word-break: break-word;
   }
   .msg.mine .msg-body { background: var(--cyan); border-color: transparent; color: #04181d; }
 
-  .composer { display: flex; gap: 12px; padding: 16px 28px 22px; border-top: 1px solid var(--surface-line); }
-  .composer textarea { min-height: 44px; max-height: 160px; }
-  .composer button { width: auto; margin: 0; padding: 0 22px; white-space: nowrap; }
+  .composer {
+    flex: none;
+    display: flex; gap: 12px; align-items: flex-end;
+    padding: clamp(14px, 1.2vw, 22px) clamp(24px, 2vw, 40px) clamp(18px, 1.5vw, 28px);
+    border-top: 1px solid var(--surface-line);
+  }
+  .composer textarea { min-height: 52px; max-height: 180px; }
+  .composer button { width: auto; margin: 0; padding: 0 clamp(20px, 1.7vw, 32px); height: 52px; white-space: nowrap; }
 
   .greeting { flex: 1; display: grid; place-items: center; text-align: center; padding: 40px; }
   .greeting h2 { margin: 24px 0 10px; font-size: clamp(28px, 2.1vw, 40px); font-weight: 300; letter-spacing: -0.03em; }
   .greeting h2 b { font-weight: 700; }
   .greeting p { margin: 0; font-size: clamp(16px, 1.1vw, 20px); color: var(--text-3); }
-  .greeting .note { margin-top: 22px; max-width: 420px; font-size: 12.5px; color: var(--text-4); line-height: 1.6; }
+  /* ── context panel ────────────────────────────────────────────────────── */
+  .detail-pane {
+    border-left: 1px solid var(--surface-line);
+    overflow-y: auto;
+    min-height: 0;
+    padding: clamp(22px, 1.8vw, 34px) clamp(20px, 1.6vw, 30px);
+  }
+  .detail-empty { font-size: clamp(14px, 1.02vw, 18px); color: var(--text-4); line-height: 1.6; }
+
+  .detail-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
+  .detail-glyph {
+    width: clamp(56px, 4vw, 76px); height: clamp(56px, 4vw, 76px);
+    display: grid; place-items: center;
+    background: linear-gradient(180deg, #01060a, #06202b);
+    border: 1px solid var(--surface-line);
+    border-radius: 16px;
+    color: var(--cyan);
+  }
+  .detail-orbit { font-size: clamp(16.5px, 1.2vw, 22px); font-weight: 700; letter-spacing: -0.01em; }
+  .detail-where { margin-top: 5px; font-size: clamp(13.5px, .98vw, 17px); color: var(--text-3); }
+
+  .detail-section {
+    margin-top: clamp(24px, 2vw, 36px);
+    padding-top: clamp(20px, 1.6vw, 28px);
+    border-top: 1px solid var(--line);
+  }
+  .detail-section h3 {
+    margin: 0 0 14px;
+    font-size: clamp(12px, .88vw, 15px);
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .detail-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 7px 0;
+    font-size: clamp(14.5px, 1.05vw, 18px);
+  }
+  .detail-row span { color: var(--text-3); }
+  .detail-row b { font-weight: 600; }
+
+  .member { padding: 13px 0; border-bottom: 1px solid var(--hair); }
+  .member:last-child { border-bottom: 0; }
+  .member-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .member-org { font-size: clamp(15px, 1.08vw, 19px); font-weight: 600; }
+  .member-country { font-size: clamp(13px, .95vw, 17px); color: var(--text-4); white-space: nowrap; }
+  .member-figures { margin-top: 4px; font-size: clamp(13.5px, .98vw, 17px); color: var(--text-3); }
+  .member-you { margin-left: 8px; font-size: clamp(11px, .8vw, 14px); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cyan); }
+
+  .detail-actions { display: grid; gap: 10px; margin-top: clamp(22px, 1.8vw, 32px); }
+  .detail-actions a, .detail-actions button {
+    display: block;
+    width: 100%;
+    padding: clamp(12px, .95vw, 18px);
+    border-radius: var(--radius-btn);
+    font: inherit;
+    font-size: clamp(14.5px, 1.05vw, 18px);
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .detail-actions .go { background: var(--cyan); border: 0; color: #04181d; }
+  .detail-actions .leave { background: transparent; border: 1px solid var(--line-strong); color: var(--text-3); }
+  .detail-actions .leave:hover { border-color: var(--destructive); color: var(--danger-text); }
+
+  .greeting .note { margin-top: 24px; max-width: 460px; font-size: clamp(13.5px, .98vw, 17px); color: var(--text-4); line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -109,6 +269,14 @@
   <section class="list-pane">
     <div class="list-head">
       <h1><span class="lite">Your</span> <span class="bold">inbox</span></h1>
+      <div class="search">
+        <svg viewBox="0 0 18 18" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="8" cy="8" r="5.5"/><path d="M12.2 12.2L16 16"/>
+        </svg>
+        <input id="search" type="search" placeholder="Search conversations" autocomplete="off">
+        <button class="search-clear" id="search-clear" type="button" hidden aria-label="Clear search">×</button>
+      </div>
+
       <div class="pills">
         <button class="pill-btn on" data-filter="all" type="button">All</button>
         <button class="pill-btn" data-filter="unread" type="button">Unread</button>
@@ -130,9 +298,14 @@
       </div>
     </div>
   </section>
+
+  <aside class="detail-pane" id="detail">
+    <p class="detail-empty">Pick a conversation and what the group is flying to shows up here.</p>
+  </aside>
 </div>
 
 <script src="nav.js"></script>
+<script src="confirm.js"></script>
 <script src="messages.js"></script>
 </body>
 </html>

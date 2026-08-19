@@ -308,10 +308,17 @@ another.
 
 ## Inbox
 
-Two panes, the shape a mail client has: threads on the left with a filter, the
-conversation on the right, a greeting when nothing is selected. **Every pool
-gets a group chat**, and those are real — members already see each other's
-organisation, so a thread reveals nothing joining did not.
+Three panes, the shape Qasa's inbox has: threads on the left with search and a
+filter, the conversation in the middle, and a context panel on the right that
+answers *what is this conversation actually about* — the orbit, the altitude,
+the window, combined mass, jurisdictions, and every member with their exact
+figures. **Every pool gets a group chat**, and those are real — members already
+see each other's organisation, so a thread reveals nothing joining did not.
+
+Search runs over thread names, orbit context, and the last message and its
+sender, and highlights the matched run rather than leaving the reader to hunt
+for it. The panes are a flex column rather than `calc(100vh - 67px)`, so the
+header can change height without the layout stopping short.
 
 Unread is tracked per company rather than per person, so a colleague reading
 clears it for everyone, and the count rides on `/api/me` for the nav dot.

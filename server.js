@@ -782,6 +782,31 @@ app.get('/api/threads/:id', requireUser, (req, res) => {
   res.json({ messages });
 });
 
+// The context panel beside a conversation: what this group is actually about.
+app.get('/api/threads/:id/detail', requireUser, (req, res) => {
+  const id = ownThread(req, res);
+  if (id === undefined) return;
+
+  const pool = poolById(id);
+  const view = poolView(pool, req.user.company_id);
+  res.json({
+    pool: {
+      id: pool.id,
+      name: pool.name,
+      orbitType: view.orbitType,
+      altitudeKm: view.altitudeKm,
+      inclinationDeg: view.inclinationDeg,
+      windowMonth: view.windowMonth,
+      memberCount: view.memberCount,
+      totalMassKg: view.totalMassKg,
+      jurisdictions: view.jurisdictions,
+      isLead: view.isLead,
+      // members carry exact figures — that disclosure is what joining bought
+      members: view.members ?? [],
+    },
+  });
+});
+
 app.post('/api/threads/:id', requireJson, requireUser, (req, res) => {
   const id = ownThread(req, res);
   if (id === undefined) return;
