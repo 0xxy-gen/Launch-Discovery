@@ -157,15 +157,11 @@
     load();
   });
 
-  $('signout').addEventListener('click', async () => {
-    await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
-    location.href = '/';
-  });
 
   (async function init() {
     const [me, options] = await Promise.all([api('/api/me'), api('/api/options')]);
     if (!me.ok) return;
-    $('whoami').textContent = `${me.data.user.email} · ${me.data.user.accountTypeLabel}`;
+    renderAccount(me.data.user);
     renderNav(me.data.user, 'payloads');
     const fill = (id, list) => { for (const o of list) $(id).add(new Option(o.label, o.value)); };
     fill('orbit', options.data.orbitTypes);

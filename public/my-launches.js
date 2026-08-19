@@ -177,15 +177,11 @@
   $('cancel').addEventListener('click', showList);
   FIELDS.forEach(id => $(id).addEventListener('input', () => setError(id, '')));
 
-  $('signout').addEventListener('click', async () => {
-    await api('/api/logout', { method: 'POST' }).catch(() => {});
-    location.href = '/';
-  });
 
   (async function init() {
     const [me, options] = await Promise.all([api('/api/me'), api('/api/options')]);
     if (!me.ok) return;
-    $('whoami').textContent = `${me.data.user.email} · ${me.data.user.accountTypeLabel}`;
+    renderAccount(me.data.user);
     renderNav(me.data.user, 'my-launches');
     for (const o of options.data.orbitTypes) $('orbitType').add(new Option(o.label, o.value));
     showList();

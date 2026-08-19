@@ -167,15 +167,11 @@
     showList();
   });
 
-  $('signout').addEventListener('click', async () => {
-    await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
-    location.href = '/';
-  });
 
   (async function init() {
     const me = await api('/api/me');
     if (!me.ok) return;
-    $('whoami').textContent = `${me.data.user.email} · ${me.data.user.accountTypeLabel}`;
+    renderAccount(me.data.user);
     renderNav(me.data.user, 'pooling');
     showList();
   })();

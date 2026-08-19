@@ -78,6 +78,18 @@
           <div class="err" id="account-type-err"></div>
         </div>
 
+        <div class="field" id="name-field" hidden>
+          <label for="name">Your name</label>
+          <input id="name" name="name" type="text" placeholder="e.g. Alex Mbeki" autocomplete="name">
+          <div class="err" id="name-err"></div>
+        </div>
+
+        <div class="field" id="role-field" hidden>
+          <label for="role">Your role</label>
+          <input id="role" name="role" type="text" placeholder="e.g. Mission Manager" autocomplete="organization-title">
+          <div class="err" id="role-err"></div>
+        </div>
+
         <div class="field">
           <label for="email">Email address</label>
           <input id="email" name="email" type="email" autocomplete="email" placeholder="you@organisation.com" required>
@@ -210,11 +222,12 @@
   const $ = id => document.getElementById(id);
   const form = $('form'), banner = $('banner'), note = $('note'), submit = $('submit');
   const email = $('email'), password = $('password');
+  const name = $('name'), role = $('role');
   const accountType = $('account-type');            // radiogroup container
   const intentField = $('intent-field');
   const tabSignin = $('tab-signin'), tabRegister = $('tab-register');
 
-  const FIELDS = [email, password, accountType];
+  const FIELDS = [email, password, accountType, name, role];
   const accountTypeValue = () => accountType.querySelector('input:checked')?.value ?? '';
 
   let mode = 'signin';
@@ -275,10 +288,12 @@
       ? '<span class="lite">Request</span> <span class="bold">Access</span>'
       : '<span class="lite">Access</span> <span class="bold">Aether</span>';
     $('lede').textContent = registering
-      ? 'Create a free account to find launch or sell it.'
+      ? 'Your own account. You set up the company next, and can add colleagues to it later.'
       : 'Sign in to continue to mission control.';
     submit.textContent = registering ? 'Create account' : 'Sign in';
     intentField.hidden = !registering;
+    $('name-field').hidden = !registering;
+    $('role-field').hidden = !registering;
     password.setAttribute('autocomplete', registering ? 'new-password' : 'current-password');
     note.textContent = registering ? 'Minimum 8 characters' : '';
     FIELDS.forEach(i => setError(i, ''));
@@ -287,7 +302,7 @@
 
   tabSignin.addEventListener('click', () => setMode('signin'));
   tabRegister.addEventListener('click', () => setMode('register'));
-  [email, password].forEach(i => i.addEventListener('input', () => setError(i, '')));
+  [email, password, name, role].forEach(i => i.addEventListener('input', () => setError(i, '')));
   accountType.addEventListener('change', () => setError(accountType, ''));
 
   $('reveal').addEventListener('click', () => {
@@ -311,11 +326,17 @@
         ok = setError(password, 'Use at least 8 characters.') && ok;
       }
       ok = setError(accountType, accountTypeValue() ? '' : 'Pick one to continue.') && ok;
+      ok = setError(name, name.value.trim() ? '' : 'Tell us your name.') && ok;
+      ok = setError(role, role.value.trim() ? '' : 'What do you do?') && ok;
     }
     if (!ok) return;
 
     const payload = { email: email.value, password: password.value };
-    if (mode === 'register') payload.accountType = accountTypeValue();
+    if (mode === 'register') {
+      payload.accountType = accountTypeValue();
+      payload.name = name.value;
+      payload.role = role.value;
+    }
 
     setBusy(true);
     let res;
@@ -328,7 +349,9 @@
     }
     setBusy(false);
 
-    if (res.ok) return location.assign('/missions');
+    // A new account goes straight to the company form; a returning one goes
+    // wherever it left off, which the server decides.
+    if (res.ok) return location.assign(mode === 'register' ? '/profile?new=1' : '/');
 
     showFieldErrors(res.data.fields);
     if (res.data.error) showBanner(res.data.error, 'bad');
@@ -366,7 +389,7 @@
     // The server also redirects a signed-in visitor; this only fires when a
     // session appears while the page is already open.
     const { ok } = await api('/api/me');
-    if (ok) location.assign('/missions');
+    if (ok) location.assign('/');
   }
 
   setMode('signin');

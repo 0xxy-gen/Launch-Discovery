@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aether — Join</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+<style>
+  body { display: grid; place-items: center; height: 100vh; padding: 40px 20px; overflow: auto; }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    padding: 34px 32px;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: var(--radius-panel);
+  }
+  .invited { margin: 14px 0 24px; font-size: 14px; color: var(--text-2); }
+  .invited b { color: var(--text); font-weight: 600; }
+  .who {
+    padding: 12px 14px;
+    margin-bottom: 24px;
+    background: var(--tint);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 13.5px;
+    color: var(--text-2);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <p class="eyebrow">Invitation</p>
+  <h1 id="headline"><span class="lite">Join your</span> <span class="bold">team</span></h1>
+  <p class="invited" id="invited">Checking the invitation…</p>
+
+  <div class="banner" id="banner"></div>
+
+  <form id="join-form" novalidate hidden>
+    <div class="who" id="who"></div>
+
+    <div class="field">
+      <label for="name">Your name</label>
+      <input id="name" type="text" placeholder="e.g. Alex Mbeki" autocomplete="name">
+      <div class="err" id="name-err"></div>
+    </div>
+
+    <div class="field">
+      <label for="role">Your role</label>
+      <input id="role" type="text" placeholder="e.g. Systems Engineer" autocomplete="organization-title">
+      <div class="err" id="role-err"></div>
+    </div>
+
+    <div class="field">
+      <div class="label-row">
+        <label for="password">Choose a password</label>
+        <button type="button" class="reveal" id="reveal">Show</button>
+      </div>
+      <input id="password" type="password" placeholder="••••••••" autocomplete="new-password">
+      <div class="err" id="password-err"></div>
+    </div>
+
+    <button class="primary" type="submit">Join</button>
+    <p class="note">Minimum 8 characters</p>
+  </form>
+</div>
+
+<script src="join.js"></script>
+</body>
+</html>

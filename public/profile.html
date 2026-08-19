@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aether — Company profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+<link rel="stylesheet" href="app.css">
+<style>
+  .profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 44px; align-items: start; }
+  @media (max-width: 880px) { .profile-grid { grid-template-columns: 1fr; } }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  .hint { margin-top: 6px; font-size: 12px; color: var(--text-4); }
+
+  .actions { display: flex; gap: 10px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .actions button { width: auto; margin: 0; padding: 12px 22px; }
+
+  .id-card {
+    position: sticky;
+    top: 28px;
+    padding: 26px 24px;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 14px;
+    text-align: center;
+  }
+  .id-avatar {
+    width: 64px; height: 64px; margin: 0 auto 16px;
+    display: grid; place-items: center;
+    background: var(--cyan); border-radius: 50%;
+    color: #04181d; font-size: 21px; font-weight: 700;
+  }
+  .id-org { font-size: 17px; font-weight: 600; }
+  .id-role { margin-top: 4px; font-size: 13px; color: var(--text-3); }
+  .id-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 16px; }
+  .people { display: grid; gap: 10px; max-width: 620px; margin-bottom: 26px; }
+  .person {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 12px;
+  }
+  .person-email { font-size: 14px; font-weight: 500; }
+  .person-role { margin-top: 2px; font-size: 12.5px; color: var(--text-3); }
+  .person.pending { border-style: dashed; }
+
+  .invite { display: flex; align-items: flex-end; gap: 12px; max-width: 620px; }
+  .invite .field { flex: 1; margin: 0; }
+  .invite button { width: auto; margin: 0; padding: 11px 20px; }
+
+  .invite-link {
+    max-width: 620px;
+    margin-top: 18px;
+    padding: 16px 18px;
+    border: 1px solid var(--surface-line);
+    border-radius: 12px;
+  }
+  .invite-link p { margin: 0 0 10px; font-size: 12.5px; color: var(--text-3); }
+  .invite-link code {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    color: var(--text-2);
+    word-break: break-all;
+  }
+
+  .id-note { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.6; color: var(--text-4); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand">Aether <span>Launch Discovery</span></div>
+    <nav class="nav" id="nav"></nav>
+  </div>
+  <div class="account" id="account"></div>
+</header>
+
+<main class="wrap">
+  <div class="banner" id="banner"></div>
+
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Company profile</p>
+      <h1><span class="lite">Who you are</span> <span class="bold">on Aether</span></h1>
+      <p class="lede">Only your operating country is ever published, and only on requirements you choose to publish. The rest is shared when you accept an introduction.</p>
+    </div>
+  </div>
+
+  <div class="profile-grid">
+    <form id="profile-form" novalidate>
+      <p class="section" style="margin-top:0; padding-top:0; border-top:0">You</p>
+
+      <div class="field">
+        <label for="name">Your name</label>
+        <input id="name" type="text" placeholder="e.g. Alex Mbeki" autocomplete="name">
+        <div class="err" id="name-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="role">Your role</label>
+        <input id="role" type="text" placeholder="e.g. Mission Manager" autocomplete="organization-title">
+        <div class="err" id="role-err"></div>
+      </div>
+
+      <p class="section">Company</p>
+
+      <div class="field">
+        <label for="organisation">Organisation</label>
+        <input id="organisation" type="text" placeholder="e.g. SatCo Systems" autocomplete="organization">
+        <div class="err" id="organisation-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="country">Main operating country</label>
+        <select id="country"><option value="">Select a country</option></select>
+        <p class="hint">Published as the jurisdiction on anything you list.</p>
+        <div class="err" id="country-err"></div>
+      </div>
+
+      <p class="section">Contact</p>
+
+      <div class="field">
+        <label for="linkedin">LinkedIn <span class="opt">optional</span></label>
+        <input id="linkedin" type="url" placeholder="linkedin.com/in/yourname">
+        <div class="err" id="linkedin-err"></div>
+      </div>
+
+      <div class="pair">
+        <div class="field">
+          <label for="dial">Country code <span class="opt">optional</span></label>
+          <select id="dial"><option value="">Select a code</option></select>
+          <div class="err" id="dial-err"></div>
+        </div>
+        <div class="field">
+          <label for="phone">Phone <span class="opt">optional</span></label>
+          <input id="phone" type="tel" placeholder="7700 900000" autocomplete="tel">
+          <div class="err" id="phone-err"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">Save profile</button>
+      </div>
+    </form>
+
+    <aside class="id-card">
+      <div class="id-avatar" id="id-avatar">—</div>
+      <div class="id-org" id="id-org"></div>
+      <div class="id-role" id="id-role"></div>
+      <div class="id-tags" id="id-tags"></div>
+      <p class="id-note" id="id-note"></p>
+    </aside>
+  </div>
+
+  <section id="people-section" hidden>
+    <p class="section" style="margin-top:48px">People</p>
+    <p class="lede" style="margin:0 0 22px; max-width:620px">
+      Everyone here works on the same missions and launches, so a campaign does not
+      stall when one person is away. Admins can edit the company and invite others.
+    </p>
+
+    <div class="people" id="people"></div>
+
+    <form class="invite" id="invite-form" novalidate>
+      <div class="field">
+        <label for="invite-email">Invite a colleague</label>
+        <input id="invite-email" type="email" placeholder="them@yourcompany.com" autocomplete="off">
+        <div class="err" id="invite-email-err"></div>
+      </div>
+      <button class="primary" type="submit">Send invite</button>
+    </form>
+
+    <div class="invite-link" id="invite-link" hidden>
+      <p>No mail goes out from a local build — pass this link on yourself. It works once, and expires in 14 days.</p>
+      <code id="invite-link-value"></code>
+      <button class="ghost-sm" type="button" id="copy-link">Copy</button>
+    </div>
+  </section>
+</main>
+
+<script src="nav.js"></script>
+<script src="profile.js"></script>
+</body>
+</html>

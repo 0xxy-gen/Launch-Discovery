@@ -16,7 +16,8 @@ npm run seed       # demo accounts and sample data
 
 | Account | Type | Has |
 | --- | --- | --- |
-| `satco@demo.aether` | Payload owner | 2 missions, 1 published, leads a pool |
+| `satco@demo.aether` | Payload owner | 2 missions, leads a pool, **admin of SatCo Systems** |
+| `eng@demo.aether` | Payload owner | **Member of the same company** — same missions, no admin rights |
 | `cubes@demo.aether` | Payload owner | A 12U cubesat, in that pool |
 | `orbital@demo.aether` | Payload owner | A 45° LEO payload — incompatible with the pool |
 | `rocketco@demo.aether` | Launch provider | 3 launches, 2 published; browses Payloads |
@@ -82,10 +83,31 @@ any mapping.
 - Country and dial code are validated against the shared list, so a hand-rolled
   request cannot store a value the dropdowns would never produce.
 
+## Companies and people
+
+A company outlives whoever signed up. Missions, launches and pools belong to
+the **company**, not to the person who typed them in, so a campaign does not
+stall when one person is on leave or leaves entirely.
+
+- Registering creates a person *and* the company they act for; the signer is
+  its admin.
+- Admins invite colleagues by email. No mail goes out from a local build, so
+  the invite link is handed back to pass on. It is single-use, hashed at rest
+  like a session, and expires in 14 days.
+- Members can create, edit and publish everything the company owns. Only admins
+  can edit the company itself, invite, or remove people.
+- Removing a person does not touch the missions they created — those belong to
+  the company.
+
+Databases that predate this split are migrated in place on boot: every existing
+account becomes the admin of a company of one, and its missions, launches and
+pools are reassigned to that company.
+
 ## Signing up
 
-Three things: which side of the market you are on, an email and a password.
-Nothing else. Organisation, role and country are asked for on the profile at
+Which side of the market you are on, who you are, your role, an email and a
+password. The name and role describe the *person* — the company is set up in
+the step straight after, and can carry several people. Organisation, role and country are asked for on the profile at
 the moment they are first needed — publishing a requirement, which carries the
 owner's jurisdiction — and contact details stay optional until a match is
 accepted. Asking for all of it up front costs signups and asks for identifying
@@ -96,18 +118,15 @@ detail before anyone has decided to trust you.
 Object-named browse tabs plus one "mine" tab, the shape Qasa uses. Which tabs
 exist depends on the account, because access does:
 
-| | Payload owner | Launch provider | Broker |
-| --- | --- | --- | --- |
-| Launches | ✓ | ✓ | ✓ |
-| Payloads | — | ✓ | ✓ |
-| Yours | My Missions | My Launches | My Missions |
-| Aether Pooling | ✓ | — | ✓ |
+Four tabs for every account: **Launches · Payloads · Aether Pooling · My
+Missions**. Only the last changes noun — a provider's own inventory is launches,
+so it reads *My Launches* there.
 
-**Payload owners cannot browse the payloads directory.** Other people's banded
-demand is competitor intelligence, and reading it is the exact leak the banding
-exists to prevent — so browse is supply side only, enforced on the API and on
-the page route, not just hidden in the nav. `nav.js` renders nothing when an
-account only has one destination: a single tab is noise, not navigation.
+The payloads directory is open to every signed-in account, and a company never
+sees its own rows there. That is a deliberate loosening: owners reading each
+other's banded requirements is how pools form — *somebody else is going to my
+orbit* — and the banding is what makes it safe to show. It does mean a
+competitor can see the shape of demand, which is the trade being made.
 
 **Supply and demand are not symmetric, and the app should not pretend they are.**
 A launch is a sales offering, so `Launches` names the provider, the vehicle and

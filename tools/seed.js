@@ -1,7 +1,7 @@
 // Demo accounts and sample data for poking at the prototype.
 //   npm run seed          create anything missing
 //   npm run seed -- --reset   delete the demo accounts first, then recreate
-import { db, createUser, findUserByEmail, updateProfile } from '../lib/db.js';
+import { db, createUser, findUserByEmail, createCompany, attachUser, updateCompany } from '../lib/db.js';
 import { createMission, missionsForOwner } from '../lib/missions.js';
 import { createLaunch, launchesForOwner } from '../lib/launches.js';
 import { hashPassword } from '../lib/auth.js';
@@ -85,27 +85,43 @@ for (const account of ACCOUNTS) {
   let user = findUserByEmail(account.email);
 
   if (!user) {
+    const company = createCompany(account.accountType);
     user = createUser({
       email: account.email,
       passwordHash,
       accountType: account.accountType,
-      organisation: '', role: '', country: '', linkedin: '', dial: '', phone: '',
+      organisation: '', role: account.profile.role, country: '', linkedin: '', dial: '', phone: '',
     });
-    user = updateProfile(user.id, account.profile);
+    attachUser(user.id, company.id, 'admin');
+    updateCompany(company.id, account.profile);
+    user = findUserByEmail(account.email);
     console.log(`created ${account.email.padEnd(22)} ${account.accountType}`);
   } else {
     console.log(`kept    ${account.email.padEnd(22)} ${account.accountType}`);
   }
 
-  if (missionsForOwner(user.id).length === 0) {
-    for (const { publish, ...m } of account.missions) createMission(user.id, m, publish);
+  if (missionsForOwner(user.company_id).length === 0) {
+    for (const { publish, ...m } of account.missions) createMission(user.id, user.company_id, m, publish);
     if (account.missions.length) console.log(`        + ${account.missions.length} mission(s)`);
   }
 
-  if (account.launches?.length && launchesForOwner(user.id).length === 0) {
-    for (const { publish, ...l } of account.launches) createLaunch(user.id, l, publish);
+  if (account.launches?.length && launchesForOwner(user.company_id).length === 0) {
+    for (const { publish, ...l } of account.launches) createLaunch(user.id, user.company_id, l, publish);
     console.log(`        + ${account.launches.length} launch(es)`);
   }
+}
+
+// A second person inside SatCo, so the people list shows what it is for.
+const satco = findUserByEmail('satco@demo.aether');
+if (satco && !findUserByEmail('eng@demo.aether')) {
+  const colleague = createUser({
+    email: 'eng@demo.aether',
+    passwordHash,
+    accountType: 'payload_owner',
+    organisation: '', role: 'Systems Engineer', country: '', linkedin: '', dial: '', phone: '',
+  });
+  attachUser(colleague.id, satco.company_id, 'member');
+  console.log('created eng@demo.aether     member of SatCo Systems');
 }
 
 console.log(`\nAll demo accounts use the password: ${PASSWORD}`);

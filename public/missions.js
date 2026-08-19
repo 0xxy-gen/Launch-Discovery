@@ -295,7 +295,6 @@
       return showBanner('Check the highlighted fields.', 'bad');
     }
     me = data.user;
-    $('whoami').textContent = `${me.email} · ${me.accountTypeLabel}`;
     const next = afterProfile ?? showList;
     afterProfile = null;
     next();
@@ -303,10 +302,6 @@
 
   $('profile-back').addEventListener('click', showList);
 
-  $('signout').addEventListener('click', async () => {
-    await api('/api/logout', { method: 'POST' }).catch(() => {});
-    location.href = '/';
-  });
 
   // ─── boot ─────────────────────────────────────────────────────────────────
 
@@ -315,7 +310,7 @@
     if (!meRes.ok) return;
 
     me = meRes.data.user;
-    $('whoami').textContent = `${me.email} · ${me.accountTypeLabel}`;
+    renderAccount(me);
     renderNav(me, 'missions');
 
     const fill = (id, list) => {
