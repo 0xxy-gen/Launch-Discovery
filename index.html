@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch Discovery — Sign in</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --ink: #14171f;
+    --muted: #667085;
+    --line: #e3e6ec;
+    --field: #ffffff;
+    --accent: #3b5bfd;
+    --accent-ink: #ffffff;
+    --danger: #c0392b;
+    --ok: #1a7f4b;
+    --shadow: 0 12px 40px rgba(16, 20, 40, .10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1016;
+      --panel: #161a22;
+      --ink: #eef1f6;
+      --muted: #98a2b3;
+      --line: #262c38;
+      --field: #10141b;
+      --accent: #6c86ff;
+      --accent-ink: #0b0e14;
+      --danger: #ff8a80;
+      --ok: #6ee7a8;
+      --shadow: 0 12px 40px rgba(0, 0, 0, .45);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 32px 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 32px 28px 26px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .mark {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--accent); color: var(--accent-ink);
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 15px;
+  }
+  .brand span { font-weight: 600; letter-spacing: -.01em; }
+  h1 { font-size: 21px; margin: 0 0 4px; letter-spacing: -.02em; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
+  .tabs { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px; margin-bottom: 22px; }
+  .tabs button {
+    flex: 1; padding: 8px 10px; border: 0; border-radius: 7px;
+    background: transparent; color: var(--muted);
+    font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  input {
+    width: 100%; padding: 11px 12px; margin-bottom: 4px;
+    background: var(--field); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 9px;
+    font: inherit;
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  input[aria-invalid="true"] { border-color: var(--danger); }
+  .field { margin-bottom: 14px; }
+  .err { color: var(--danger); font-size: 12.5px; min-height: 16px; }
+  .hint { color: var(--muted); font-size: 12.5px; }
+  button.primary {
+    width: 100%; padding: 11px; margin-top: 6px;
+    background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 9px;
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button.primary:hover { filter: brightness(1.06); }
+  button.primary:disabled { opacity: .55; cursor: default; }
+  .note { margin-top: 16px; font-size: 12.5px; color: var(--muted); text-align: center; }
+  .note b { color: var(--ok); font-weight: 600; }
+  .banner { padding: 10px 12px; border-radius: 9px; font-size: 13.5px; margin-bottom: 16px; display: none; }
+  .banner.show { display: block; }
+  .banner.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+  .banner.bad { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+  .account { text-align: center; }
+  .avatar {
+    width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 14px;
+    background: var(--accent); color: var(--accent-ink);
+    display: grid; place-items: center; font-size: 21px; font-weight: 700;
+  }
+  .account p { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+  .account strong { color: var(--ink); }
+  .linkish { background: none; border: 0; color: var(--muted); font: inherit; font-size: 12.5px; text-decoration: underline; cursor: pointer; padding: 0; }
+  .disclaimer { max-width: 420px; margin: 14px auto 0; text-align: center; font-size: 12px; color: var(--muted); line-height: 1.45; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <div class="brand"><div class="mark">L</div><span>Launch Discovery</span></div>
+
+    <!-- signed-out view -->
+    <section id="auth">
+      <h1 id="title">Welcome back</h1>
+      <p class="sub" id="subtitle">Sign in to your account to continue.</p>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-signin" aria-selected="true" aria-controls="form">Sign in</button>
+        <button role="tab" id="tab-register" aria-selected="false" aria-controls="form">Register</button>
+      </div>
+
+      <div class="banner" id="banner"></div>
+
+      <form id="form" novalidate>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required>
+          <div class="err" id="email-err"></div>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+          <div class="err" id="password-err"></div>
+        </div>
+
+        <div class="field" id="confirm-field" hidden>
+          <label for="confirm">Confirm password</label>
+          <input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="••••••••">
+          <div class="err" id="confirm-err"></div>
+        </div>
+
+        <button class="primary" type="submit" id="submit">Sign in</button>
+      </form>
+
+      <p class="note" id="note"></p>
+    </section>
+
+    <!-- signed-in view -->
+    <section id="account" class="account" hidden>
+      <div class="avatar" id="avatar">?</div>
+      <h1>You're in</h1>
+      <p>Signed in as <strong id="who"></strong></p>
+      <button class="primary" id="signout">Sign out</button>
+      <p class="note"><button class="linkish" id="wipe">Clear all local accounts</button></p>
+    </section>
+  </div>
+  <p class="disclaimer">Demo only — accounts live in this browser's localStorage and passwords are not securely stored. Wire the form up to a real backend before using it with real credentials.</p>
+</main>
+
+<script>
+(function () {
+  const USERS_KEY = 'ld.users';
+  const SESSION_KEY = 'ld.session';
+
+  const $ = id => document.getElementById(id);
+  const authView = $('auth'), accountView = $('account');
+  const form = $('form'), banner = $('banner'), note = $('note');
+  const email = $('email'), password = $('password'), confirm = $('confirm');
+  const confirmField = $('confirm-field');
+  const tabSignin = $('tab-signin'), tabRegister = $('tab-register');
+
+  let mode = 'signin';
+
+  const loadUsers = () => {
+    try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; }
+    catch { return {}; }
+  };
+  const saveUsers = u => localStorage.setItem(USERS_KEY, JSON.stringify(u));
+
+  // Not real security — a stand-in so plaintext passwords aren't sitting in localStorage.
+  // crypto.subtle needs a secure context; fall back so the demo still works off file://.
+  async function digest(text) {
+    if (window.crypto && crypto.subtle) {
+      const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    let h1 = 0x811c9dc5, h2 = 0x01000193;
+    for (let i = 0; i < text.length; i++) {
+      h1 = Math.imul(h1 ^ text.charCodeAt(i), 0x01000193) >>> 0;
+      h2 = Math.imul(h2 ^ text.charCodeAt(i), 0x85ebca6b) >>> 0;
+    }
+    return 'fnv-' + h1.toString(16) + h2.toString(16);
+  }
+
+  const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+
+  function setError(input, msg) {
+    $(input.id + '-err').textContent = msg || '';
+    input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+    return !msg;
+  }
+
+  function showBanner(msg, kind) {
+    banner.textContent = msg;
+    banner.className = 'banner show ' + kind;
+  }
+  const clearBanner = () => { banner.className = 'banner'; };
+
+  function setMode(next) {
+    mode = next;
+    const registering = mode === 'register';
+    tabSignin.setAttribute('aria-selected', String(!registering));
+    tabRegister.setAttribute('aria-selected', String(registering));
+    $('title').textContent = registering ? 'Create your account' : 'Welcome back';
+    $('subtitle').textContent = registering
+      ? 'Register with your email to get started.'
+      : 'Sign in to your account to continue.';
+    $('submit').textContent = registering ? 'Create account' : 'Sign in';
+    confirmField.hidden = !registering;
+    password.setAttribute('autocomplete', registering ? 'new-password' : 'current-password');
+    note.textContent = registering ? 'Passwords must be at least 8 characters.' : '';
+    [email, password, confirm].forEach(i => setError(i, ''));
+    clearBanner();
+  }
+
+  tabSignin.addEventListener('click', () => setMode('signin'));
+  tabRegister.addEventListener('click', () => setMode('register'));
+  [email, password, confirm].forEach(i => i.addEventListener('input', () => setError(i, '')));
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    clearBanner();
+
+    let ok = setError(email, validEmail(email.value) ? '' : 'Enter a valid email address.');
+    ok = setError(password, password.value ? '' : 'Password is required.') && ok;
+
+    if (mode === 'register') {
+      if (password.value && password.value.length < 8) {
+        ok = setError(password, 'Use at least 8 characters.') && ok;
+      }
+      ok = setError(confirm, confirm.value === password.value ? '' : 'Passwords do not match.') && ok;
+    }
+    if (!ok) return;
+
+    const addr = email.value.trim().toLowerCase();
+    const users = loadUsers();
+    const hash = await digest(addr + '::' + password.value);
+
+    if (mode === 'register') {
+      if (users[addr]) {
+        setError(email, 'That email is already registered.');
+        showBanner('An account with that email already exists. Try signing in.', 'bad');
+        return;
+      }
+      users[addr] = { hash, createdAt: new Date().toISOString() };
+      saveUsers(users);
+      signIn(addr);
+      return;
+    }
+
+    const user = users[addr];
+    if (!user || user.hash !== hash) {
+      showBanner('Email or password is incorrect.', 'bad');
+      return;
+    }
+    signIn(addr);
+  });
+
+  function signIn(addr) {
+    localStorage.setItem(SESSION_KEY, addr);
+    render();
+  }
+
+  $('signout').addEventListener('click', () => {
+    localStorage.removeItem(SESSION_KEY);
+    form.reset();
+    setMode('signin');
+    render();
+    showBanner('You have been signed out.', 'ok');
+  });
+
+  $('wipe').addEventListener('click', () => {
+    localStorage.removeItem(USERS_KEY);
+    localStorage.removeItem(SESSION_KEY);
+    form.reset();
+    setMode('signin');
+    render();
+    showBanner('All local accounts cleared.', 'ok');
+  });
+
+  function render() {
+    const addr = localStorage.getItem(SESSION_KEY);
+    const signedIn = Boolean(addr && loadUsers()[addr]);
+    authView.hidden = signedIn;
+    accountView.hidden = !signedIn;
+    if (signedIn) {
+      $('who').textContent = addr;
+      $('avatar').textContent = addr[0].toUpperCase();
+    }
+  }
+
+  setMode('signin');
+  render();
+})();
+</script>
+</body>
+</html>
