@@ -16,6 +16,9 @@ import {
 import { compatibility } from './lib/compatibility.js';
 import { destinations } from './lib/destinations.js';
 import { saveLaunch, unsaveLaunch, savedIds, savedLaunches } from './lib/saved.js';
+import {
+  postMessage, messagesFor, lastMessage, unreadCount, markThreadRead, threadsFor,
+} from './lib/messages.js';
 import { waitlistEntry, joinWaitlist, leaveWaitlist } from './lib/waitlist.js';
 import {
   createConstellation, constellationById, constellationsFor,
@@ -149,7 +152,11 @@ app.get('/api/me', (req, res) => {
   const user = token && findSessionUser(hashToken(token));
   if (!user) return res.status(401).json({ error: 'Not signed in.' });
   // the saved count rides along so the nav badge does not need its own request
-  res.json({ user: { ...publicUser(user), savedCount: savedIds(user.company_id).size } });
+  const unread = threadsFor(user.company_id)
+    .reduce((n, p) => n + unreadCount(p.id, user.company_id), 0);
+  res.json({
+    user: { ...publicUser(user), savedCount: savedIds(user.company_id).size, unreadCount: unread },
+  });
 });
 
 app.post('/api/register', requireJson, rateLimit(20), async (req, res, next) => {
@@ -719,6 +726,73 @@ app.post('/api/waitlist', requireJson, requireUser, (req, res) => {
 app.delete('/api/waitlist', requireUser, (req, res) => {
   leaveWaitlist(req.user.company_id);
   res.status(204).end();
+});
+
+// ─── inbox ──────────────────────────────────────────────────────────────────
+// One thread per pool the company belongs to. Introductions between a provider
+// and an owner will land here too, once accepting a match is built.
+
+app.get('/api/threads', requireUser, (req, res) => {
+  const threads = threadsFor(req.user.company_id).map(pool => {
+    const last = lastMessage(pool.id);
+    const view = poolView(pool, req.user.company_id);
+    return {
+      id: pool.id,
+      kind: 'pool',
+      name: pool.name,
+      context: `${view.orbitType} · ${view.altitudeKm} km · ${view.windowMonth}`,
+      members: view.memberCount,
+      unread: unreadCount(pool.id, req.user.company_id),
+      last: last && {
+        body: last.body,
+        organisation: last.organisation,
+        mine: last.company_id === req.user.company_id,
+        at: new Date(last.created_at).toISOString(),
+      },
+      lastAt: last ? last.created_at : pool.created_at,
+    };
+  }).sort((a, b) => b.lastAt - a.lastAt);
+
+  res.json({ threads, unreadTotal: threads.reduce((n, t) => n + t.unread, 0) });
+});
+
+function ownThread(req, res) {
+  const id = Number(req.params.id);
+  const mine = threadsFor(req.user.company_id).some(p => p.id === id);
+  if (!mine) {
+    res.status(404).json({ error: 'Not found.' });
+    return undefined;
+  }
+  return id;
+}
+
+app.get('/api/threads/:id', requireUser, (req, res) => {
+  const id = ownThread(req, res);
+  if (id === undefined) return;
+
+  const messages = messagesFor(id).map(m => ({
+    id: m.id,
+    body: m.body,
+    organisation: m.organisation,
+    author: m.author || m.author_email,
+    mine: m.company_id === req.user.company_id,
+    at: new Date(m.created_at).toISOString(),
+  }));
+  markThreadRead(id, req.user.company_id);
+  res.json({ messages });
+});
+
+app.post('/api/threads/:id', requireJson, requireUser, (req, res) => {
+  const id = ownThread(req, res);
+  if (id === undefined) return;
+
+  const body = String(req.body.body ?? '').trim();
+  if (!body) return res.status(400).json({ error: 'Write something first.' });
+  if (body.length > 4000) return res.status(400).json({ error: 'That message is too long.' });
+
+  postMessage(id, req.user.company_id, req.user.id, body);
+  markThreadRead(id, req.user.company_id);
+  res.status(201).json({ ok: true });
 });
 
 // ─── pages ──────────────────────────────────────────────────────────────────

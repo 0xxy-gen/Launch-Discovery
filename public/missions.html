@@ -27,11 +27,11 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 18px 20px;
+    padding: 22px 26px;
     cursor: pointer;
   }
   .group-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .group-title h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .group-title h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
   .group-kind {
     padding: 3px 9px;
     border: 1px solid var(--line-strong);
@@ -42,7 +42,7 @@
     text-transform: uppercase;
     color: var(--text-4);
   }
-  .group-summary { margin: 6px 0 0 32px; font-size: 12.5px; color: var(--text-3); }
+  .group-summary { margin: 8px 0 0 34px; font-size: 14px; color: var(--text-3); }
   .group-actions { display: flex; gap: 8px; flex: none; }
   .group-actions button { flex: none; }
 
@@ -55,7 +55,7 @@
   .group.collapsed .caret { transform: rotate(-90deg); }
   .group.collapsed .group-body { display: none; }
 
-  .group-body { padding: 0 14px 14px; display: grid; gap: 10px; }
+  .group-body { padding: 0 18px 18px; display: grid; gap: 12px; }
   .group-body .row-card { background: var(--surface); }
   .group-empty {
     display: grid;
@@ -371,6 +371,7 @@
 </main>
 
 <script src="nav.js"></script>
+<script src="confirm.js"></script>
 <script src="missions.js"></script>
 </body>
 </html>

@@ -136,7 +136,7 @@
 
     const actions = el('div', 'row-actions');
     const toggle = el('button', 'ghost-sm', m.status === 'published' ? 'Unpublish' : 'Publish');
-    toggle.addEventListener('click', () => setStatus(m.id, m.status === 'published' ? 'draft' : 'published'));
+    toggle.addEventListener('click', () => setStatus(m.id, m.status === 'published' ? 'draft' : 'published', m));
     const copy = el('button', 'ghost-sm', 'Duplicate');
     copy.title = 'Create the next satellite from this one';
     copy.addEventListener('click', () => duplicate(m));
@@ -267,7 +267,31 @@
     renderList(data.missions, data.constellations);
   }
 
-  async function setStatus(id, status) {
+  async function setStatus(id, status, mission) {
+    if (status === 'published' && mission) {
+      const p = mission.published ?? {};
+      const go = await confirmPublish({
+        title: `Publish ${mission.reference}?`,
+        lead: 'It becomes discoverable straight away. You can unpublish at any time, and nothing here identifies you.',
+        audience: 'Launch providers and other satellite operators will see',
+        visible: [
+          p.orbitType,
+          [p.altitudeBand, p.inclinationBand].filter(Boolean).join(' · '),
+          p.massBand,
+          [p.formFactor, p.rideType].filter(Boolean).join(' · '),
+          p.window,
+          p.jurisdiction && `${p.jurisdiction} (jurisdiction)`,
+          'A pseudonym such as LD-0DTY, not your name for it',
+        ],
+        hidden: [
+          `Your name for it (${mission.reference})`,
+          'Exact altitude, inclination, mass and launch date',
+          'Your notes, your organisation and your contact details',
+          'Which constellation it belongs to',
+        ],
+      });
+      if (!go) return;
+    }
     const { ok, data } = await api(`/api/missions/${id}/status`, { method: 'POST', body: { status } });
     if (!ok) {
       if (data.needsProfile) return showProfile(() => setStatus(id, status));
@@ -320,11 +344,40 @@
 
   // ─── save ─────────────────────────────────────────────────────────────────
 
+  // Publishing is the one irreversible-feeling action here, so it states what
+  // becomes visible using the very values that will be shown.
+  async function confirmFirst(reference) {
+    const { ok, data } = await api('/api/missions/preview', { method: 'POST', body: readForm() });
+    const p = ok ? data.preview : {};
+    return confirmPublish({
+      title: `Publish ${reference || 'this satellite'}?`,
+      lead: 'It becomes discoverable straight away. You can unpublish at any time, and nothing here identifies you.',
+      audience: 'Launch providers and other satellite operators will see',
+      visible: [
+        p.orbitType,
+        [p.altitudeBand, p.inclinationBand].filter(Boolean).join(' · '),
+        p.massBand,
+        [p.formFactor, p.rideType].filter(Boolean).join(' · '),
+        p.window,
+        p.jurisdiction && `${p.jurisdiction} (jurisdiction)`,
+        'A pseudonym such as LD-0DTY, not your name for it',
+      ],
+      hidden: [
+        `Your name for it${reference ? ` (${reference})` : ''}`,
+        'Exact altitude, inclination, mass and launch date',
+        'Your notes, your organisation and your contact details',
+        'Which constellation it belongs to',
+      ],
+    });
+  }
+
   async function save(publish) {
     if (busy) return;
     busy = true;
     clearErrors();
     clearBanner();
+
+    if (publish && !(await confirmFirst($('reference').value.trim()))) return;
 
     const body = { ...readForm(), publish };
     pendingForm = readForm();

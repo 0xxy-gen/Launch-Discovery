@@ -12,10 +12,10 @@
 <link rel="stylesheet" href="app.css">
 <style>
   .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 34px 0 14px; }
-  .section-head h2 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .section-head h2 { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
   .section-head span { font-size: 13px; color: var(--text-3); }
 
-  .dests { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .dests { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
 
   .dest {
     background: var(--surface);
@@ -28,7 +28,7 @@
   /* the orbit band stands in for the trip photo */
   .dest-banner {
     position: relative;
-    padding: 20px 20px 16px;
+    padding: 26px 26px 22px;
     background:
       radial-gradient(120% 90% at 50% 140%, rgba(34, 211, 238, .30), transparent 60%),
       linear-gradient(180deg, #01060a, #04141b);
@@ -36,15 +36,15 @@
   }
   .dest-banner svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .dest-banner > * { position: relative; }
-  .dest-orbit { margin: 0; font-size: 16px; font-weight: 600; color: #fff; }
-  .dest-alt { margin: 4px 0 0; font-size: 13px; color: rgba(255, 255, 255, .6); }
+  .dest-orbit { margin: 0; font-size: 19px; font-weight: 600; color: #fff; }
+  .dest-alt { margin: 6px 0 0; font-size: 15px; color: rgba(255, 255, 255, .6); }
   .dest-window {
     position: absolute; top: 20px; right: 20px;
     font-size: 12px; font-weight: 600; letter-spacing: .04em;
     color: rgba(255, 255, 255, .8);
   }
 
-  .dest-body { padding: 16px 20px 18px; }
+  .dest-body { padding: 22px 26px 24px; }
   .going { display: flex; align-items: center; gap: 10px; }
   .flags { display: flex; }
   .flag {
@@ -58,7 +58,7 @@
   }
   .flag:first-child { margin-left: 0; }
   .flag.more { font-size: 11px; font-weight: 600; color: var(--text-3); }
-  .going-text { font-size: 13px; color: var(--text-2); }
+  .going-text { font-size: 15px; color: var(--text-2); }
   .going-text b { font-weight: 600; color: var(--text); }
 
   .yours-line { margin: 12px 0 0; font-size: 12.5px; color: var(--cyan); }

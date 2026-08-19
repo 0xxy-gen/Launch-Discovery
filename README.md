@@ -11,6 +11,13 @@ npm start          # http://localhost:3100   (npm run dev to watch)
 npm run seed       # demo accounts and sample data
 ```
 
+`npm run seed:slots` loads real available-launch-slot data transcribed from a
+supplied spreadsheet — 14 slots across SpaceX, ISRO, Rocket Lab and ExPace. The
+source gives mission, capacity, deployer, window, launcher and company; it does
+not give a launch site, and gives an orbit for only two rows, so `tools/seed-slots.js`
+marks every value it had to supply and keeps the sheet's own wording verbatim in
+each launch's notes.
+
 `npm run seed` is safe to re-run — it creates only what is missing. Pass
 `-- --reset` to wipe the demo accounts and rebuild them.
 
@@ -21,6 +28,7 @@ npm run seed       # demo accounts and sample data
 | `cubes@demo.aether` | Payload owner | A 12U cubesat, in that pool |
 | `orbital@demo.aether` | Payload owner | A 45° LEO payload — incompatible with the pool |
 | `rocketco@demo.aether` | Launch provider | 3 launches, 2 published; browses Payloads |
+| `spacex@demo.aether`, `isro@demo.aether`, `rocketlab@demo.aether`, `expace@demo.aether` | Launch providers | The 14 real slots from `npm run seed:slots` |
 | `broker@demo.aether` | Broker | Sees both sides |
 
 Password for all of them: `aether-demo-2026`
@@ -299,8 +307,26 @@ rather than the account that typed them in. One favourite affordance is used
 everywhere: a heart that fills red, never a star in one place and a heart in
 another.
 
-`/messages` and the Agents tab both say plainly that they are not built. An
-inert button is better than one that pretends to send something.
+## Inbox
+
+Two panes, the shape a mail client has: threads on the left with a filter, the
+conversation on the right, a greeting when nothing is selected. **Every pool
+gets a group chat**, and those are real — members already see each other's
+organisation, so a thread reveals nothing joining did not.
+
+Unread is tracked per company rather than per person, so a colleague reading
+clears it for everyone, and the count rides on `/api/me` for the nav dot.
+Introductions between a provider and an owner will land in the same list once
+accepting a match is built.
+
+## Publishing is confirmed, with the actual values
+
+Publish is the one action that is hard to take back socially — you cannot
+un-see a competitor's launch window. So it asks first, and it does not ask *"are
+you sure?"* about nothing: the dialog lists the exact banded values that will
+become visible, pulled from the same preview endpoint the editor uses, beside
+what stays private. The launch version is the mirror image, and says plainly
+that supply is a public offer with nothing withheld.
 
 ## Theming
 

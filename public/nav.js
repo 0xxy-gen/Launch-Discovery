@@ -79,14 +79,15 @@ window.renderAccount = function renderAccount(user) {
   const CHAT = 'M17 11.5a6.5 6.5 0 01-6.5 6.5H4l-1.5 1.5v-7.9A6.5 6.5 0 0110.5 5h0a6.5 6.5 0 016.5 6.5z';
   const HEART = 'M10 16.5S3.5 12.6 3.5 8.2A3.7 3.7 0 0110 6a3.7 3.7 0 016.5 2.2c0 4.4-6.5 8.3-6.5 8.3z';
 
-  const chat = icon('/messages', 'Introductions', CHAT);
+  const chat = icon('/messages', 'Inbox', CHAT);
+  if (user.unreadCount) {
+    chat.classList.add('unread');
+    chat.title = `Inbox (${user.unreadCount} unread)`;
+  }
   const saved = icon('/saved', 'Saved launch opportunities', HEART, Boolean(user.savedCount));
-  if (user.savedCount) saved.classList.add('on');
   if (user.savedCount) {
-    const badge = document.createElement('span');
-    badge.className = 'icon-badge';
-    badge.textContent = user.savedCount > 9 ? '9+' : String(user.savedCount);
-    saved.append(badge);
+    saved.classList.add('on');
+    saved.title = `Saved launch opportunities (${user.savedCount})`;
   }
 
   // ── the menu ──────────────────────────────────────────────────────────────

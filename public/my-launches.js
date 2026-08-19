@@ -97,7 +97,27 @@
 
       const actions = el('div', 'row-actions');
       const toggle = el('button', 'ghost-sm', l.status === 'published' ? 'Unpublish' : 'Publish');
-      toggle.addEventListener('click', () => setStatus(l.id, l.status === 'published' ? 'draft' : 'published'));
+      toggle.addEventListener('click', async () => {
+      const next = l.status === 'published' ? 'draft' : 'published';
+      if (next === 'published') {
+        const spare = Math.max(0, l.capacityKg - l.committedKg);
+        const go = await confirmPublish({
+          title: `Publish ${l.name}?`,
+          lead: 'Supply is advertised openly — unlike a satellite, a launch is named. Anyone signed in can see it.',
+          audience: 'Every signed-in account will see',
+          visible: [
+            `${l.name} on ${l.vehicle}`,
+            'Your company name and country',
+            l.site && `Launch site: ${l.site}`,
+            `${l.altitudeKm} km · ${l.inclinationDeg}° · ${l.windowMonth}`,
+            `${spare} kg spare of ${l.capacityKg} kg`,
+          ],
+          hidden: ['Nothing — a launch listing is a public offer'],
+        });
+        if (!go) return;
+      }
+      setStatus(l.id, next);
+    });
       const edit = el('button', 'ghost-sm', 'Edit');
       edit.addEventListener('click', () => openEditor(l));
       actions.append(toggle, edit);
@@ -138,10 +158,31 @@
     window.scrollTo(0, 0);
   }
 
+  function confirmFirst() {
+    const f = readForm();
+    const spare = Math.max(0, Number(f.capacityKg || 0) - Number(f.committedKg || 0));
+    return confirmPublish({
+      title: `Publish ${f.name || 'this launch'}?`,
+      lead: 'Supply is advertised openly — unlike a satellite, a launch is named. Anyone signed in can see it.',
+      audience: 'Every signed-in account will see',
+      visible: [
+        `${f.name} on ${f.vehicle}`,
+        `Your company name and country`,
+        f.site && `Launch site: ${f.site}`,
+        `${f.altitudeKm} km · ${f.inclinationDeg}° · ${f.windowMonth}`,
+        `${spare} kg spare of ${f.capacityKg} kg`,
+        f.notes && 'Your notes on deployers and deadlines',
+      ],
+      hidden: ['Nothing — a launch listing is a public offer'],
+    });
+  }
+
   async function save(publish) {
     if (busy) return;
     busy = true;
     clearErrors();
+
+    if (publish && !(await confirmFirst())) return;
 
     const body = { ...readForm(), publish };
     const res = editingId
