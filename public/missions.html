@@ -58,12 +58,16 @@
   .group-body { padding: 0 14px 14px; display: grid; gap: 10px; }
   .group-body .row-card { background: var(--surface); }
   .group-empty {
-    padding: 18px 20px;
+    display: grid;
+    justify-items: start;
+    gap: 14px;
+    padding: 22px 20px;
     border: 1px dashed var(--line-strong);
     border-radius: 12px;
     font-size: 13px;
     color: var(--text-4);
   }
+  .group-empty p { margin: 0; }
 
   .ungrouped-label {
     margin: 0 0 12px;
@@ -81,23 +85,6 @@
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
   .hint { margin-top: 6px; font-size: 12px; color: var(--text-4); }
 
-  textarea {
-    width: 100%;
-    min-height: 84px;
-    padding: 11px 0;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid var(--field-line);
-    color: var(--text);
-    font-family: var(--font-sans);
-    font-weight: 300;
-    font-size: 16px;
-    outline: none;
-    resize: vertical;
-    transition: border-color .2s;
-  }
-  textarea:focus { border-bottom-color: var(--cyan); }
-  textarea::placeholder { color: var(--text-4); }
 
   .check { display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 14px; }
   .check input {

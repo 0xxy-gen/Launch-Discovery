@@ -4,6 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 import { COUNTRIES } from './lib/countries.js';
 import { ACCOUNT_TYPES } from './lib/account-types.js';
+import {
+  ENTITY_TYPES, COMPANY_SIZES, FUNDING_STAGES,
+  FLIGHT_HERITAGE, EXPORT_REGIMES, APPLICATIONS,
+} from './lib/company-options.js';
 import { ORBIT_TYPES, RIDE_TYPES, FORM_FACTORS } from './lib/mission-options.js';
 import { ownerMission, previewMission, publicMission } from './lib/banding.js';
 import {
@@ -45,7 +49,7 @@ const SECURE_COOKIES = process.env.NODE_ENV === 'production';
 
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '16kb' }));
+app.use(express.json({ limit: '600kb' }));   // company logos arrive as data URLs
 
 // ─── cookies ────────────────────────────────────────────────────────────────
 
@@ -129,6 +133,12 @@ app.get('/api/options', (req, res) => {
     orbitTypes: ORBIT_TYPES,
     rideTypes: RIDE_TYPES,
     formFactors: FORM_FACTORS,
+    entityTypes: ENTITY_TYPES,
+    companySizes: COMPANY_SIZES,
+    fundingStages: FUNDING_STAGES,
+    flightHeritage: FLIGHT_HERITAGE,
+    exportRegimes: EXPORT_REGIMES,
+    applications: APPLICATIONS,
   });
 });
 
@@ -159,7 +169,7 @@ app.post('/api/register', requireJson, rateLimit(20), async (req, res, next) => 
       passwordHash: await hashPassword(values.password),
       accountType: values.accountType,
       organisation: '', role: values.role, country: '', linkedin: '', dial: '', phone: '',
-      name: values.name,
+      firstName: values.firstName, lastName: values.lastName,
     });
     attachUser(user.id, company.id, 'admin');
 
@@ -245,7 +255,7 @@ app.put('/api/profile', requireJson, requireUser, (req, res) => {
   if (!req.user.isAdmin) return res.status(403).json({ error: 'Only an admin can edit the company.' });
 
   updateCompany(req.user.company_id, values);
-  setPerson(req.user.id, values.name, values.role);
+  setPerson(req.user.id, values);
   res.json({ user: publicUser(findUserByEmail(req.user.email)) });
 });
 
@@ -261,6 +271,8 @@ app.get('/api/people', requireUser, (req, res) => {
       id: p.id,
       email: p.email,
       name: p.name,
+      firstName: p.first_name,
+      lastName: p.last_name,
       role: p.role,
       companyRole: p.company_role,
       isYou: p.id === req.user.id,
@@ -331,7 +343,9 @@ app.post('/api/join', requireJson, rateLimit(20), async (req, res, next) => {
       passwordHash: await hashPassword(password),
       accountType: company.account_type,
       organisation: '', role: String(req.body.role ?? '').trim(), country: '',
-      linkedin: '', dial: '', phone: '', name: String(req.body.name ?? '').trim(),
+      linkedin: '', dial: '', phone: '',
+      firstName: String(req.body.firstName ?? '').trim(),
+      lastName: String(req.body.lastName ?? '').trim(),
     });
     attachUser(user.id, company.id, 'member');
     acceptInvite(hashToken(token));
@@ -723,7 +737,12 @@ app.get('/payloads', (req, res) => {
   res.sendFile(join(root, 'public', 'payloads.html'));
 });
 
-app.use(express.static(join(root, 'public'), { extensions: ['html'] }));
+// no-cache, not no-store: the browser still revalidates cheaply with an ETag,
+// but it can never serve a stale script after a deploy or an edit.
+app.use(express.static(join(root, 'public'), {
+  extensions: ['html'],
+  setHeaders: res => res.set('Cache-Control', 'no-cache'),
+}));
 
 app.use((req, res) => res.status(404).json({ error: 'Not found.' }));
 

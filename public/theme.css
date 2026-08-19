@@ -260,7 +260,33 @@
     outline: none;
     transition: border-color .2s;
   }
+  textarea {
+    width: 100%;
+    min-height: 92px;
+    padding: 11px 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--field-line);
+    border-radius: 0;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.5;
+    outline: none;
+    resize: vertical;
+    transition: border-color .2s;
+  }
+  textarea:focus { border-bottom-color: var(--cyan); }
+  textarea::placeholder { color: var(--text-4); }
+  textarea[aria-invalid="true"] { border-bottom-color: var(--destructive); }
+
   input::placeholder { color: var(--text-4); }
+  input:disabled, select:disabled, textarea:disabled {
+    color: var(--text-3);
+    border-bottom-style: dashed;
+    cursor: not-allowed;
+  }
   input:focus,
   select:focus { border-bottom-color: var(--cyan); }
   input[aria-invalid="true"],

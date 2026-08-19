@@ -47,6 +47,7 @@
   @media (prefers-reduced-motion: reduce) {
     .visual-pane .drift { animation: none; }
   }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
 </style>
 </head>
 <body>
@@ -78,10 +79,17 @@
           <div class="err" id="account-type-err"></div>
         </div>
 
-        <div class="field" id="name-field" hidden>
-          <label for="name">Your name</label>
-          <input id="name" name="name" type="text" placeholder="e.g. Alex Mbeki" autocomplete="name">
-          <div class="err" id="name-err"></div>
+        <div class="pair" id="name-field" hidden>
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" name="firstName" type="text" placeholder="Alex" autocomplete="given-name">
+            <div class="err" id="firstName-err"></div>
+          </div>
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" name="lastName" type="text" placeholder="Mbeki" autocomplete="family-name">
+            <div class="err" id="lastName-err"></div>
+          </div>
         </div>
 
         <div class="field" id="role-field" hidden>
@@ -222,12 +230,12 @@
   const $ = id => document.getElementById(id);
   const form = $('form'), banner = $('banner'), note = $('note'), submit = $('submit');
   const email = $('email'), password = $('password');
-  const name = $('name'), role = $('role');
+  const firstName = $('firstName'), lastName = $('lastName'), role = $('role');
   const accountType = $('account-type');            // radiogroup container
   const intentField = $('intent-field');
   const tabSignin = $('tab-signin'), tabRegister = $('tab-register');
 
-  const FIELDS = [email, password, accountType, name, role];
+  const FIELDS = [email, password, accountType, firstName, lastName, role];
   const accountTypeValue = () => accountType.querySelector('input:checked')?.value ?? '';
 
   let mode = 'signin';
@@ -302,7 +310,7 @@
 
   tabSignin.addEventListener('click', () => setMode('signin'));
   tabRegister.addEventListener('click', () => setMode('register'));
-  [email, password, name, role].forEach(i => i.addEventListener('input', () => setError(i, '')));
+  [email, password, firstName, lastName, role].forEach(i => i.addEventListener('input', () => setError(i, '')));
   accountType.addEventListener('change', () => setError(accountType, ''));
 
   $('reveal').addEventListener('click', () => {
@@ -326,7 +334,8 @@
         ok = setError(password, 'Use at least 8 characters.') && ok;
       }
       ok = setError(accountType, accountTypeValue() ? '' : 'Pick one to continue.') && ok;
-      ok = setError(name, name.value.trim() ? '' : 'Tell us your name.') && ok;
+      ok = setError(firstName, firstName.value.trim() ? '' : 'Enter your first name.') && ok;
+      ok = setError(lastName, lastName.value.trim() ? '' : 'Enter your last name.') && ok;
       ok = setError(role, role.value.trim() ? '' : 'What do you do?') && ok;
     }
     if (!ok) return;
@@ -334,7 +343,8 @@
     const payload = { email: email.value, password: password.value };
     if (mode === 'register') {
       payload.accountType = accountTypeValue();
-      payload.name = name.value;
+      payload.firstName = firstName.value;
+      payload.lastName = lastName.value;
       payload.role = role.value;
     }
 

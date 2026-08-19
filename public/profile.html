@@ -73,6 +73,49 @@
     word-break: break-all;
   }
 
+  .logo-row { display: grid; grid-template-columns: 76px 1fr; gap: 18px; align-items: start; margin-bottom: 26px; }
+  .logo-preview {
+    width: 76px; height: 76px;
+    display: grid; place-items: center;
+    background: var(--tint);
+    border: 1px solid var(--surface-line);
+    border-radius: 14px;
+    overflow: hidden;
+    color: var(--text-4);
+    font-size: 20px; font-weight: 700;
+  }
+  .logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .logo-actions { display: flex; gap: 8px; margin: 6px 0 0; }
+
+  .checks { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+  .check-item:has(input:checked) { border-color: var(--cyan); background: rgba(34, 211, 238, .07); }
+  .check-item input {
+    width: 15px; height: 15px; margin: 0;
+    border: 1px solid var(--field-line); border-radius: 4px;
+    appearance: none; -webkit-appearance: none; cursor: pointer;
+  }
+  .check-item input:checked { border-color: var(--cyan); background: var(--cyan) var(--tick) center/11px no-repeat; }
+
+  .meter { margin-top: 20px; text-align: left; }
+  .meter-head { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12.5px; color: var(--text-3); }
+  .meter-head b { color: var(--text); font-weight: 700; }
+  .meter-track { height: 6px; background: var(--track); border-radius: 999px; overflow: hidden; }
+  .meter-fill { height: 100%; width: 0; background: var(--cyan); border-radius: 999px; transition: width .35s; }
+
+  .id-why { margin: 14px 0 0; font-size: 12px; line-height: 1.55; color: var(--text-4); text-align: left; }
+
+  .missing { margin-top: 16px; text-align: left; }
+  .missing-head { margin: 0 0 6px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-4); }
+  .missing ul { margin: 0; padding-left: 16px; font-size: 12.5px; line-height: 1.7; color: var(--text-3); }
+
   .id-note { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.6; color: var(--text-4); }
 </style>
 </head>
@@ -100,10 +143,17 @@
     <form id="profile-form" novalidate>
       <p class="section" style="margin-top:0; padding-top:0; border-top:0">You</p>
 
-      <div class="field">
-        <label for="name">Your name</label>
-        <input id="name" type="text" placeholder="e.g. Alex Mbeki" autocomplete="name">
-        <div class="err" id="name-err"></div>
+      <div class="pair">
+        <div class="field">
+          <label for="firstName">First name</label>
+          <input id="firstName" type="text" placeholder="Alex" autocomplete="given-name">
+          <div class="err" id="firstName-err"></div>
+        </div>
+        <div class="field">
+          <label for="lastName">Last name</label>
+          <input id="lastName" type="text" placeholder="Mbeki" autocomplete="family-name">
+          <div class="err" id="lastName-err"></div>
+        </div>
       </div>
 
       <div class="field">
@@ -112,22 +162,13 @@
         <div class="err" id="role-err"></div>
       </div>
 
-      <p class="section">Company</p>
+      <p class="section">How people reach you</p>
 
       <div class="field">
-        <label for="organisation">Organisation</label>
-        <input id="organisation" type="text" placeholder="e.g. SatCo Systems" autocomplete="organization">
-        <div class="err" id="organisation-err"></div>
+        <label for="email">Email</label>
+        <input id="email" type="email" disabled>
+        <p class="hint">Taken from your sign-in. Shared when you accept an introduction, never before.</p>
       </div>
-
-      <div class="field">
-        <label for="country">Main operating country</label>
-        <select id="country"><option value="">Select a country</option></select>
-        <p class="hint">Published as the jurisdiction on anything you list.</p>
-        <div class="err" id="country-err"></div>
-      </div>
-
-      <p class="section">Contact</p>
 
       <div class="field">
         <label for="linkedin">LinkedIn <span class="opt">optional</span></label>
@@ -148,6 +189,106 @@
         </div>
       </div>
 
+      <p class="section">Company</p>
+
+      <div class="logo-row">
+        <div class="logo-preview" id="logo-preview">—</div>
+        <div>
+          <label for="logo-input">Company logo</label>
+          <div class="logo-actions">
+            <button class="ghost-sm" type="button" id="logo-pick">Upload</button>
+            <button class="ghost-sm" type="button" id="logo-clear" hidden>Remove</button>
+          </div>
+          <p class="hint">Square works best. Resized to 256px in the browser before it is stored.</p>
+          <input id="logo-input" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+          <div class="err" id="logo-err"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="organisation">Organisation</label>
+        <input id="organisation" type="text" placeholder="e.g. SatCo Systems" autocomplete="organization">
+        <div class="err" id="organisation-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="website">Website</label>
+        <input id="website" type="text" placeholder="satco.systems">
+        <p class="hint">The quickest way for a counterparty to check you are real.</p>
+        <div class="err" id="website-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="description">What you do</label>
+        <textarea id="description" placeholder="One or two sentences on your activities — what you build, fly or operate."></textarea>
+        <p class="hint"><span id="description-count">0</span>/600</p>
+        <div class="err" id="description-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="entityType">Kind of organisation</label>
+        <select id="entityType"><option value="">Select one</option></select>
+        <div class="err" id="entityType-err"></div>
+      </div>
+
+      <div class="field" id="funding-field" hidden>
+        <label for="fundingStage">Funding stage</label>
+        <select id="fundingStage"><option value="">Prefer not to say</option></select>
+        <p class="hint">Providers spend a lot of time on enquiries that were never funded. Saying so early gets you taken seriously.</p>
+        <div class="err" id="fundingStage-err"></div>
+      </div>
+
+      <p class="section">Operations</p>
+
+      <div class="pair">
+        <div class="field">
+          <label for="country">Main operating country</label>
+          <select id="country"><option value="">Select a country</option></select>
+          <p class="hint">Published as the jurisdiction on anything you list.</p>
+          <div class="err" id="country-err"></div>
+        </div>
+        <div class="field">
+          <label for="incorporatedIn">Country of incorporation</label>
+          <select id="incorporatedIn"><option value="">Select a country</option></select>
+          <div class="err" id="incorporatedIn-err"></div>
+        </div>
+      </div>
+
+      <div class="pair">
+        <div class="field">
+          <label for="sizeBand">Company size</label>
+          <select id="sizeBand"><option value="">Prefer not to say</option></select>
+          <div class="err" id="sizeBand-err"></div>
+        </div>
+        <div class="field">
+          <label for="foundedYear">Year founded</label>
+          <input id="foundedYear" type="number" min="1900" step="1" placeholder="e.g. 2019">
+          <div class="err" id="foundedYear-err"></div>
+        </div>
+      </div>
+
+      <p class="section">Standing</p>
+
+      <div class="field">
+        <label for="flightHeritage">Flight heritage</label>
+        <select id="flightHeritage"><option value="">Prefer not to say</option></select>
+        <p class="hint">The trust signal in this industry — worth filling in even if the answer is nothing yet.</p>
+        <div class="err" id="flightHeritage-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="exportRegime">Export control</label>
+        <select id="exportRegime"><option value="">Prefer not to say</option></select>
+        <p class="hint">Whether a payload drags ITAR, EAR or EU dual-use rules into a deal changes who can fly it. Saying "not sure yet" is a real answer.</p>
+        <div class="err" id="exportRegime-err"></div>
+      </div>
+
+      <div class="field">
+        <p class="field-label">Applications</p>
+        <div class="checks" id="applications"></div>
+        <div class="err" id="applications-err"></div>
+      </div>
+
       <div class="actions">
         <button class="primary" type="submit">Save profile</button>
         <button class="ghost-sm" type="button" id="signout" style="margin-left:auto">Sign out</button>
@@ -159,6 +300,21 @@
       <div class="id-org" id="id-org"></div>
       <div class="id-role" id="id-role"></div>
       <div class="id-tags" id="id-tags"></div>
+      <div class="meter">
+        <div class="meter-head">
+          <span>Profile complete</span>
+          <b id="pct">0%</b>
+        </div>
+        <div class="meter-track"><div class="meter-fill" id="meter-fill"></div></div>
+      </div>
+
+      <p class="id-why">Providers and pool members decide who to answer from this page. The more of it you fill in, the less they have to guess.</p>
+
+      <div class="missing" id="missing" hidden>
+        <p class="missing-head">Still empty</p>
+        <ul id="missing-list"></ul>
+      </div>
+
       <p class="id-note" id="id-note"></p>
     </aside>
   </div>

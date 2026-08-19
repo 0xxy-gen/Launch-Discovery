@@ -148,6 +148,13 @@
     return card;
   }
 
+  function addSatellite(group, members) {
+    if (members.length) return duplicate(members.at(-1));
+    openEditor(null);
+    $('constellationId').value = group.id;
+    schedulePreview();
+  }
+
   async function duplicate(m) {
     const { ok, data } = await api(`/api/missions/${m.id}/duplicate`, { method: 'POST', body: {} });
     if (!ok) return showBanner(data.error ?? 'Could not duplicate that.', 'bad');
@@ -157,7 +164,7 @@
   }
 
   function summaryLine(s) {
-    if (!s) return 'No missions yet';
+    if (!s) return 'No satellites yet';
     return [
       `${s.count} satellite${s.count === 1 ? '' : 's'}`,
       `${s.totalMassKg} kg total`,
@@ -198,11 +205,9 @@
       const actions = el('div', 'group-actions');
 
       // The obvious next action inside a constellation is another satellite.
-      if (members.length) {
-        const add = el('button', 'ghost-sm', 'Add satellite');
-        add.addEventListener('click', e => { e.stopPropagation(); duplicate(members.at(-1)); });
-        actions.append(add);
-      }
+      const add = el('button', 'ghost-sm', 'Add satellite');
+      add.addEventListener('click', e => { e.stopPropagation(); addSatellite(group, members); });
+      actions.append(add);
 
       const rename = el('button', 'ghost-sm', 'Rename');
       rename.addEventListener('click', async e => {
@@ -229,8 +234,12 @@
       if (members.length) {
         members.forEach(m => body.append(missionCard(m)));
       } else {
-        body.append(el('div', 'group-empty',
-          'No satellites here yet — set the constellation on a mission, or duplicate one into it.'));
+        const blank = el('div', 'group-empty');
+        blank.append(el('p', undefined, 'No satellites in this constellation yet.'));
+        const first = el('button', 'primary compact', 'Add the first satellite');
+        first.addEventListener('click', () => addSatellite(group, members));
+        blank.append(first);
+        body.append(blank);
       }
 
       head.addEventListener('click', () => block.classList.toggle('collapsed'));
