@@ -254,6 +254,22 @@ through validation. Slugs are what the database stores, so labels can be
 reworded freely. A database created before this column existed gets it added in
 place on the next start.
 
+## Theming
+
+Dark and light, toggled bottom-right on every page and remembered in
+`localStorage`. With no stored choice it follows `prefers-color-scheme`, and
+keeps following it until someone picks.
+
+`theme.js` loads in `<head>` rather than at the end of `<body>` on purpose: the
+stored choice has to be applied before first paint, or a light-mode user gets a
+black flash on every navigation.
+
+Only tokens change between themes — no rule is written twice. That required
+tokenising the structural colours first (`--hair`, `--line`, `--line-strong`,
+`--field-line`, `--track`, `--tint`, `--alt-bg`, `--arrow`, `--tick`), since a
+hardcoded `rgba(255,255,255,…)` is invisible on white. The launch graphic stays
+dark in both themes — it is a photograph of space, not a UI surface.
+
 ## Country data
 
 `lib/countries.js` is a single `name:dial:ISO` string — 163 entries, shared by

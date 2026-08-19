@@ -17,7 +17,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   .ghost-sm {
     padding: 7px 14px;
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid var(--line-strong);
     border-radius: 8px;
     color: var(--text-2);
     font: inherit;
@@ -25,7 +25,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
     cursor: pointer;
     transition: border-color .2s, color .2s;
   }
-  .ghost-sm:hover { border-color: rgba(255, 255, 255, 0.4); color: #fff; }
+  .ghost-sm:hover { border-color: var(--field-line); color: var(--text); }
 
   .profile-form { max-width: 520px; }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 28px 80px; }
@@ -60,7 +60,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
     text-transform: uppercase;
   }
   .pill.published { color: #0b1416; background: var(--cyan); }
-  .pill.draft { color: var(--text-3); border: 1px solid rgba(255, 255, 255, 0.22); }
+  .pill.draft { color: var(--text-3); border: 1px solid var(--line-strong); }
 
   /* ── empty state ─────────────────────────────────────────────────────── */
   .empty {
@@ -78,7 +78,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag {
   padding: 4px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   font-size: 12px;
   color: var(--text-2);
@@ -97,5 +97,5 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   text-decoration: none;
   transition: color .2s;
 }
-.nav-tab:hover { color: #fff; }
-.nav-tab.current { color: #fff; border-bottom-color: var(--rule); }
+.nav-tab:hover { color: var(--text); }
+.nav-tab.current { color: var(--text); border-bottom-color: var(--rule); }

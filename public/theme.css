@@ -7,24 +7,78 @@
     --surface: #0f0f0f;       /* raised panel — neutral black, lifted off the page */
     --radius-panel: 16px;
     --radius-btn: 10px;
-    --surface-line: rgba(255, 255, 255, 0.16);
+    --surface-line: var(--line-strong);
     --cyan: #22d3ee;          /* cyan-400 — solid CTA fill */
     --cyan-hover: #67e8f9;    /* cyan-300 */
     --rule: #3ce0f5;          /* section titles / active tab */
     --destructive: #ff6b6b;
+    --danger-text: #ff8f8f;
+
     --text: #ffffff;
     --text-2: rgba(255, 255, 255, 0.78);   /* body copy */
     --text-3: rgba(255, 255, 255, 0.62);   /* labels, eyebrows */
     --text-4: rgba(255, 255, 255, 0.42);   /* placeholders, fine print */
+    --text-soft: rgba(255, 255, 255, 0.75);
+
+    /* structural lines, flipped as a set by the theme */
+    --hair: rgba(255, 255, 255, 0.07);
+    --line: rgba(255, 255, 255, 0.12);
+    --line-strong: rgba(255, 255, 255, 0.18);
+    --field-line: rgba(255, 255, 255, 0.28);
+    --track: rgba(255, 255, 255, 0.09);
+    --tint: rgba(255, 255, 255, 0.03);
+
+    /* the second button: light-on-dark here, dark-on-light there */
+    --alt-bg: #ffffff;
+    --alt-fg: #000000;
+    --alt-bg-hover: rgba(255, 255, 255, 0.9);
+
+    --arrow: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M2 5L7 10L12 5' stroke='rgba(255,255,255,0.65)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --tick: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.2L4.8 9 10 3.4' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
     --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
+
+  /* Light theme. Only the tokens change — no rule is written twice. */
+  :root[data-theme="light"] {
+    --background: #eef0f3;
+    --surface: #ffffff;
+    --surface-line: rgba(0, 0, 0, 0.12);
+    --cyan: #06b6d4;
+    --cyan-hover: #0891b2;
+    --rule: #0e7490;
+    --destructive: #c0342b;
+    --danger-text: #b3271e;
+
+    --text: #0d0f12;
+    --text-2: rgba(0, 0, 0, 0.74);
+    --text-3: rgba(0, 0, 0, 0.56);
+    --text-4: rgba(0, 0, 0, 0.42);
+    --text-soft: rgba(0, 0, 0, 0.6);
+
+    --hair: rgba(0, 0, 0, 0.07);
+    --line: rgba(0, 0, 0, 0.12);
+    --line-strong: rgba(0, 0, 0, 0.16);
+    --field-line: rgba(0, 0, 0, 0.28);
+    --track: rgba(0, 0, 0, 0.10);
+    --tint: rgba(0, 0, 0, 0.02);
+
+    --alt-bg: #14181d;
+    --alt-fg: #ffffff;
+    --alt-bg-hover: #23292f;
+
+    --arrow: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M2 5L7 10L12 5' stroke='rgba(0,0,0,0.55)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    --tick: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.2L4.8 9 10 3.4' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  :root[data-theme="light"] { color-scheme: light; }
 
   * { box-sizing: border-box; }
 
   /* native date pickers and scrollbars follow the dark palette */
   :root { color-scheme: dark; }
 
-  html { background: #000; }
+  html { background: var(--background); }
 
   body {
     margin: 0;
@@ -42,7 +96,7 @@
   /* The pane is the card now — the form itself sits flat inside it */
   .panel { background: transparent; border: 0; }
 
-  .panel-head { padding: 0 0 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
+  .panel-head { padding: 0 0 24px; border-bottom: 1px solid var(--line); }
 
   /* Micro eyebrow — the site's mono/heavy-tracking label idiom */
   .eyebrow {
@@ -62,8 +116,8 @@
     letter-spacing: -0.045em;
     font-weight: 300;
   }
-  h1 .lite { font-weight: 300; color: rgba(255, 255, 255, 0.75); }
-  h1 .bold { font-weight: 700; color: #fff; }
+  h1 .lite { font-weight: 300; color: var(--text-soft); }
+  h1 .bold { font-weight: 700; color: var(--text); }
 
   .lede { margin: 14px 0 0; font-size: 14px; font-weight: 300; color: var(--text-2); }
 
@@ -71,7 +125,7 @@
     display: flex;
     gap: 34px;
     padding: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    border-bottom: 1px solid var(--line);
   }
   .tabs button {
     padding: 16px 0;
@@ -87,8 +141,8 @@
     cursor: pointer;
     transition: color .2s;
   }
-  .tabs button:hover { color: #fff; }
-  .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--rule); }
+  .tabs button:hover { color: var(--text); }
+  .tabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--rule); }
 
   .panel-body { padding: 30px 0 0; }
 
@@ -101,14 +155,14 @@
   }
   .banner { border-radius: 8px; }
   .banner.show { display: block; }
-  .banner.bad { color: #ff8f8f; border: 1px solid rgba(255, 107, 107, .5); background: rgba(255, 107, 107, .12); }
+  .banner.bad { color: var(--danger-text); border: 1px solid rgba(255, 107, 107, .5); background: rgba(255, 107, 107, .12); }
   .banner.ok  { color: var(--rule); border: 1px solid rgba(60, 224, 245, .5); background: rgba(60, 224, 245, .12); }
 
   /* Section rule — the app's Section title treatment */
   .section {
     margin: 34px 0 26px;
     padding-top: 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-top: 1px solid var(--line);
     font-weight: 600;
     font-size: 12px;
     letter-spacing: 0.12em;
@@ -158,13 +212,13 @@
     gap: 2px 12px;
     margin: 0;
     padding: 12px 14px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
+    border: 1px solid var(--line-strong);
     border-radius: 10px;
     font-size: 14px;
     cursor: pointer;
     transition: border-color .2s, background .2s;
   }
-  .choice:hover { border-color: rgba(255, 255, 255, 0.32); }
+  .choice:hover { border-color: var(--field-line); }
   .choice:has(input:checked) { border-color: var(--cyan); background: rgba(34, 211, 238, .07); }
   .choice:focus-within { outline: 2px solid rgba(34, 211, 238, .5); outline-offset: 2px; }
 
@@ -173,7 +227,7 @@
     height: 15px;
     margin: 0;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--field-line);
     border-radius: 50%;
     appearance: none;
     -webkit-appearance: none;
@@ -185,7 +239,7 @@
     background: radial-gradient(circle, var(--cyan) 0 42%, transparent 44%);
   }
 
-  .choice-label { font-weight: 500; color: #fff; }
+  .choice-label { font-weight: 500; color: var(--text); }
   .choice-help  { grid-column: 2; font-size: 12px; line-height: 1.4; color: var(--text-4); }
 
   .choices[aria-invalid="true"] .choice { border-color: rgba(255, 107, 107, .5); }
@@ -196,9 +250,9 @@
     padding: 11px 0;
     background: transparent;
     border: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+    border-bottom: 1px solid var(--field-line);
     border-radius: 0;
-    color: #fff;
+    color: var(--text);
     font-family: var(--font-sans);
     font-weight: 300;
     font-size: 16px;
@@ -214,7 +268,7 @@
 
   select {
     padding-right: 24px;
-    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M2 5L7 10L12 5' stroke='rgba(255,255,255,0.65)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-image: var(--arrow);
     background-repeat: no-repeat;
     background-position: right 2px center;
     cursor: pointer;
@@ -222,7 +276,7 @@
     -webkit-appearance: none;
   }
   select.placeholder { color: var(--text-4); }
-  select option { background: #0f0f0f; color: #fff; }
+  select option { background: var(--surface); color: var(--text); }
 
   /* Country code + number share one row */
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -232,7 +286,7 @@
     margin-top: 7px;
     font-weight: 400;
     font-size: 12.5px;
-    color: #ff8f8f;
+    color: var(--danger-text);
   }
 
   /* Solid, black-on-color fills — the site's CTA treatment */
@@ -243,7 +297,7 @@
     padding: 14px;
     border: 0;
     border-radius: 0;
-    color: #000;
+    color: var(--on-accent, #000);
     font-family: var(--font-sans);
     font-weight: 600;
     font-size: 15px;
@@ -253,9 +307,9 @@
     transition: background .2s, box-shadow .2s;
   }
   button.primary { background: var(--cyan); }
-  button.primary:hover { background: var(--cyan-hover); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55); }
-  button.alt { background: #fff; }
-  button.alt:hover { background: rgba(255, 255, 255, 0.9); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
+  button.primary:hover { background: var(--cyan-hover); }
+  button.alt { background: var(--alt-bg); color: var(--alt-fg); }
+  button.alt:hover { background: var(--alt-bg-hover); }
 
   .note {
     margin: 18px 0 0;
@@ -277,7 +331,7 @@
     cursor: pointer;
     transition: color .2s;
   }
-  .linkish:hover { color: #fff; }
+  .linkish:hover { color: var(--text); }
 
   @media (max-width: 900px) {
     .split { grid-template-columns: 1fr; }
@@ -292,3 +346,27 @@
     color: var(--text-4);
     text-align: center;
   }
+
+  /* ── theme toggle, bottom right of every page ─────────────────────────── */
+  .theme-toggle {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 999px;
+    color: var(--text-2);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+    transition: color .2s, border-color .2s, transform .15s;
+  }
+  .theme-toggle:hover { color: var(--text); border-color: var(--field-line); transform: translateY(-1px); }
+  .theme-toggle svg { flex: none; }

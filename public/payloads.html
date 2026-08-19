@@ -8,34 +8,99 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
 <link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
-  .browse { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; align-items: start; }
-  @media (max-width: 860px) { .browse { grid-template-columns: 1fr; } }
-
-  .filters { position: sticky; top: 28px; }
-  .filters .field { margin-bottom: 20px; }
-  .filters label { font-size: 12.5px; }
-  .filters select, .filters input { font-size: 14px; padding: 8px 0; }
-  .filters .pair { gap: 0 12px; }
-  .filter-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
-  .filter-head .eyebrow { margin: 0; }
-
-  .result-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
-  .result-count { font-size: 13px; color: var(--text-3); }
-
-  .payload-card {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px 24px;
-    padding: 20px 22px;
+  /* filters run across the top so the grid gets the full width */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 18px 22px;
+    padding: 18px 20px;
+    margin-bottom: 26px;
     background: var(--surface);
     border: 1px solid var(--surface-line);
     border-radius: 12px;
   }
-  .payload-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .payload-ref { font-size: 15px; font-weight: 600; letter-spacing: 0.04em; }
-  .payload-jur { font-size: 12px; color: var(--text-4); }
+  .filter-bar .field { margin: 0; min-width: 132px; }
+  .filter-bar label { margin-bottom: 2px; font-size: 12px; color: var(--text-3); }
+  .filter-bar select, .filter-bar input { padding: 6px 0; font-size: 14px; }
+  .filter-bar select { padding-right: 22px; }
+  .filter-bar .clear { margin-left: auto; }
+
+  .count { margin-bottom: 16px; font-size: 13px; color: var(--text-3); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 22px 22px;
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    border-radius: 14px;
+  }
+
+  .glyph { align-self: center; margin-bottom: 16px; }
+
+  .card-ref {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+  .card-sub {
+    margin: 5px 0 0;
+    font-size: 12.5px;
+    color: var(--text-3);
+    text-align: center;
+  }
+  .card-orbit {
+    margin: 14px 0 18px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    text-align: center;
+  }
+
+  .spec-rows { display: grid; gap: 9px; margin-top: auto; font-size: 13px; }
+  .spec-row { display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: 9px; color: var(--text-2); }
+  .spec-row svg { color: var(--text-4); }
+
+  .card-actions { margin-top: 18px; }
+  .card-actions button { width: 100%; }
+
+  /* the in-grid prompt, Qasa's pink cell */
+  .cta-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 26px 24px;
+    background: var(--cyan);
+    border-radius: 14px;
+    color: #04181d;
+  }
+  .cta-card svg { display: block; margin: 0 0 18px; color: #04181d; opacity: .85; }
+  .cta-card h2 { margin: 0 0 12px; font-size: 22px; font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; }
+  .cta-card p { margin: 0 0 24px; font-size: 13.5px; line-height: 1.5; opacity: .8; }
+  .cta-card a {
+    align-self: flex-start;
+    padding: 11px 20px;
+    background: #04181d;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .cta-card a:hover { background: #0b2a32; }
 </style>
 </head>
 <body>
@@ -61,61 +126,45 @@
     </div>
   </div>
 
-  <div class="browse">
-    <form class="filters" id="filters">
-      <div class="filter-head">
-        <p class="eyebrow">Filter</p>
-        <button type="button" class="reveal" id="clear">Clear</button>
-      </div>
+  <div class="count" id="count"></div>
 
-      <div class="field">
-        <label for="orbit">Orbit</label>
-        <select id="orbit"><option value="">Any</option></select>
-      </div>
+  <form class="filter-bar" id="filters">
+    <div class="field">
+      <label for="orbit">Orbit</label>
+      <select id="orbit"><option value="">Any</option></select>
+    </div>
+    <div class="field">
+      <label for="ride">Ride</label>
+      <select id="ride"><option value="">Any</option></select>
+    </div>
+    <div class="field">
+      <label for="form">Form factor</label>
+      <select id="form"><option value="">Any</option></select>
+    </div>
+    <div class="field">
+      <label for="massMin">Mass from (kg)</label>
+      <input id="massMin" type="number" min="0" step="1" placeholder="Any">
+    </div>
+    <div class="field">
+      <label for="massMax">to (kg)</label>
+      <input id="massMax" type="number" min="0" step="1" placeholder="Any">
+    </div>
+    <div class="field">
+      <label for="from">Window from</label>
+      <input id="from" type="month">
+    </div>
+    <div class="field">
+      <label for="to">to</label>
+      <input id="to" type="month">
+    </div>
+    <button type="button" class="reveal clear" id="clear">Clear</button>
+  </form>
 
-      <div class="field">
-        <label for="ride">Ride</label>
-        <select id="ride"><option value="">Any</option></select>
-      </div>
+  <div class="grid" id="rows"></div>
 
-      <div class="field">
-        <label for="form">Form factor</label>
-        <select id="form"><option value="">Any</option></select>
-      </div>
-
-      <div class="pair">
-        <div class="field">
-          <label for="massMin">Mass from</label>
-          <input id="massMin" type="number" min="0" step="1" placeholder="kg">
-        </div>
-        <div class="field">
-          <label for="massMax">to</label>
-          <input id="massMax" type="number" min="0" step="1" placeholder="kg">
-        </div>
-      </div>
-
-      <div class="pair">
-        <div class="field">
-          <label for="from">Window from</label>
-          <input id="from" type="month">
-        </div>
-        <div class="field">
-          <label for="to">to</label>
-          <input id="to" type="month">
-        </div>
-      </div>
-    </form>
-
-    <section>
-      <div class="result-head">
-        <span class="result-count" id="count"></span>
-      </div>
-      <div class="rows" id="rows"></div>
-      <div class="empty" id="empty" hidden>
-        <h2><span class="lite">No requirements</span> <b>match</b></h2>
-        <p>Widen the filters, or check back — owners publish as campaigns firm up.</p>
-      </div>
-    </section>
+  <div class="empty" id="empty" hidden>
+    <h2><span class="lite">No requirements</span> <b>match</b></h2>
+    <p>Widen the filters, or check back — owners publish as campaigns firm up.</p>
   </div>
 </main>
 

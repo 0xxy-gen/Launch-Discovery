@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,700&display=swap">
 <link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
   .pool-card {
@@ -24,18 +25,18 @@
 
   /* the running total is the thing that tells you whether to join */
   .meter { margin: 18px 0 10px; }
-  .meter-track { height: 6px; background: rgba(255, 255, 255, 0.09); border-radius: 999px; overflow: hidden; }
+  .meter-track { height: 6px; background: var(--track); border-radius: 999px; overflow: hidden; }
   .meter-fill { height: 100%; background: var(--cyan); border-radius: 999px; transition: width .3s; }
   .meter-legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12.5px; color: var(--text-3); }
-  .meter-legend b { color: #fff; font-weight: 600; }
+  .meter-legend b { color: var(--text); font-weight: 600; }
 
   .jurisdictions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; }
   .jur-label { margin-right: 4px; font-size: 12px; color: var(--text-4); }
 
-  .members { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+  .members { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
   .member { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 9px 0; font-size: 13px; }
-  .member + .member { border-top: 1px solid rgba(255, 255, 255, 0.07); }
-  .member b { font-weight: 500; }
+  .member + .member { border-top: 1px solid var(--hair); }
+  .member b { font-weight: 500; color: var(--text); }
   .member .figures { color: var(--text-3); font-size: 12.5px; }
   .member .you { margin-left: 8px; color: var(--cyan); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 
