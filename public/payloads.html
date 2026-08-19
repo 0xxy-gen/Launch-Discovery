@@ -29,52 +29,52 @@
   .filter-bar select { padding-right: 22px; }
   .filter-bar .clear { margin-left: auto; }
 
-  .count { margin-bottom: 18px; font-size: 14.5px; color: var(--text-3); }
+  .count { margin-bottom: 20px; font-size: 16px; color: var(--text-3); }
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(290px, 21vw, 460px), 1fr));
+    gap: clamp(20px, 1.6vw, 32px);
   }
 
   .card {
     display: flex;
     flex-direction: column;
-    padding: 30px 26px 26px;
+    padding: clamp(28px, 2vw, 40px) clamp(24px, 1.8vw, 34px) clamp(28px, 2vw, 36px);
     background: var(--surface);
     border: 1px solid var(--surface-line);
     border-radius: 14px;
   }
 
-  .glyph { align-self: center; margin-bottom: 20px; }
+  .glyph { align-self: center; margin: 14px 0 26px; }
 
   .card-ref {
     margin: 0;
-    font-size: 18px;
+    font-size: clamp(21px, 1.5vw, 27px);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-align: center;
   }
   .card-sub {
-    margin: 6px 0 0;
-    font-size: 14px;
+    margin: 8px 0 0;
+    font-size: clamp(14.5px, 1vw, 18px);
     color: var(--text-3);
     text-align: center;
   }
   .card-orbit {
-    margin: 18px 0 22px;
-    font-size: 19px;
+    margin: clamp(18px, 1.4vw, 26px) 0 clamp(24px, 2vw, 34px);
+    font-size: clamp(19px, 1.3vw, 24px);
     font-weight: 600;
     line-height: 1.3;
     letter-spacing: -0.01em;
     text-align: center;
   }
 
-  .spec-rows { display: grid; gap: 11px; margin-top: auto; font-size: 14.5px; }
-  .spec-row { display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: 9px; color: var(--text-2); }
+  .spec-rows { display: grid; gap: clamp(14px, 1.1vw, 20px); margin-top: auto; font-size: clamp(15.5px, 1.05vw, 19px); }
+  .spec-row { display: grid; grid-template-columns: 20px 1fr; align-items: center; gap: 11px; color: var(--text-2); }
   .spec-row svg { color: var(--text-4); }
 
-  .card-actions { margin-top: 18px; }
+  .card-actions { margin-top: 26px; }
   .card-actions button { width: 100%; }
 
   /* the in-grid prompt, Qasa's pink cell */
@@ -82,21 +82,21 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 26px 24px;
+    padding: 34px 28px;
     background: var(--cyan);
     border-radius: 14px;
     color: #04181d;
   }
   .cta-card svg { display: block; margin: 0 0 18px; color: #04181d; opacity: .85; }
-  .cta-card h2 { margin: 0 0 14px; font-size: 26px; font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; }
-  .cta-card p { margin: 0 0 28px; font-size: 15px; line-height: 1.5; opacity: .8; }
+  .cta-card h2 { margin: 0 0 18px; font-size: clamp(26px, 2vw, 36px); font-weight: 700; line-height: 1.15; letter-spacing: -0.03em; }
+  .cta-card p { margin: 0 0 34px; font-size: clamp(15px, 1.05vw, 19px); line-height: 1.5; opacity: .8; }
   .cta-card a {
     align-self: flex-start;
-    padding: 11px 20px;
+    padding: 14px 26px;
     background: #04181d;
     border-radius: 999px;
     color: #fff;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     text-decoration: none;
   }

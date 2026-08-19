@@ -28,7 +28,7 @@
   // stands near-vertical, an equatorial one lies flat.
   function glyph(inclinationBand) {
     const deg = parseFloat(inclinationBand) || 0;
-    const node = svg('svg', { viewBox: '0 0 72 72', width: '72', height: '72', class: 'glyph' });
+    const node = svg('svg', { viewBox: '0 0 72 72', width: '128', height: '128', class: 'glyph' });
 
     node.append(svg('circle', {
       cx: 36, cy: 36, r: 33, fill: 'none',

@@ -328,6 +328,19 @@ become visible, pulled from the same preview endpoint the editor uses, beside
 what stays private. The launch version is the mirror image, and says plainly
 that supply is a public offer with nothing withheld.
 
+## Scale
+
+Sized against Qasa's live computed styles rather than by eye. Theirs, measured
+at a 1512px viewport: body 16px, page heading 32px, nav 16px, cards 308×440 with
+a 128px avatar, name 24/700, headline 20/700, detail rows 16/400 — the card
+being **20.4% of the viewport width** is the number that matters.
+
+A fixed card width cannot hold that ratio: on a 2268px monitor a 350px card is
+15% of the screen and reads as small even though its type matches. So cards,
+gaps, padding and headings are `clamp()`-ed against `vw`, which keeps the
+proportion roughly constant. At 2268px the payload card lands at 555px — 24.5%
+of the viewport, slightly more generous than Qasa.
+
 ## Theming
 
 Dark and light, toggled bottom-right on every page and remembered in
