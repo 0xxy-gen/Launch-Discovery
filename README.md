@@ -30,6 +30,17 @@ then visit http://localhost:8000
 Sign in checks the email/password against registered accounts; the signed-in
 view shows the account's role, organisation, country and phone.
 
+## Layout
+
+Full-bleed split: the form sits in a narrow column in the left pane, and the
+right pane holds a generated orbit visual (inline SVG — starfield, orbit
+traces, and a planet limb lit on the rim). Both panes are rounded and fill the
+window; the form pane scrolls on its own when the register form runs long.
+Below 900px the visual pane is hidden and the form goes full width.
+
+To use a photograph instead, replace the `<svg>` inside `.visual-pane` with
+`<img src="your-photo.jpg" style="width:100%;height:100%;object-fit:cover">`.
+
 ## Theme
 
 Palette comes from `mission-management/app/globals.css` (black ground, cyan

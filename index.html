@@ -34,10 +34,8 @@
 
   body {
     margin: 0;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 48px 20px;
+    height: 100vh;
+    overflow: hidden;
     background: var(--background);
     color: var(--text);
     font-family: var(--font-sans);
@@ -47,17 +45,56 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  .shell { width: 100%; max-width: 460px; }
+  /* Split: form column left, visual panel right */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    height: 100vh;
+    padding: 10px;
+  }
 
-  .panel {
-    background: var(--surface);
+  .pane {
     border: 1px solid var(--surface-line);
     border-radius: var(--radius-panel);
     overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
   }
 
-  .panel-head { padding: 28px 30px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
+  .form-pane {
+    display: flex;
+    background: var(--surface);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* margin:auto centres the column when it is shorter than the pane */
+  .form-col {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    padding: 56px 30px;
+  }
+
+  .visual-pane { position: relative; background: #000; }
+  .visual-pane svg { display: block; width: 100%; height: 100%; }
+  .visual-caption {
+    position: absolute;
+    left: 30px;
+    bottom: 28px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 10.5px;
+    line-height: 2;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .visual-caption span { display: block; color: rgba(255, 255, 255, 0.3); letter-spacing: 0.2em; }
+
+  /* The pane is the card now — the form itself sits flat inside it */
+  .panel { background: transparent; border: 0; }
+
+  .panel-head { padding: 0 0 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
 
   /* Micro eyebrow — the site's mono/heavy-tracking label idiom */
   .eyebrow {
@@ -86,8 +123,7 @@
   .tabs {
     display: flex;
     gap: 34px;
-    padding: 0 30px;
-    background: rgba(255, 255, 255, 0.03);
+    padding: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.10);
   }
   .tabs button {
@@ -108,7 +144,7 @@
   .tabs button:hover { color: #fff; }
   .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--rule); }
 
-  .panel-body { padding: 30px; }
+  .panel-body { padding: 30px 0 0; }
 
   .banner {
     display: none;
@@ -288,9 +324,13 @@
   }
   .linkish:hover { color: #fff; }
 
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .visual-pane { display: none; }
+  }
+
   .disclaimer {
-    max-width: 460px;
-    margin: 22px auto 0;
+    margin: 40px 0 0;
     font-family: var(--font-mono);
     font-weight: 400;
     font-size: 10px;
@@ -303,7 +343,9 @@
 </style>
 </head>
 <body>
-<div class="shell">
+<div class="split">
+  <section class="pane form-pane">
+    <div class="form-col">
 
   <!-- signed-out -->
   <section id="auth" class="panel">
@@ -410,6 +452,71 @@
   </section>
 
   <p class="disclaimer">Demo only — accounts live in this browser's localStorage and passwords are not securely stored. Wire the form up to a real backend before using it with real credentials.</p>
+    </div>
+  </section>
+
+  <!-- Visual panel. Swap the <svg> for <img src="..." class="visual-photo"> to use a photograph. -->
+  <aside class="pane visual-pane" aria-hidden="true">
+    <svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" role="presentation">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#000000"/>
+          <stop offset="70%" stop-color="#03080a"/>
+          <stop offset="100%" stop-color="#061217"/>
+        </linearGradient>
+        <filter id="rimBlur" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="9"/>
+        </filter>
+      </defs>
+
+      <rect width="800" height="1000" fill="url(#sky)"/>
+
+      <g fill="#ffffff">
+        <circle cx="62"  cy="88"  r="1.4" opacity=".65"/>
+        <circle cx="158" cy="212" r="1"   opacity=".35"/>
+        <circle cx="243" cy="64"  r="1.7" opacity=".8"/>
+        <circle cx="331" cy="180" r="1.1" opacity=".45"/>
+        <circle cx="408" cy="52"  r="1"   opacity=".3"/>
+        <circle cx="486" cy="146" r="1.5" opacity=".7"/>
+        <circle cx="572" cy="78"  r="1.1" opacity=".4"/>
+        <circle cx="655" cy="196" r="1.8" opacity=".85"/>
+        <circle cx="736" cy="104" r="1.2" opacity=".5"/>
+        <circle cx="96"  cy="286" r="1.6" opacity=".6"/>
+        <circle cx="205" cy="352" r="1"   opacity=".3"/>
+        <circle cx="298" cy="298" r="1.3" opacity=".55"/>
+        <circle cx="389" cy="392" r="1"   opacity=".35"/>
+        <circle cx="471" cy="318" r="1.7" opacity=".75"/>
+        <circle cx="559" cy="404" r="1.1" opacity=".4"/>
+        <circle cx="648" cy="330" r="1.4" opacity=".6"/>
+        <circle cx="742" cy="418" r="1"   opacity=".3"/>
+        <circle cx="52"  cy="452" r="1.2" opacity=".45"/>
+        <circle cx="146" cy="524" r="1.6" opacity=".7"/>
+        <circle cx="264" cy="486" r="1"   opacity=".3"/>
+        <circle cx="352" cy="562" r="1.3" opacity=".5"/>
+        <circle cx="447" cy="498" r="1"   opacity=".35"/>
+        <circle cx="538" cy="576" r="1.5" opacity=".65"/>
+        <circle cx="629" cy="512" r="1"   opacity=".3"/>
+        <circle cx="718" cy="588" r="1.3" opacity=".55"/>
+        <circle cx="118" cy="642" r="1"   opacity=".3"/>
+        <circle cx="382" cy="668" r="1.2" opacity=".4"/>
+        <circle cx="676" cy="654" r="1"   opacity=".3"/>
+      </g>
+
+      <!-- orbit traces -->
+      <g fill="none" stroke="#00E5FF" stroke-width="1">
+        <ellipse cx="400" cy="800" rx="520" ry="132" opacity=".14"/>
+        <ellipse cx="400" cy="800" rx="370" ry="94"  opacity=".09"/>
+        <ellipse cx="400" cy="782" rx="640" ry="182" opacity=".06"/>
+      </g>
+
+      <!-- planet limb: near-black body, light caught only on the rim -->
+      <circle cx="400" cy="1420" r="620" fill="#000305"/>
+      <circle cx="400" cy="1420" r="620" fill="none" stroke="#00E5FF" stroke-opacity=".30"
+              stroke-width="7" filter="url(#rimBlur)"/>
+      <circle cx="400" cy="1420" r="620" fill="none" stroke="#7fefff" stroke-opacity=".55" stroke-width="1.2"/>
+    </svg>
+    <p class="visual-caption">Launch Discovery<span>Mission Control · Aether</span></p>
+  </aside>
 </div>
 
 <script>
