@@ -10,11 +10,13 @@ import {
   createMission, updateMission, setMissionStatus,
   missionById, missionsForOwner, deleteMission,
 } from './lib/missions.js';
-import { validateRegistration, validateLogin, validateMission } from './lib/validate.js';
+import {
+  validateRegistration, validateLogin, validateMission, validateProfile,
+} from './lib/validate.js';
 import { hashPassword, verifyPassword, newSessionToken, hashToken } from './lib/auth.js';
 import {
   createUser, findUserByEmail, createSession, findSessionUser,
-  deleteSession, purgeExpiredSessions, publicUser,
+  deleteSession, purgeExpiredSessions, publicUser, updateProfile,
 } from './lib/db.js';
 
 const root = dirname(fileURLToPath(import.meta.url));
@@ -135,12 +137,7 @@ app.post('/api/register', requireJson, rateLimit(20), async (req, res, next) => 
       email: values.email,
       passwordHash: await hashPassword(values.password),
       accountType: values.accountType,
-      organisation: values.organisation,
-      role: values.role,
-      country: values.country,
-      linkedin: values.linkedin,
-      dial: values.dial,
-      phone: values.phone,
+      organisation: '', role: '', country: '', linkedin: '', dial: '', phone: '',
     });
 
     const token = newSessionToken();
@@ -205,6 +202,12 @@ function ownedMission(req, res) {
   return mission;
 }
 
+app.put('/api/profile', requireJson, requireUser, (req, res) => {
+  const { fields, values } = validateProfile(req.body);
+  if (Object.keys(fields).length) return res.status(400).json({ fields });
+  res.json({ user: publicUser(updateProfile(req.user.id, values)) });
+});
+
 app.get('/api/missions', requireUser, (req, res) => {
   const missions = missionsForOwner(req.user.id).map(m => ownerMission(m, req.user));
   res.json({ missions });
@@ -216,11 +219,19 @@ app.post('/api/missions/preview', requireJson, requireUser, (req, res) => {
   res.json({ preview: previewMission(values, fields, req.user) });
 });
 
+// A published requirement carries the owner's jurisdiction, so it cannot go
+// out before the profile says what that is.
+const profileReady = user => Boolean(user.organisation && user.country);
+const NEEDS_PROFILE = { error: 'Add your organisation and country before publishing.', needsProfile: true };
+
 app.post('/api/missions', requireJson, requireUser, (req, res) => {
   const { fields, values } = validateMission(req.body);
   if (Object.keys(fields).length) return res.status(400).json({ fields });
 
-  const mission = createMission(req.user.id, values, req.body.publish === true);
+  const publish = req.body.publish === true;
+  if (publish && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
+
+  const mission = createMission(req.user.id, values, publish);
   res.status(201).json({ mission: ownerMission(mission, req.user) });
 });
 
@@ -243,6 +254,7 @@ app.post('/api/missions/:id/status', requireJson, requireUser, (req, res) => {
   if (status !== 'published' && status !== 'draft') {
     return res.status(400).json({ error: 'Status must be draft or published.' });
   }
+  if (status === 'published' && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
   const mission = setMissionStatus(req.user.id, Number(req.params.id), status);
   res.json({ mission: ownerMission(mission, req.user) });
 });

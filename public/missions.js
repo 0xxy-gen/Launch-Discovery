@@ -1,7 +1,7 @@
 (function () {
   const $ = id => document.getElementById(id);
 
-  const listView = $('list-view'), editorView = $('editor-view');
+  const listView = $('list-view'), editorView = $('editor-view'), profileView = $('profile-view');
   const form = $('mission-form'), banner = $('banner');
   const rows = $('rows'), empty = $('empty');
 
@@ -10,6 +10,8 @@
 
   let editingId = null;   // null while creating
   let busy = false;
+  let me = null;
+  let afterProfile = null;   // what to do once the profile is saved
 
   // ─── api ──────────────────────────────────────────────────────────────────
 
@@ -167,7 +169,10 @@
 
   async function setStatus(id, status) {
     const { ok, data } = await api(`/api/missions/${id}/status`, { method: 'POST', body: { status } });
-    if (!ok) return showBanner(data.error ?? 'Could not change that.', 'bad');
+    if (!ok) {
+      if (data.needsProfile) return showProfile(() => setStatus(id, status));
+      return showBanner(data.error ?? 'Could not change that.', 'bad');
+    }
     showBanner(status === 'published' ? 'Requirement published' : 'Requirement hidden from providers', 'ok');
     loadList();
   }
@@ -176,13 +181,31 @@
 
   function showList() {
     editorView.hidden = true;
+    profileView.hidden = true;
     listView.hidden = false;
     clearBanner();
     loadList();
   }
 
+  // Asked for at the moment it matters, not at signup.
+  function showProfile(next) {
+    afterProfile = next ?? showList;
+    $('organisation').value = me.organisation ?? '';
+    $('role').value = me.role ?? '';
+    $('country').value = me.country ?? '';
+    $('linkedin').value = me.linkedin ?? '';
+    $('dial').value = me.dial ?? '';
+    $('phone').value = me.phone ?? '';
+    $('profile-back').hidden = !me.profileComplete;
+    listView.hidden = true;
+    editorView.hidden = true;
+    profileView.hidden = false;
+    window.scrollTo(0, 0);
+  }
+
   function openEditor(mission) {
     editingId = mission?.id ?? null;
+    profileView.hidden = true;
     clearErrors();
     clearBanner();
     fillForm(mission);
@@ -204,6 +227,7 @@
     clearBanner();
 
     const body = { ...readForm(), publish };
+    pendingForm = readForm();
     const res = editingId
       ? await api(`/api/missions/${editingId}`, { method: 'PUT', body })
       : await api('/api/missions', { method: 'POST', body });
@@ -213,6 +237,8 @@
       if (res.data.fields) {
         for (const [id, msg] of Object.entries(res.data.fields)) if ($(id)) setError(id, msg);
         showBanner('Check the highlighted fields.', 'bad');
+      } else if (res.data.needsProfile) {
+        showProfile(() => { showBanner('Now publish your requirement.', 'ok'); openEditorAgain(); });
       } else {
         showBanner(res.data.error ?? 'Could not save that.', 'bad');
       }
@@ -247,6 +273,36 @@
   });
   $('propulsion').addEventListener('change', schedulePreview);
 
+  // keeps whatever was typed, so a bounce through the profile loses nothing
+  let pendingForm = null;
+  function openEditorAgain() {
+    openEditor(null);
+    if (pendingForm) fillForm(pendingForm);
+    schedulePreview();
+  }
+
+  $('profile-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    ['organisation', 'role', 'country', 'linkedin', 'dial', 'phone'].forEach(id => setError(id, ''));
+
+    const body = {
+      organisation: $('organisation').value, role: $('role').value, country: $('country').value,
+      linkedin: $('linkedin').value, dial: $('dial').value, phone: $('phone').value,
+    };
+    const { ok, data } = await api('/api/profile', { method: 'PUT', body });
+    if (!ok) {
+      for (const [id, msg] of Object.entries(data.fields ?? {})) if ($(id)) setError(id, msg);
+      return showBanner('Check the highlighted fields.', 'bad');
+    }
+    me = data.user;
+    $('whoami').textContent = `${me.email} · ${me.accountTypeLabel}`;
+    const next = afterProfile ?? showList;
+    afterProfile = null;
+    next();
+  });
+
+  $('profile-back').addEventListener('click', showList);
+
   $('signout').addEventListener('click', async () => {
     await api('/api/logout', { method: 'POST' }).catch(() => {});
     location.href = '/';
@@ -255,11 +311,11 @@
   // ─── boot ─────────────────────────────────────────────────────────────────
 
   (async function init() {
-    const [me, options] = await Promise.all([api('/api/me'), api('/api/options')]);
-    if (!me.ok) return;
+    const [meRes, options] = await Promise.all([api('/api/me'), api('/api/options')]);
+    if (!meRes.ok) return;
 
-    const user = me.data.user;
-    $('whoami').textContent = `${user.email} · ${user.accountTypeLabel}`;
+    me = meRes.data.user;
+    $('whoami').textContent = `${me.email} · ${me.accountTypeLabel}`;
 
     const fill = (id, list) => {
       for (const o of list) $(id).add(new Option(o.label, o.value));
@@ -267,6 +323,10 @@
     fill('orbitType', options.data.orbitTypes);
     fill('rideType', options.data.rideTypes);
     fill('formFactor', options.data.formFactors);
+    for (const c of options.data.countries) {
+      $('country').add(new Option(`${c.flag}  ${c.name}`, c.name));
+      $('dial').add(new Option(`${c.flag}  ${c.dial} · ${c.name}`, c.dial));
+    }
 
     showList();
   })();

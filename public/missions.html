@@ -37,6 +37,7 @@
   }
   .ghost-sm:hover { border-color: rgba(255, 255, 255, 0.4); color: #fff; }
 
+  .profile-form { max-width: 520px; }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 28px 80px; }
 
   .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 32px; }
@@ -175,6 +176,63 @@
 
 <main class="wrap">
   <div class="banner" id="banner"></div>
+
+  <!-- ── profile, asked for only when it is needed ──────────────────────── -->
+  <section id="profile-view" hidden>
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">One more thing</p>
+        <h1><span class="lite">Who is</span> <span class="bold">publishing?</span></h1>
+        <p class="lede">A published requirement shows the country it is licensed from. Nothing else here is ever public.</p>
+      </div>
+    </div>
+
+    <form id="profile-form" class="profile-form" novalidate>
+      <div class="field">
+        <label for="organisation">Organisation</label>
+        <input id="organisation" type="text" placeholder="e.g. OrbitWorks" autocomplete="organization">
+        <p class="hint">Private. Shared only when you accept a match.</p>
+        <div class="err" id="organisation-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="role">Your role</label>
+        <input id="role" type="text" placeholder="e.g. Launch Procurement" autocomplete="organization-title">
+        <div class="err" id="role-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="country">Main operating country</label>
+        <select id="country"><option value="">Select a country</option></select>
+        <p class="hint">Shown on your published requirements as the jurisdiction.</p>
+        <div class="err" id="country-err"></div>
+      </div>
+
+      <div class="field">
+        <label for="linkedin">LinkedIn <span class="opt">optional</span></label>
+        <input id="linkedin" type="url" placeholder="linkedin.com/in/yourname">
+        <div class="err" id="linkedin-err"></div>
+      </div>
+
+      <div class="pair">
+        <div class="field">
+          <label for="dial">Country code <span class="opt">optional</span></label>
+          <select id="dial"><option value="">Select a code</option></select>
+          <div class="err" id="dial-err"></div>
+        </div>
+        <div class="field">
+          <label for="phone">Phone <span class="opt">optional</span></label>
+          <input id="phone" type="tel" placeholder="7700 900000" autocomplete="tel">
+          <div class="err" id="phone-err"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">Save and continue</button>
+        <button class="ghost-sm" type="button" id="profile-back" hidden>Back</button>
+      </div>
+    </form>
+  </section>
 
   <!-- ── list ──────────────────────────────────────────────────────────── -->
   <section id="list-view" hidden>

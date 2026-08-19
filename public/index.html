@@ -70,6 +70,13 @@
       <div class="banner" id="banner"></div>
 
       <form id="form" novalidate>
+        <!-- register only: the one answer that decides everything downstream -->
+        <div class="field" id="intent-field" hidden>
+          <p class="field-label" id="account-type-label">I am looking to</p>
+          <div class="choices" id="account-type" role="radiogroup" aria-labelledby="account-type-label"></div>
+          <div class="err" id="account-type-err"></div>
+        </div>
+
         <div class="field">
           <label for="email">Email address</label>
           <input id="email" name="email" type="email" autocomplete="email" placeholder="you@organisation.com" required>
@@ -77,70 +84,12 @@
         </div>
 
         <div class="field">
-          <label for="password">Password</label>
+          <div class="label-row">
+            <label for="password">Password</label>
+            <button type="button" class="reveal" id="reveal">Show</button>
+          </div>
           <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
           <div class="err" id="password-err"></div>
-        </div>
-
-        <div class="field" id="confirm-field" hidden>
-          <label for="confirm">Confirm password</label>
-          <input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="••••••••">
-          <div class="err" id="confirm-err"></div>
-        </div>
-
-        <!-- register-only profile block -->
-        <div id="profile" hidden>
-          <p class="section">Organisation</p>
-
-          <div class="field">
-            <p class="field-label" id="account-type-label">What brings you here?</p>
-            <div class="choices" id="account-type" role="radiogroup" aria-labelledby="account-type-label"></div>
-            <div class="err" id="account-type-err"></div>
-          </div>
-
-          <div class="field">
-            <label for="org">Organisation</label>
-            <input id="org" name="org" type="text" autocomplete="organization" placeholder="e.g. Aether Space">
-            <div class="err" id="org-err"></div>
-          </div>
-
-          <div class="field">
-            <label for="role">Role</label>
-            <input id="role" name="role" type="text" autocomplete="organization-title" placeholder="e.g. Mission Manager">
-            <div class="err" id="role-err"></div>
-          </div>
-
-          <div class="field">
-            <label for="country">Main operating country</label>
-            <select id="country" name="country" autocomplete="country-name" required>
-              <option value="" selected>Select a country</option>
-            </select>
-            <div class="err" id="country-err"></div>
-          </div>
-
-          <p class="section">Contact</p>
-
-          <div class="field">
-            <label for="linkedin">LinkedIn <span class="opt">optional</span></label>
-            <input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/yourname">
-            <div class="err" id="linkedin-err"></div>
-          </div>
-
-          <div class="row">
-            <div class="field">
-              <label for="dial">Country code</label>
-              <select id="dial" name="dial" required>
-                <option value="" selected>Select a code</option>
-              </select>
-              <div class="err" id="dial-err"></div>
-            </div>
-
-            <div class="field">
-              <label for="phone">Phone number</label>
-              <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="7700 900000">
-              <div class="err" id="phone-err"></div>
-            </div>
-          </div>
         </div>
 
         <button class="primary" type="submit" id="submit">Sign in</button>
@@ -259,16 +208,13 @@
 (function () {
   const $ = id => document.getElementById(id);
   const form = $('form'), banner = $('banner'), note = $('note'), submit = $('submit');
-  const email = $('email'), password = $('password'), confirm = $('confirm');
-  const accountType = $('account-type');   // radiogroup container
-  const accountTypeValue = () => accountType.querySelector('input:checked')?.value ?? '';
-  const org = $('org'), role = $('role'), country = $('country');
-  const linkedin = $('linkedin'), dial = $('dial'), phone = $('phone');
-  const confirmField = $('confirm-field'), profileBlock = $('profile');
+  const email = $('email'), password = $('password');
+  const accountType = $('account-type');            // radiogroup container
+  const intentField = $('intent-field');
   const tabSignin = $('tab-signin'), tabRegister = $('tab-register');
 
-  const REGISTER_ONLY = [confirm, accountType, org, role, country, linkedin, dial, phone];
-  const ALL_FIELDS = [email, password, ...REGISTER_ONLY];
+  const FIELDS = [email, password, accountType];
+  const accountTypeValue = () => accountType.querySelector('input:checked')?.value ?? '';
 
   let mode = 'signin';
   let busy = false;
@@ -289,8 +235,6 @@
   // ─── form helpers ─────────────────────────────────────────────────────────
 
   const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
-  const validLinkedIn = v => /^(https?:\/\/)?([\w-]+\.)?linkedin\.com\/.+/i.test(v.trim());
-  const validPhone = v => /^[\d][\d\s().-]{4,}$/.test(v.trim());
 
   function setError(input, msg) {
     $(input.id + '-err').textContent = msg || '';
@@ -298,12 +242,11 @@
     return !msg;
   }
 
-  // The server returns the same field keys the inputs use, so its errors
-  // paint inline exactly like the client-side ones.
+  // The server keys its errors on the same ids, so they paint inline too.
   function showFieldErrors(fields = {}) {
     for (const [id, msg] of Object.entries(fields)) {
-      const input = $(id);
-      if (input) setError(input, msg);
+      const el = $(id);
+      if (el) setError(el, msg);
     }
   }
 
@@ -321,35 +264,36 @@
       : (mode === 'register' ? 'Create account' : 'Sign in');
   }
 
-  const markPlaceholder = sel => sel.classList.toggle('placeholder', !sel.value);
-
   function setMode(next) {
     mode = next;
     const registering = mode === 'register';
     tabSignin.setAttribute('aria-selected', String(!registering));
     tabRegister.setAttribute('aria-selected', String(registering));
-    $('eyebrow').textContent = registering ? 'New Account' : 'Authentication';
+    $('eyebrow').textContent = registering ? 'New account' : 'Authentication';
     $('headline').innerHTML = registering
       ? '<span class="lite">Request</span> <span class="bold">Access</span>'
       : '<span class="lite">Access</span> <span class="bold">Aether</span>';
     $('lede').textContent = registering
-      ? 'Register with your email to get started.'
+      ? 'Create a free account to find launch or sell it.'
       : 'Sign in to continue to mission control.';
     submit.textContent = registering ? 'Create account' : 'Sign in';
-    confirmField.hidden = !registering;
-    profileBlock.hidden = !registering;
+    intentField.hidden = !registering;
     password.setAttribute('autocomplete', registering ? 'new-password' : 'current-password');
     note.textContent = registering ? 'Minimum 8 characters' : '';
-    ALL_FIELDS.forEach(i => setError(i, ''));
-    [country, dial].forEach(markPlaceholder);
+    FIELDS.forEach(i => setError(i, ''));
     clearBanner();
   }
 
   tabSignin.addEventListener('click', () => setMode('signin'));
   tabRegister.addEventListener('click', () => setMode('register'));
-  ALL_FIELDS.forEach(i => i.addEventListener('input', () => setError(i, '')));
-  [country, dial].forEach(sel => sel.addEventListener('change', () => markPlaceholder(sel)));
+  [email, password].forEach(i => i.addEventListener('input', () => setError(i, '')));
   accountType.addEventListener('change', () => setError(accountType, ''));
+
+  $('reveal').addEventListener('click', () => {
+    const shown = password.type === 'text';
+    password.type = shown ? 'password' : 'text';
+    $('reveal').textContent = shown ? 'Show' : 'Hide';
+  });
 
   // ─── submit ───────────────────────────────────────────────────────────────
 
@@ -365,27 +309,12 @@
       if (password.value && password.value.length < 8) {
         ok = setError(password, 'Use at least 8 characters.') && ok;
       }
-      ok = setError(confirm, confirm.value === password.value ? '' : 'Passwords do not match.') && ok;
-      ok = setError(accountType, accountTypeValue() ? '' : 'Select what brings you here.') && ok;
-      ok = setError(org, org.value.trim() ? '' : 'Organisation is required.') && ok;
-      ok = setError(role, role.value.trim() ? '' : 'Role is required.') && ok;
-      ok = setError(country, country.value ? '' : 'Operating country is required.') && ok;
-      ok = setError(linkedin, !linkedin.value.trim() || validLinkedIn(linkedin.value)
-        ? '' : 'Enter a LinkedIn profile URL.') && ok;
-      ok = setError(dial, dial.value ? '' : 'Country code is required.') && ok;
-      ok = setError(phone, !phone.value.trim() ? 'Phone number is required.'
-        : validPhone(phone.value) ? '' : 'Enter a valid phone number.') && ok;
+      ok = setError(accountType, accountTypeValue() ? '' : 'Pick one to continue.') && ok;
     }
     if (!ok) return;
 
-    const payload = mode === 'register'
-      ? {
-          email: email.value, password: password.value,
-          accountType: accountTypeValue(),
-          organisation: org.value, role: role.value, country: country.value,
-          linkedin: linkedin.value, dial: dial.value, phone: phone.value,
-        }
-      : { email: email.value, password: password.value };
+    const payload = { email: email.value, password: password.value };
+    if (mode === 'register') payload.accountType = accountTypeValue();
 
     setBusy(true);
     let res;
@@ -430,15 +359,10 @@
       card.append(radio, label, help);
       accountType.appendChild(card);
     }
-    for (const c of data.countries) {
-      country.add(new Option(`${c.flag}  ${c.name}`, c.name));
-      // Flag and code first — the half-width select clips long country names.
-      dial.add(new Option(`${c.flag}  ${c.dial} · ${c.name}`, c.dial));
-    }
   }
 
   async function loadSession() {
-    // The server also redirects a signed-in visitor, so this only fires when a
+    // The server also redirects a signed-in visitor; this only fires when a
     // session appears while the page is already open.
     const { ok } = await api('/api/me');
     if (ok) location.assign('/missions');

@@ -16,13 +16,23 @@ Requires Node 22.5+; developed on 24.
 
 ## API
 
-| Method | Path             | Purpose                                                    |
-| ------ | ---------------- | ---------------------------------------------------------- |
-| GET    | `/api/options`   | Account types, and countries with flags and dial codes     |
-| GET    | `/api/me`        | Current account, or 401                                    |
-| POST   | `/api/register`  | Create an account, start a session                         |
-| POST   | `/api/login`     | Start a session                                            |
-| POST   | `/api/logout`    | End the current session                                    |
+| Method | Path                       | Purpose                                              |
+| ------ | -------------------------- | ---------------------------------------------------- |
+| GET    | `/api/options`             | Account types, countries, orbit/ride/form-factor lists |
+| GET    | `/api/me`                  | Current account, or 401                              |
+| POST   | `/api/register`            | Create an account, start a session                   |
+| POST   | `/api/login`               | Start a session                                      |
+| POST   | `/api/logout`              | End the current session                              |
+| PUT    | `/api/profile`             | Organisation, role, country, contact details         |
+| GET    | `/api/missions`            | Your requirements, private figures and public view   |
+| POST   | `/api/missions`            | Create one                                           |
+| POST   | `/api/missions/preview`    | Band a draft without saving — drives the live preview |
+| PUT    | `/api/missions/:id`        | Update one                                           |
+| POST   | `/api/missions/:id/status` | Publish or hide                                      |
+| DELETE | `/api/missions/:id`        | Delete one                                           |
+
+Every mission route checks ownership: the id in the URL is never trusted on its
+own, so another account gets a 404 rather than a peek.
 
 Validation errors come back as `{ fields: { email: "…", phone: "…" } }`, keyed
 by the same ids the form inputs use, so the client paints them inline without
@@ -47,19 +57,40 @@ any mapping.
 - Country and dial code are validated against the shared list, so a hand-rolled
   request cannot store a value the dropdowns would never produce.
 
-## Registration form
+## Signing up
 
-| Field                  | Required | Notes                                    |
-| ---------------------- | -------- | ---------------------------------------- |
-| Email address          | yes      | format-checked, must be unique           |
-| What brings you here   | yes      | intent: need / sell / broker / supply     |
-| Password / Confirm     | yes      | 8-character minimum, must match          |
-| Organisation           | yes      |                                          |
-| Role                   | yes      |                                          |
-| Main operating country | yes      | dropdown, 163 countries with flags       |
-| LinkedIn               | no       | validated as a linkedin.com URL if given |
-| Country code           | yes      | dropdown, flag + dial code per country   |
-| Phone number           | yes      | local number, digits only                |
+Three things: which side of the market you are on, an email and a password.
+Nothing else. Organisation, role and country are asked for on the profile at
+the moment they are first needed — publishing a requirement, which carries the
+owner's jurisdiction — and contact details stay optional until a match is
+accepted. Asking for all of it up front costs signups and asks for identifying
+detail before anyone has decided to trust you.
+
+## Launch requirements
+
+A payload owner publishes what they need flown; providers find it without
+learning who they are. `/missions` holds the whole flow: the list, the editor,
+and a live "what providers see" panel beside the form.
+
+**Banding is the anonymity mechanism.** Exact values are fingerprints — "180 kg
+to 550 km SSO in March 2027" names a specific company to anyone in the industry
+and tells a provider exactly how to price it. `lib/banding.js` widens each
+figure just far enough to stay searchable:
+
+| Private              | Public                |
+| -------------------- | --------------------- |
+| 180 kg               | 100–250 kg            |
+| 550 km               | 500–600 km            |
+| 97.6°                | 95–100°               |
+| 2027-03              | Q1 2027               |
+| Mission A, notes, org | *(never shown)*      |
+
+Each requirement also gets a stable pseudonym (`LD-0DTY`) derived from its row
+id, offset so it does not read as a countable sequence.
+
+The preview panel is rendered from `POST /api/missions/preview` rather than
+recomputed in the browser, so what the owner is shown cannot drift from what a
+provider actually gets.
 
 ## Layout
 
@@ -144,7 +175,12 @@ lib/auth.js        scrypt hashing, session tokens
 lib/validate.js    server-side field validation
 lib/countries.js   shared country/dial/ISO data
 lib/account-types.js  account type slugs and labels
-public/index.html  the page (self-contained apart from the API)
+lib/missions.js    missions table and queries
+lib/banding.js     what a provider is allowed to see
+lib/mission-options.js  orbit, ride and form-factor lists
+public/index.html  sign in and register
+public/missions.html + missions.js   the requirements app
+public/theme.css   shared tokens and form components
 tools/gen_visual.py  regenerates the launch graphic
 data/app.db        created on first run, gitignored
 ```
