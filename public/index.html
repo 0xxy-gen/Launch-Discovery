@@ -428,11 +428,10 @@
       <p class="who" id="who"></p>
       <div class="meta" id="meta"></div>
       <button class="alt" id="signout">Sign out</button>
-      <p class="note"><button class="linkish" id="wipe">Clear all local accounts</button></p>
     </div>
   </section>
 
-  <p class="disclaimer">Demo only — accounts live in this browser's localStorage and passwords are not securely stored. Wire the form up to a real backend before using it with real credentials.</p>
+  <p class="disclaimer">Development build — accounts are stored in a local SQLite database, passwords hashed with scrypt, sessions held in httpOnly cookies.</p>
     </div>
   </section>
 
@@ -608,12 +607,9 @@
 
 <script>
 (function () {
-  const USERS_KEY = 'ld.users';
-  const SESSION_KEY = 'ld.session';
-
   const $ = id => document.getElementById(id);
   const authView = $('auth'), accountView = $('account');
-  const form = $('form'), banner = $('banner'), note = $('note');
+  const form = $('form'), banner = $('banner'), note = $('note'), submit = $('submit');
   const email = $('email'), password = $('password'), confirm = $('confirm');
   const org = $('org'), role = $('role'), country = $('country');
   const linkedin = $('linkedin'), dial = $('dial'), phone = $('phone');
@@ -624,73 +620,22 @@
   const ALL_FIELDS = [email, password, ...REGISTER_ONLY];
 
   let mode = 'signin';
+  let busy = false;
 
-  // name:dial:ISO — feeds both the operating-country and country-code selects
-  const COUNTRIES = (
-    'Afghanistan:93:AF,Albania:355:AL,Algeria:213:DZ,Andorra:376:AD,Angola:244:AO,Argentina:54:AR,Armenia:374:AM,' +
-    'Australia:61:AU,Austria:43:AT,Azerbaijan:994:AZ,Bahamas:1242:BS,Bahrain:973:BH,Bangladesh:880:BD,Barbados:1246:BB,' +
-    'Belarus:375:BY,Belgium:32:BE,Belize:501:BZ,Benin:229:BJ,Bhutan:975:BT,Bolivia:591:BO,Bosnia and Herzegovina:387:BA,' +
-    'Botswana:267:BW,Brazil:55:BR,Brunei:673:BN,Bulgaria:359:BG,Burkina Faso:226:BF,Burundi:257:BI,Cambodia:855:KH,' +
-    'Cameroon:237:CM,Canada:1:CA,Cape Verde:238:CV,Chad:235:TD,Chile:56:CL,China:86:CN,Colombia:57:CO,Costa Rica:506:CR,' +
-    'Croatia:385:HR,Cuba:53:CU,Cyprus:357:CY,Czechia:420:CZ,Democratic Republic of the Congo:243:CD,Denmark:45:DK,' +
-    'Djibouti:253:DJ,Dominican Republic:1809:DO,Ecuador:593:EC,Egypt:20:EG,El Salvador:503:SV,Estonia:372:EE,' +
-    'Eswatini:268:SZ,Ethiopia:251:ET,Fiji:679:FJ,Finland:358:FI,France:33:FR,Gabon:241:GA,Georgia:995:GE,Germany:49:DE,' +
-    'Ghana:233:GH,Greece:30:GR,Guatemala:502:GT,Guinea:224:GN,Guyana:592:GY,Haiti:509:HT,Honduras:504:HN,Hong Kong:852:HK,' +
-    'Hungary:36:HU,Iceland:354:IS,India:91:IN,Indonesia:62:ID,Iraq:964:IQ,Ireland:353:IE,Israel:972:IL,Italy:39:IT,' +
-    'Ivory Coast:225:CI,Jamaica:1876:JM,Japan:81:JP,Jordan:962:JO,Kazakhstan:7:KZ,Kenya:254:KE,Kuwait:965:KW,' +
-    'Kyrgyzstan:996:KG,Laos:856:LA,Latvia:371:LV,Lebanon:961:LB,Lesotho:266:LS,Liberia:231:LR,Libya:218:LY,' +
-    'Liechtenstein:423:LI,Lithuania:370:LT,Luxembourg:352:LU,Madagascar:261:MG,Malawi:265:MW,Malaysia:60:MY,' +
-    'Maldives:960:MV,Mali:223:ML,Malta:356:MT,Mauritania:222:MR,Mauritius:230:MU,Mexico:52:MX,Moldova:373:MD,' +
-    'Monaco:377:MC,Mongolia:976:MN,Montenegro:382:ME,Morocco:212:MA,Mozambique:258:MZ,Myanmar:95:MM,Namibia:264:NA,' +
-    'Nepal:977:NP,Netherlands:31:NL,New Zealand:64:NZ,Nicaragua:505:NI,Niger:227:NE,Nigeria:234:NG,' +
-    'North Macedonia:389:MK,Norway:47:NO,Oman:968:OM,Pakistan:92:PK,Panama:507:PA,Papua New Guinea:675:PG,' +
-    'Paraguay:595:PY,Peru:51:PE,Philippines:63:PH,Poland:48:PL,Portugal:351:PT,Qatar:974:QA,Romania:40:RO,Rwanda:250:RW,' +
-    'Saudi Arabia:966:SA,Senegal:221:SN,Serbia:381:RS,Seychelles:248:SC,Sierra Leone:232:SL,Singapore:65:SG,' +
-    'Slovakia:421:SK,Slovenia:386:SI,Somalia:252:SO,South Africa:27:ZA,South Korea:82:KR,Spain:34:ES,Sri Lanka:94:LK,' +
-    'Sudan:249:SD,Sweden:46:SE,Switzerland:41:CH,Taiwan:886:TW,Tajikistan:992:TJ,Tanzania:255:TZ,Thailand:66:TH,' +
-    'Togo:228:TG,Trinidad and Tobago:1868:TT,Tunisia:216:TN,Turkey:90:TR,Turkmenistan:993:TM,Uganda:256:UG,Ukraine:380:UA,' +
-    'United Arab Emirates:971:AE,United Kingdom:44:GB,United States:1:US,Uruguay:598:UY,Uzbekistan:998:UZ,' +
-    'Venezuela:58:VE,Vietnam:84:VN,Yemen:967:YE,Zambia:260:ZM,Zimbabwe:263:ZW'
-  ).split(',').map(entry => {
-    const [name, dial, iso] = entry.split(':');
-    // regional indicator pair — renders as the flag wherever the OS has one
-    const flag = String.fromCodePoint(...[...iso].map(ch => 0x1F1E6 - 65 + ch.charCodeAt(0)));
-    return { name, iso, flag, dial: '+' + dial };
-  });
+  // ─── api ──────────────────────────────────────────────────────────────────
 
-  COUNTRIES.forEach(c => {
-    country.add(new Option(`${c.flag}  ${c.name}`, c.name));
-    // Flag and code first — the half-width select clips long country names.
-    dial.add(new Option(`${c.flag}  ${c.dial} · ${c.name}`, c.dial));
-  });
-
-  // Grey the select until a real choice is made
-  const markPlaceholder = sel => sel.classList.toggle('placeholder', !sel.value);
-  [country, dial].forEach(sel => {
-    markPlaceholder(sel);
-    sel.addEventListener('change', () => markPlaceholder(sel));
-  });
-
-  const loadUsers = () => {
-    try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; }
-    catch { return {}; }
-  };
-  const saveUsers = u => localStorage.setItem(USERS_KEY, JSON.stringify(u));
-
-  // Not real security — a stand-in so plaintext passwords aren't sitting in localStorage.
-  // crypto.subtle needs a secure context; fall back so the demo still works off file://.
-  async function digest(text) {
-    if (window.crypto && crypto.subtle) {
-      const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-      return [...new Uint8Array(bytes)].map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-    let h1 = 0x811c9dc5, h2 = 0x01000193;
-    for (let i = 0; i < text.length; i++) {
-      h1 = Math.imul(h1 ^ text.charCodeAt(i), 0x01000193) >>> 0;
-      h2 = Math.imul(h2 ^ text.charCodeAt(i), 0x85ebca6b) >>> 0;
-    }
-    return 'fnv-' + h1.toString(16) + h2.toString(16);
+  async function api(path, { method = 'GET', body } = {}) {
+    const res = await fetch(path, {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: 'same-origin',
+    });
+    const data = res.status === 204 ? {} : await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
   }
+
+  // ─── form helpers ─────────────────────────────────────────────────────────
 
   const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
   const validLinkedIn = v => /^(https?:\/\/)?([\w-]+\.)?linkedin\.com\/.+/i.test(v.trim());
@@ -702,11 +647,30 @@
     return !msg;
   }
 
+  // The server returns the same field keys the inputs use, so its errors
+  // paint inline exactly like the client-side ones.
+  function showFieldErrors(fields = {}) {
+    for (const [id, msg] of Object.entries(fields)) {
+      const input = $(id);
+      if (input) setError(input, msg);
+    }
+  }
+
   function showBanner(msg, kind) {
     banner.textContent = msg;
     banner.className = 'banner show ' + kind;
   }
   const clearBanner = () => { banner.className = 'banner'; };
+
+  function setBusy(state) {
+    busy = state;
+    submit.disabled = state;
+    submit.textContent = state
+      ? (mode === 'register' ? 'Creating account…' : 'Signing in…')
+      : (mode === 'register' ? 'Create account' : 'Sign in');
+  }
+
+  const markPlaceholder = sel => sel.classList.toggle('placeholder', !sel.value);
 
   function setMode(next) {
     mode = next;
@@ -720,7 +684,7 @@
     $('lede').textContent = registering
       ? 'Register with your email to get started.'
       : 'Sign in to continue to mission control.';
-    $('submit').textContent = registering ? 'Create account' : 'Sign in';
+    submit.textContent = registering ? 'Create account' : 'Sign in';
     confirmField.hidden = !registering;
     profileBlock.hidden = !registering;
     password.setAttribute('autocomplete', registering ? 'new-password' : 'current-password');
@@ -733,9 +697,13 @@
   tabSignin.addEventListener('click', () => setMode('signin'));
   tabRegister.addEventListener('click', () => setMode('register'));
   ALL_FIELDS.forEach(i => i.addEventListener('input', () => setError(i, '')));
+  [country, dial].forEach(sel => sel.addEventListener('change', () => markPlaceholder(sel)));
+
+  // ─── submit ───────────────────────────────────────────────────────────────
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (busy) return;
     clearBanner();
 
     let ok = setError(email, validEmail(email.value) ? '' : 'Enter a valid email address.');
@@ -757,76 +725,59 @@
     }
     if (!ok) return;
 
-    const addr = email.value.trim().toLowerCase();
-    const users = loadUsers();
-    const hash = await digest(addr + '::' + password.value);
+    const payload = mode === 'register'
+      ? {
+          email: email.value, password: password.value,
+          organisation: org.value, role: role.value, country: country.value,
+          linkedin: linkedin.value, dial: dial.value, phone: phone.value,
+        }
+      : { email: email.value, password: password.value };
 
-    if (mode === 'register') {
-      if (users[addr]) {
-        setError(email, 'That email is already registered.');
-        showBanner('An account with that email already exists', 'bad');
-        return;
-      }
-      users[addr] = {
-        hash,
-        org: org.value.trim(),
-        role: role.value.trim(),
-        country: country.value,
-        linkedin: linkedin.value.trim(),
-        dial: dial.value,
-        phone: phone.value.trim(),
-        createdAt: new Date().toISOString(),
-      };
-      saveUsers(users);
-      signIn(addr);
-      return;
+    setBusy(true);
+    let res;
+    try {
+      res = await api(mode === 'register' ? '/api/register' : '/api/login',
+                      { method: 'POST', body: payload });
+    } catch {
+      setBusy(false);
+      return showBanner('Cannot reach the server. Is it running?', 'bad');
+    }
+    setBusy(false);
+
+    if (res.ok) {
+      form.reset();
+      [country, dial].forEach(markPlaceholder);
+      return render(res.data.user);
     }
 
-    const user = users[addr];
-    if (!user || user.hash !== hash) {
-      showBanner('Email or password is incorrect', 'bad');
-      return;
-    }
-    signIn(addr);
+    showFieldErrors(res.data.fields);
+    if (res.data.error) showBanner(res.data.error, 'bad');
+    else if (res.status === 429) showBanner('Too many attempts. Try again shortly.', 'bad');
   });
 
-  function signIn(addr) {
-    localStorage.setItem(SESSION_KEY, addr);
-    render();
-  }
-
-  $('signout').addEventListener('click', () => {
-    localStorage.removeItem(SESSION_KEY);
-    form.reset();
+  $('signout').addEventListener('click', async () => {
+    try { await api('/api/logout', { method: 'POST' }); } catch { /* fall through */ }
     setMode('signin');
-    render();
+    render(null);
     showBanner('Session ended', 'ok');
   });
 
-  $('wipe').addEventListener('click', () => {
-    localStorage.removeItem(USERS_KEY);
-    localStorage.removeItem(SESSION_KEY);
-    form.reset();
-    setMode('signin');
-    render();
-    showBanner('All local accounts cleared', 'ok');
-  });
+  // ─── render ───────────────────────────────────────────────────────────────
 
-  function render() {
-    const addr = localStorage.getItem(SESSION_KEY);
-    const user = addr ? loadUsers()[addr] : null;
+  function render(user) {
     authView.hidden = Boolean(user);
     accountView.hidden = !user;
     if (!user) return;
 
-    $('who').textContent = addr;
-    $('seal').textContent = addr.slice(0, 2).toUpperCase();
+    $('who').textContent = user.email;
+    $('seal').textContent = user.email.slice(0, 2).toUpperCase();
 
     const rows = [
-      [user.role, user.org].filter(Boolean).join(' · '),
+      [user.role, user.organisation].filter(Boolean).join(' · '),
       user.country,
       [user.dial, user.phone].filter(Boolean).join(' '),
     ].filter(Boolean);
+
     const meta = $('meta');
     meta.textContent = '';
     rows.forEach(r => {
@@ -836,8 +787,27 @@
     });
   }
 
+  // ─── boot ─────────────────────────────────────────────────────────────────
+
+  async function loadCountries() {
+    const { ok, data } = await api('/api/countries');
+    if (!ok) throw new Error('countries');
+    for (const c of data.countries) {
+      country.add(new Option(`${c.flag}  ${c.name}`, c.name));
+      // Flag and code first — the half-width select clips long country names.
+      dial.add(new Option(`${c.flag}  ${c.dial} · ${c.name}`, c.dial));
+    }
+  }
+
+  async function loadSession() {
+    const { ok, data } = await api('/api/me');
+    render(ok ? data.user : null);
+  }
+
   setMode('signin');
-  render();
+  Promise.all([loadCountries(), loadSession()]).catch(() => {
+    showBanner('Cannot reach the server. Is it running?', 'bad');
+  });
 })();
 </script>
 </body>
