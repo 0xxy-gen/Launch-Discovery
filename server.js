@@ -10,6 +10,11 @@ import {
   createPool, poolById, allPools, poolView, joinPool, leavePool, isMember,
 } from './lib/pools.js';
 import { compatibility } from './lib/compatibility.js';
+import { waitlistEntry, joinWaitlist, leaveWaitlist } from './lib/waitlist.js';
+import {
+  createConstellation, constellationById, constellationsFor,
+  renameConstellation, deleteConstellation, assignMission, summarise,
+} from './lib/constellations.js';
 import {
   createLaunch, updateLaunch, setLaunchStatus, launchById, launchesForOwner,
   deleteLaunch, browseLaunches, launchView, ownerLaunch,
@@ -17,6 +22,7 @@ import {
 import {
   createMission, updateMission, setMissionStatus,
   missionById, missionsForOwner, deleteMission, browsePublished,
+  duplicateMission, nextReference,
 } from './lib/missions.js';
 import {
   validateRegistration, validateLogin, validateMission, validateProfile, validatePool, validateLaunch,
@@ -194,6 +200,20 @@ app.post('/api/logout', (req, res) => {
   res.status(204).end();
 });
 
+// Resolves the constellation a mission is being filed under. Returns null for
+// ungrouped, or undefined once it has already answered with an error.
+function groupFor(req, res) {
+  const raw = req.body.constellationId;
+  if (raw === null || raw === undefined || raw === '') return null;
+
+  const group = constellationById(Number(raw));
+  if (!group || group.company_id !== req.user.company_id) {
+    res.status(400).json({ fields: { constellationId: 'Choose one of your own constellations.' } });
+    return undefined;
+  }
+  return group.id;
+}
+
 // ─── missions ───────────────────────────────────────────────────────────────
 
 function currentUser(req) {
@@ -353,7 +373,50 @@ app.get('/api/payloads', requireUser, (req, res) => {
 
 app.get('/api/missions', requireUser, (req, res) => {
   const missions = missionsForOwner(req.user.company_id).map(m => ownerMission(m, req.user));
-  res.json({ missions });
+
+  // Each group carries the shape of what is inside it: a constellation only
+  // means anything as the altitude, inclination and window of its members.
+  const constellations = constellationsFor(req.user.company_id).map(c => {
+    const members = missions.filter(m => m.constellationId === c.id);
+    return {
+      id: c.id,
+      name: c.name,
+      notes: c.notes,
+      summary: summarise(members),
+    };
+  });
+
+  res.json({ missions, constellations });
+});
+
+// ─── constellations ─────────────────────────────────────────────────────────
+
+app.post('/api/constellations', requireJson, requireUser, (req, res) => {
+  const name = String(req.body.name ?? '').trim();
+  if (!name) return res.status(400).json({ fields: { 'constellation-name': 'Give it a name.' } });
+  if (name.length > 120) {
+    return res.status(400).json({ fields: { 'constellation-name': 'That name is too long.' } });
+  }
+  const created = createConstellation(req.user.company_id, name, String(req.body.notes ?? '').trim());
+  res.status(201).json({ constellation: { id: created.id, name: created.name, notes: created.notes } });
+});
+
+app.put('/api/constellations/:id', requireJson, requireUser, (req, res) => {
+  const name = String(req.body.name ?? '').trim();
+  if (!name) return res.status(400).json({ error: 'Give it a name.' });
+  if (!renameConstellation(req.user.company_id, Number(req.params.id), name, String(req.body.notes ?? '').trim())) {
+    return res.status(404).json({ error: 'Not found.' });
+  }
+  res.status(204).end();
+});
+
+// The missions inside survive: the column is ON DELETE SET NULL, so they
+// return to the ungrouped list rather than disappearing with the group.
+app.delete('/api/constellations/:id', requireUser, (req, res) => {
+  if (!deleteConstellation(req.user.company_id, Number(req.params.id))) {
+    return res.status(404).json({ error: 'Not found.' });
+  }
+  res.status(204).end();
 });
 
 // Drives the "what providers see" panel as the form is typed into.
@@ -377,7 +440,11 @@ app.post('/api/missions', requireJson, requireUser, (req, res) => {
   const publish = req.body.publish === true;
   if (publish && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
 
+  const group = groupFor(req, res);
+  if (group === undefined) return;
+
   const mission = createMission(req.user.id, req.user.company_id, values, publish);
+  if (group !== null) assignMission(req.user.company_id, mission.id, group);
   res.status(201).json({ mission: ownerMission(mission, req.user) });
 });
 
@@ -387,8 +454,12 @@ app.put('/api/missions/:id', requireJson, requireUser, (req, res) => {
   const { fields, values } = validateMission(req.body);
   if (Object.keys(fields).length) return res.status(400).json({ fields });
 
-  const mission = updateMission(req.user.company_id, Number(req.params.id), values);
-  res.json({ mission: ownerMission(mission, req.user) });
+  const group = groupFor(req, res);
+  if (group === undefined) return;
+
+  updateMission(req.user.company_id, Number(req.params.id), values);
+  assignMission(req.user.company_id, Number(req.params.id), group);
+  res.json({ mission: ownerMission(missionById(Number(req.params.id)), req.user) });
 });
 
 // Publishing is its own route, not a field on the update — flipping a
@@ -403,6 +474,20 @@ app.post('/api/missions/:id/status', requireJson, requireUser, (req, res) => {
   if (status === 'published' && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
   const mission = setMissionStatus(req.user.company_id, Number(req.params.id), status);
   res.json({ mission: ownerMission(mission, req.user) });
+});
+
+// Copies everything and lands in the same constellation as a draft, so a
+// second satellite is one click rather than a re-typed form.
+app.post('/api/missions/:id/duplicate', requireJson, requireUser, (req, res) => {
+  const source = ownedMission(req, res);
+  if (!source) return;
+
+  const existing = missionsForOwner(req.user.company_id).map(m => m.reference);
+  const reference = String(req.body.reference ?? '').trim()
+    || nextReference(existing, source.reference);
+
+  const copy = duplicateMission(req.user.id, req.user.company_id, source, reference);
+  res.status(201).json({ mission: ownerMission(copy, req.user) });
 });
 
 app.delete('/api/missions/:id', requireUser, (req, res) => {
@@ -558,6 +643,32 @@ app.post('/api/pools/:id/leave', requireJson, requireUser, (req, res) => {
   res.json({ pool: poolView(pool, req.user.company_id) });
 });
 
+// ─── agents waitlist ────────────────────────────────────────────────────────
+// Aether Agents is not built. The page collects interest, and the note field
+// is the useful part — it says what people actually want an agent to do.
+
+app.get('/api/waitlist', requireUser, (req, res) => {
+  const entry = waitlistEntry(req.user.company_id);
+  res.json({
+    joined: Boolean(entry),
+    note: entry?.note ?? '',
+    joinedAt: entry ? new Date(entry.created_at).toISOString() : null,
+  });
+});
+
+app.post('/api/waitlist', requireJson, requireUser, (req, res) => {
+  const note = String(req.body.note ?? '').trim();
+  if (note.length > 1000) return res.status(400).json({ fields: { note: 'Keep it under 1000 characters.' } });
+
+  joinWaitlist(req.user.company_id, req.user.id, note);
+  res.status(201).json({ joined: true, note });
+});
+
+app.delete('/api/waitlist', requireUser, (req, res) => {
+  leaveWaitlist(req.user.company_id);
+  res.status(204).end();
+});
+
 // ─── pages ──────────────────────────────────────────────────────────────────
 
 // Where an account lands: its own inventory, or the company form if the
@@ -578,6 +689,11 @@ app.get('/missions', (req, res) => {
 
 app.get('/join', (req, res) => {
   res.sendFile(join(root, 'public', 'join.html'));
+});
+
+app.get('/agents', (req, res) => {
+  if (!currentUser(req)) return res.redirect('/');
+  res.sendFile(join(root, 'public', 'agents.html'));
 });
 
 app.get('/profile', (req, res) => {

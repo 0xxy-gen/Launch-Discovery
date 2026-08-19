@@ -12,6 +12,7 @@ window.renderNav = function renderNav(user, current) {
     sellsLaunch
       ? { href: '/my-launches', label: 'My Launches', key: 'my-launches' }
       : { href: '/missions', label: 'My Missions', key: 'missions' },
+    { href: '/agents', label: 'Aether Agents', key: 'agents', badge: 'Beta' },
   ];
 
   const nav = document.getElementById('nav');
@@ -22,13 +23,19 @@ window.renderNav = function renderNav(user, current) {
     a.href = tab.href;
     a.textContent = tab.label;
     a.className = 'nav-tab' + (tab.key === current ? ' current' : '');
+    if (tab.badge) {
+      const badge = document.createElement('span');
+      badge.className = 'nav-badge';
+      badge.textContent = tab.badge;
+      a.appendChild(badge);
+    }
     nav.appendChild(a);
   }
 };
 
-// ── account menu, top right ────────────────────────────────────────────────
-// The avatar is the company, not a person: satellite operators and providers
-// act as organisations here, so it carries the organisation's initials.
+// ── account, top right ─────────────────────────────────────────────────────
+// A straight link to the company profile. The avatar carries the company's
+// initials, since operators and providers act as organisations here.
 window.renderAccount = function renderAccount(user) {
   const host = document.getElementById('account');
   if (!host) return;
@@ -39,65 +46,15 @@ window.renderAccount = function renderAccount(user) {
     ? user.organisation.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0])
     : [user.email[0], user.email[1]]).join('').toUpperCase();
 
-  const button = document.createElement('button');
-  button.className = 'avatar';
-  button.type = 'button';
-  button.textContent = initials;
-  button.setAttribute('aria-haspopup', 'menu');
-  button.setAttribute('aria-expanded', 'false');
-  button.setAttribute('aria-label', `Account: ${name}`);
-  button.title = name;
-
-  const menu = document.createElement('div');
-  menu.className = 'account-menu';
-  menu.setAttribute('role', 'menu');
-  menu.hidden = true;
-
-  const head = document.createElement('div');
-  head.className = 'account-head';
-  const org = document.createElement('div');
-  org.className = 'account-org';
-  org.textContent = user.organisation || 'No organisation yet';
-  const meta = document.createElement('div');
-  meta.className = 'account-meta';
-  meta.textContent = `${user.accountTypeLabel} · ${user.email}`;
-  head.append(org, meta);
-  menu.append(head);
-
   const link = document.createElement('a');
-  link.className = 'account-item';
+  link.className = 'avatar';
   link.href = '/profile';
-  link.textContent = 'Company profile';
-  link.setAttribute('role', 'menuitem');
-  menu.append(link);
+  link.textContent = initials;
+  link.title = `${name} — company profile`;
+  link.setAttribute('aria-label', `${name} — company profile`);
 
-  const out = document.createElement('button');
-  out.className = 'account-item';
-  out.type = 'button';
-  out.textContent = 'Sign out';
-  out.setAttribute('role', 'menuitem');
-  out.addEventListener('click', async () => {
-    await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
-    location.href = '/';
-  });
-  menu.append(out);
+  // An unfinished profile blocks publishing, so it is flagged rather than hidden.
+  if (!user.profileComplete) link.classList.add('incomplete');
 
-  const close = () => {
-    menu.hidden = true;
-    button.setAttribute('aria-expanded', 'false');
-  };
-
-  button.addEventListener('click', e => {
-    e.stopPropagation();
-    menu.hidden = !menu.hidden;
-    button.setAttribute('aria-expanded', String(!menu.hidden));
-  });
-  document.addEventListener('click', close);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  menu.addEventListener('click', e => e.stopPropagation());
-
-  host.append(button, menu);
-
-  // A profile with no organisation cannot publish anything, so say so here too.
-  if (!user.profileComplete) button.classList.add('incomplete');
+  host.append(link);
 };

@@ -76,6 +76,11 @@
 
   FIELDS.forEach(id => $(id).addEventListener('input', () => setError(id, '')));
 
+  $('signout').addEventListener('click', async () => {
+    await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+    location.href = '/';
+  });
+
   // ── people ────────────────────────────────────────────────────────────────
 
   const el = (tag, className, text) => {

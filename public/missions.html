@@ -11,6 +11,69 @@
 <script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
+  .head-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* A constellation is a container, not a heading: the satellites sit visibly
+     inside it, and each keeps its own card, name, status and pseudonym. */
+  .group {
+    margin-bottom: 20px;
+    background: var(--tint);
+    border: 1px solid var(--surface-line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    cursor: pointer;
+  }
+  .group-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .group-title h2 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .group-kind {
+    padding: 3px 9px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+  .group-summary { margin: 6px 0 0 32px; font-size: 12.5px; color: var(--text-3); }
+  .group-actions { display: flex; gap: 8px; flex: none; }
+  .group-actions button { flex: none; }
+
+  .caret {
+    width: 20px; height: 20px;
+    display: grid; place-items: center;
+    color: var(--text-3);
+    transition: transform .2s;
+  }
+  .group.collapsed .caret { transform: rotate(-90deg); }
+  .group.collapsed .group-body { display: none; }
+
+  .group-body { padding: 0 14px 14px; display: grid; gap: 10px; }
+  .group-body .row-card { background: var(--surface); }
+  .group-empty {
+    padding: 18px 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-4);
+  }
+
+  .ungrouped-label {
+    margin: 0 0 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-4);
+  }
+
   /* ── editor ──────────────────────────────────────────────────────────── */
   .editor-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; align-items: start; }
   @media (max-width: 900px) { .editor-grid { grid-template-columns: 1fr; } }
@@ -168,7 +231,10 @@
         <h1><span class="lite">Your</span> <span class="bold">missions</span></h1>
         <p class="lede" id="list-lede"></p>
       </div>
-      <button class="primary compact" id="new-mission">New requirement</button>
+      <div class="head-actions">
+        <button class="ghost-sm" id="new-constellation">New constellation</button>
+        <button class="primary compact" id="new-mission">New requirement</button>
+      </div>
     </div>
 
     <div class="empty" id="empty" hidden>
@@ -181,6 +247,7 @@
       <button class="primary" id="empty-cta">Publish a requirement</button>
     </div>
 
+    <div id="groups"></div>
     <div class="rows" id="rows"></div>
   </section>
 
@@ -198,6 +265,15 @@
     <div class="editor-grid">
       <form id="mission-form" novalidate>
         <p class="section" style="margin-top: 0; padding-top: 0; border-top: 0;">Mission</p>
+
+        <div class="field">
+          <label for="constellationId">Constellation</label>
+          <select id="constellationId" name="constellationId">
+            <option value="">Not part of one</option>
+          </select>
+          <p class="hint">Group missions flown as one programme. Private — providers never see the grouping.</p>
+          <div class="err" id="constellationId-err"></div>
+        </div>
 
         <div class="field">
           <label for="reference">Internal name</label>

@@ -46,6 +46,12 @@ Requires Node 22.5+; developed on 24.
 | PUT    | `/api/my-launches/:id`     | Update one                                            |
 | POST   | `/api/my-launches/:id/status` | Publish or hide                                    |
 | DELETE | `/api/my-launches/:id`     | Delete one                                            |
+| POST   | `/api/missions/:id/duplicate` | Copy a satellite into the same constellation      |
+| GET/POST/PUT/DELETE | `/api/constellations` | Group missions flown as one programme  |
+| GET/POST/DELETE | `/api/waitlist`   | Aether Agents early access                            |
+| GET    | `/api/people`              | Everyone in your company, plus pending invites        |
+| POST   | `/api/people/invite`       | Invite a colleague — returns a single-use link        |
+| POST   | `/api/join`                | Accept an invitation                                  |
 | GET    | `/api/pools`               | Open pools, with which of your missions could join each |
 | POST   | `/api/pools`               | Start a pool, seeded by one of your missions          |
 | POST   | `/api/pools/:id/join`      | Join with a compatible mission                        |
@@ -181,6 +187,28 @@ Still missing, and deliberately: a **lead member** — someone eventually has to
 the counterparty on a launch contract. Every group-buy without a named lead
 dead-ends at the moment it succeeds.
 
+## Constellations
+
+Satellites are rarely procured one at a time, so `My Missions` groups them.
+A constellation is drawn as a **container** rather than a heading — the
+satellites sit visibly inside it, collapsible, each keeping its own card, name,
+status and published pseudonym. The group header carries the rollup (count,
+total mass, altitude and inclination ranges, window span); each member carries
+its own figures. That contrast is what says *this is a grouping, and these are
+individually distinct records*.
+
+`Duplicate` copies a satellite into the same constellation as a draft with the
+name bumped — `Aurora-2` becomes `Aurora-3`, `Aurora` becomes `Aurora 2` — and
+`Add satellite` on the group header does the same from the last member. Typing
+the same form twenty-four times is not a workflow.
+
+`Ungroup` deletes the grouping, never the satellites: the column is
+`ON DELETE SET NULL`, so they return to the ungrouped list.
+
+The grouping is private. A provider sees each requirement on its own, banded,
+with no signal that several belong to one programme — the fact that you are
+building a constellation is itself commercially sensitive.
+
 ## Launch requirements
 
 A payload owner publishes what they need flown; providers find it without
@@ -272,6 +300,13 @@ Types live in `lib/account-types.js`; adding one puts it in the radio group and
 through validation. Slugs are what the database stores, so labels can be
 reworded freely. A database created before this column existed gets it added in
 place on the next start.
+
+## Aether Agents
+
+Not built. The tab carries a `Beta` chip and the page is a waitlist — it says
+plainly that nothing runs yet, describes what an agent would watch for, and
+collects one row per company. The note field is the useful part: it records
+what people actually want an agent to do.
 
 ## Theming
 

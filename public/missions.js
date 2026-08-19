@@ -5,9 +5,10 @@
   const form = $('mission-form'), banner = $('banner');
   const rows = $('rows'), empty = $('empty');
 
-  const FIELDS = ['reference', 'orbitType', 'altitudeKm', 'inclinationDeg',
+  const FIELDS = ['constellationId', 'reference', 'orbitType', 'altitudeKm', 'inclinationDeg',
                   'payloadMassKg', 'formFactor', 'windowMonth', 'rideType', 'notes'];
 
+  let constellations = [];
   let editingId = null;   // null while creating
   let busy = false;
   let me = null;
@@ -44,6 +45,7 @@
 
   function readForm() {
     return {
+      constellationId: $('constellationId').value || null,
       reference: $('reference').value,
       orbitType: $('orbitType').value,
       altitudeKm: $('altitudeKm').value,
@@ -58,6 +60,7 @@
   }
 
   function fillForm(m) {
+    $('constellationId').value = m?.constellationId ?? '';
     $('reference').value = m?.reference ?? '';
     $('orbitType').value = m?.orbitType ?? '';
     $('altitudeKm').value = m?.altitudeKm ?? '';
@@ -109,62 +112,150 @@
     ].filter(Boolean);
   }
 
-  function renderList(missions) {
+  const el = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+
+  function missionCard(m) {
+    const card = el('div', 'row-card');
+    const left = el('div');
+
+    const title = el('div', 'row-title');
+    title.append(el('h2', undefined, m.reference));
+    const pill = el('span', 'pill ' + m.status,
+      m.status === 'published' ? m.published.ref : 'Draft');
+    title.append(pill);
+
+    const facts = el('div', 'facts');
+    for (const f of factList(m.published)) facts.append(el('span', undefined, f));
+
+    left.append(title, facts);
+
+    const actions = el('div', 'row-actions');
+    const toggle = el('button', 'ghost-sm', m.status === 'published' ? 'Unpublish' : 'Publish');
+    toggle.addEventListener('click', () => setStatus(m.id, m.status === 'published' ? 'draft' : 'published'));
+    const copy = el('button', 'ghost-sm', 'Duplicate');
+    copy.title = 'Create the next satellite from this one';
+    copy.addEventListener('click', () => duplicate(m));
+    const edit = el('button', 'ghost-sm', 'Edit');
+    edit.addEventListener('click', () => openEditor(m));
+    actions.append(toggle, copy, edit);
+
+    card.append(left, actions);
+    return card;
+  }
+
+  async function duplicate(m) {
+    const { ok, data } = await api(`/api/missions/${m.id}/duplicate`, { method: 'POST', body: {} });
+    if (!ok) return showBanner(data.error ?? 'Could not duplicate that.', 'bad');
+    showBanner(`${data.mission.reference} created as a draft — rename it if you like`, 'ok');
+    await loadList();
+    openEditor(data.mission);
+  }
+
+  function summaryLine(s) {
+    if (!s) return 'No missions yet';
+    return [
+      `${s.count} mission${s.count === 1 ? '' : 's'}`,
+      `${s.totalMassKg} kg total`,
+      s.altitude,
+      s.inclination,
+      s.window,
+      `${s.published} published`,
+    ].join(' · ');
+  }
+
+  function renderList(missions, groups) {
     rows.textContent = '';
-    empty.hidden = missions.length > 0;
+    $('groups').textContent = '';
+    empty.hidden = missions.length > 0 || groups.length > 0;
 
     const published = missions.filter(m => m.status === 'published').length;
     $('list-lede').textContent = missions.length
       ? `${missions.length} requirement${missions.length === 1 ? '' : 's'} · ${published} visible to providers`
       : 'Publish a requirement and providers can find it without learning who you are.';
 
-    for (const m of missions) {
-      const card = document.createElement('div');
-      card.className = 'row-card';
+    // one container per constellation, then whatever is not in one
+    for (const group of groups) {
+      const members = missions.filter(m => m.constellationId === group.id);
+      const block = el('div', 'group');
 
-      const left = document.createElement('div');
+      const head = el('div', 'group-head');
+      const left = el('div');
 
-      const title = document.createElement('div');
-      title.className = 'row-title';
-      const h = document.createElement('h2');
-      h.textContent = m.reference;
-      const pill = document.createElement('span');
-      pill.className = 'pill ' + m.status;
-      pill.textContent = m.status === 'published' ? m.published.ref : 'Draft';
-      title.append(h, pill);
+      const title = el('div', 'group-title');
+      const caret = el('span', 'caret');
+      caret.innerHTML =
+        '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l5 5 5-5"/></svg>';
+      title.append(caret, el('h2', undefined, group.name), el('span', 'group-kind', 'Constellation'));
+      left.append(title);
+      left.append(el('p', 'group-summary', summaryLine(group.summary)));
+      head.append(left);
 
-      const facts = document.createElement('div');
-      facts.className = 'facts';
-      for (const f of factList(m.published)) {
-        const span = document.createElement('span');
-        span.textContent = f;
-        facts.appendChild(span);
+      const actions = el('div', 'group-actions');
+
+      // The obvious next action inside a constellation is another satellite.
+      if (members.length) {
+        const add = el('button', 'ghost-sm', 'Add satellite');
+        add.addEventListener('click', e => { e.stopPropagation(); duplicate(members.at(-1)); });
+        actions.append(add);
       }
 
-      left.append(title, facts);
+      const rename = el('button', 'ghost-sm', 'Rename');
+      rename.addEventListener('click', async e => {
+        e.stopPropagation();
+        const name = prompt('Constellation name', group.name);
+        if (!name || name.trim() === group.name) return;
+        const { ok } = await api(`/api/constellations/${group.id}`,
+          { method: 'PUT', body: { name: name.trim(), notes: group.notes } });
+        if (ok) loadList();
+      });
 
-      const actions = document.createElement('div');
-      actions.className = 'row-actions';
+      const remove = el('button', 'ghost-sm', 'Ungroup');
+      remove.title = 'Removes the grouping. The satellites stay.';
+      remove.addEventListener('click', async e => {
+        e.stopPropagation();
+        const { ok } = await api(`/api/constellations/${group.id}`, { method: 'DELETE' });
+        if (ok) { showBanner(`${group.name} ungrouped — its satellites are still here`, 'ok'); loadList(); }
+      });
 
-      const toggle = document.createElement('button');
-      toggle.className = 'ghost-sm';
-      toggle.textContent = m.status === 'published' ? 'Unpublish' : 'Publish';
-      toggle.addEventListener('click', () => setStatus(m.id, m.status === 'published' ? 'draft' : 'published'));
+      actions.append(rename, remove);
+      head.append(actions);
 
-      const edit = document.createElement('button');
-      edit.className = 'ghost-sm';
-      edit.textContent = 'Edit';
-      edit.addEventListener('click', () => openEditor(m));
+      const body = el('div', 'group-body');
+      if (members.length) {
+        members.forEach(m => body.append(missionCard(m)));
+      } else {
+        body.append(el('div', 'group-empty',
+          'Nothing filed here yet — set the constellation on a requirement, or duplicate one into it.'));
+      }
 
-      actions.append(toggle, edit);
-      card.append(left, actions);
-      rows.appendChild(card);
+      head.addEventListener('click', () => block.classList.toggle('collapsed'));
+      block.append(head, body);
+      $('groups').append(block);
     }
+
+    const loose = missions.filter(m => !m.constellationId);
+    if (loose.length && groups.length) {
+      $('groups').append(el('p', 'ungrouped-label', 'Not in a constellation'));
+    }
+    loose.forEach(m => rows.append(missionCard(m)));
   }
 
   async function loadList() {
     const { ok, data } = await api('/api/missions');
-    if (ok) renderList(data.missions);
+    if (!ok) return;
+
+    constellations = data.constellations;
+    const select = $('constellationId');
+    select.textContent = '';
+    select.add(new Option('Not part of one', ''));
+    constellations.forEach(c => select.add(new Option(c.name, c.id)));
+
+    renderList(data.missions, data.constellations);
   }
 
   async function setStatus(id, status) {
@@ -261,6 +352,15 @@
     if (!editingId) return;
     const { ok } = await api(`/api/missions/${editingId}`, { method: 'DELETE' });
     if (ok) { showBanner('Requirement deleted', 'ok'); showList(); }
+  });
+
+  $('new-constellation').addEventListener('click', async () => {
+    const name = prompt('Name this constellation', '');
+    if (!name || !name.trim()) return;
+    const { ok, data } = await api('/api/constellations', { method: 'POST', body: { name: name.trim() } });
+    if (!ok) return showBanner(data.fields?.['constellation-name'] ?? 'Could not create that.', 'bad');
+    showBanner(`${data.constellation.name} created`, 'ok');
+    loadList();
   });
 
   $('new-mission').addEventListener('click', () => openEditor(null));
