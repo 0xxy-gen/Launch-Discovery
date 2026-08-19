@@ -3,132 +3,321 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Launch Discovery — Sign in</title>
+<title>Aether — Access</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;1,700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
+  /* Palette from mission-management/app/globals.css,
+     type + button treatment from aetherspace.tech */
   :root {
-    --bg: #f6f7f9;
-    --panel: #ffffff;
-    --ink: #14171f;
-    --muted: #667085;
-    --line: #e3e6ec;
-    --field: #ffffff;
-    --accent: #3b5bfd;
-    --accent-ink: #ffffff;
-    --danger: #c0392b;
-    --ok: #1a7f4b;
-    --shadow: 0 12px 40px rgba(16, 20, 40, .10);
+    --background: #000000;
+    --surface: #12161b;       /* raised panel — clearly lifted off the black page */
+    --surface-line: rgba(255, 255, 255, 0.16);
+    --cyan: #22d3ee;          /* cyan-400 — solid CTA fill */
+    --cyan-hover: #67e8f9;    /* cyan-300 */
+    --rule: #3ce0f5;          /* section titles / active tab */
+    --destructive: #ff6b6b;
+    --text: #ffffff;
+    --text-2: rgba(255, 255, 255, 0.78);   /* body copy */
+    --text-3: rgba(255, 255, 255, 0.62);   /* labels, eyebrows */
+    --text-4: rgba(255, 255, 255, 0.42);   /* placeholders, fine print */
+    --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0e1016;
-      --panel: #161a22;
-      --ink: #eef1f6;
-      --muted: #98a2b3;
-      --line: #262c38;
-      --field: #10141b;
-      --accent: #6c86ff;
-      --accent-ink: #0b0e14;
-      --danger: #ff8a80;
-      --ok: #6ee7a8;
-      --shadow: 0 12px 40px rgba(0, 0, 0, .45);
-    }
-  }
+
   * { box-sizing: border-box; }
+
+  html { background: #000; }
+
   body {
     margin: 0;
     min-height: 100vh;
     display: grid;
     place-items: center;
-    padding: 32px 20px;
-    background: var(--bg);
-    color: var(--ink);
-    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 48px 20px;
+    background: var(--background);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
   }
-  .card {
-    width: 100%;
-    max-width: 420px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    padding: 32px 28px 26px;
+
+  .shell { width: 100%; max-width: 460px; }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--surface-line);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 30px 80px rgba(0, 0, 0, 0.9);
   }
-  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-  .mark {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: var(--accent); color: var(--accent-ink);
-    display: grid; place-items: center;
-    font-weight: 700; font-size: 15px;
+
+  .panel-head { padding: 28px 30px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.10); }
+
+  /* Micro eyebrow — the site's mono/heavy-tracking label idiom */
+  .eyebrow {
+    margin: 0 0 12px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-3);
   }
-  .brand span { font-weight: 600; letter-spacing: -.01em; }
-  h1 { font-size: 21px; margin: 0 0 4px; letter-spacing: -.02em; }
-  .sub { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
-  .tabs { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px; margin-bottom: 22px; }
+
+  /* Headline — tracking-tighter, leading 1.0, mixed light/bold weights */
+  h1 {
+    margin: 0;
+    font-size: 34px;
+    line-height: 1.0;
+    letter-spacing: -0.045em;
+    font-weight: 300;
+  }
+  h1 .lite { font-weight: 300; color: rgba(255, 255, 255, 0.75); }
+  h1 .bold { font-weight: 700; color: #fff; }
+
+  .lede { margin: 14px 0 0; font-size: 14px; font-weight: 300; color: var(--text-2); }
+
+  .tabs {
+    display: flex;
+    gap: 34px;
+    padding: 0 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  }
   .tabs button {
-    flex: 1; padding: 8px 10px; border: 0; border-radius: 7px;
-    background: transparent; color: var(--muted);
-    font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+    padding: 16px 0;
+    margin-bottom: -1px;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 11.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: color .2s;
   }
-  .tabs button[aria-selected="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  input {
-    width: 100%; padding: 11px 12px; margin-bottom: 4px;
-    background: var(--field); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 9px;
-    font: inherit;
+  .tabs button:hover { color: #fff; }
+  .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--rule); }
+
+  .panel-body { padding: 30px; }
+
+  .banner {
+    display: none;
+    padding: 12px 14px;
+    margin-bottom: 26px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
   }
-  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
-  input[aria-invalid="true"] { border-color: var(--danger); }
-  .field { margin-bottom: 14px; }
-  .err { color: var(--danger); font-size: 12.5px; min-height: 16px; }
-  .hint { color: var(--muted); font-size: 12.5px; }
-  button.primary {
-    width: 100%; padding: 11px; margin-top: 6px;
-    background: var(--accent); color: var(--accent-ink);
-    border: 0; border-radius: 9px;
-    font: inherit; font-weight: 600; cursor: pointer;
-  }
-  button.primary:hover { filter: brightness(1.06); }
-  button.primary:disabled { opacity: .55; cursor: default; }
-  .note { margin-top: 16px; font-size: 12.5px; color: var(--muted); text-align: center; }
-  .note b { color: var(--ok); font-weight: 600; }
-  .banner { padding: 10px 12px; border-radius: 9px; font-size: 13.5px; margin-bottom: 16px; display: none; }
   .banner.show { display: block; }
-  .banner.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
-  .banner.bad { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
-  .account { text-align: center; }
-  .avatar {
-    width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 14px;
-    background: var(--accent); color: var(--accent-ink);
-    display: grid; place-items: center; font-size: 21px; font-weight: 700;
+  .banner.bad { color: #ff8f8f; border: 1px solid rgba(255, 107, 107, .5); background: rgba(255, 107, 107, .12); }
+  .banner.ok  { color: var(--rule); border: 1px solid rgba(60, 224, 245, .5); background: rgba(60, 224, 245, .12); }
+
+  /* Section rule — the app's Section title treatment */
+  .section {
+    margin: 34px 0 26px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 11.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--rule);
   }
-  .account p { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
-  .account strong { color: var(--ink); }
-  .linkish { background: none; border: 0; color: var(--muted); font: inherit; font-size: 12.5px; text-decoration: underline; cursor: pointer; padding: 0; }
-  .disclaimer { max-width: 420px; margin: 14px auto 0; text-align: center; font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+  .field { margin-bottom: 26px; }
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  label .opt { margin-left: 8px; letter-spacing: 0.12em; color: var(--text-4); }
+
+  input,
+  select {
+    width: 100%;
+    padding: 11px 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 0;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input::placeholder { color: var(--text-4); }
+  input:focus,
+  select:focus { border-bottom-color: var(--cyan); }
+  input[aria-invalid="true"],
+  select[aria-invalid="true"] { border-bottom-color: var(--destructive); }
+
+  select {
+    padding-right: 24px;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M2 5L7 10L12 5' stroke='rgba(255,255,255,0.65)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 2px center;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  select.placeholder { color: var(--text-4); }
+  select option { background: #12161b; color: #fff; }
+
+  /* Country code + number share one row */
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  .err {
+    min-height: 15px;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ff8f8f;
+  }
+
+  /* Solid, black-on-color fills — the site's CTA treatment */
+  button.primary,
+  button.alt {
+    width: 100%;
+    margin-top: 8px;
+    padding: 14px;
+    border: 0;
+    border-radius: 0;
+    color: #000;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.025em;
+    cursor: pointer;
+    transition: background .2s, box-shadow .2s;
+  }
+  button.primary { background: var(--cyan); }
+  button.primary:hover { background: var(--cyan-hover); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); }
+  button.alt { background: #fff; }
+  button.alt:hover { background: rgba(255, 255, 255, 0.9); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
+
+  .note {
+    margin: 18px 0 0;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 10.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    text-align: center;
+  }
+
+  .granted { text-align: center; }
+  .seal {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 22px;
+    display: grid;
+    place-items: center;
+    background: var(--cyan);
+    color: #000;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 19px;
+    letter-spacing: 0.04em;
+  }
+  .granted .eyebrow { margin-bottom: 10px; }
+  .granted h1 { font-size: 30px; }
+  .granted .who {
+    margin: 16px 0 0;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--text-2);
+    word-break: break-all;
+  }
+  .granted .meta {
+    margin: 20px 0 28px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 11px;
+    line-height: 2;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .granted .meta:empty { display: none; }
+
+  .linkish {
+    padding: 0;
+    background: none;
+    border: 0;
+    color: var(--text-4);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+    transition: color .2s;
+  }
+  .linkish:hover { color: #fff; }
+
+  .disclaimer {
+    max-width: 460px;
+    margin: 22px auto 0;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 10px;
+    line-height: 1.8;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-4);
+    text-align: center;
+  }
 </style>
 </head>
 <body>
-<main>
-  <div class="card">
-    <div class="brand"><div class="mark">L</div><span>Launch Discovery</span></div>
+<div class="shell">
 
-    <!-- signed-out view -->
-    <section id="auth">
-      <h1 id="title">Welcome back</h1>
-      <p class="sub" id="subtitle">Sign in to your account to continue.</p>
+  <!-- signed-out -->
+  <section id="auth" class="panel">
+    <div class="panel-head">
+      <p class="eyebrow" id="eyebrow">Authentication</p>
+      <h1 id="headline"><span class="lite">Access</span> <span class="bold">Aether</span></h1>
+      <p class="lede" id="lede">Sign in to continue to mission control.</p>
+    </div>
 
-      <div class="tabs" role="tablist">
-        <button role="tab" id="tab-signin" aria-selected="true" aria-controls="form">Sign in</button>
-        <button role="tab" id="tab-register" aria-selected="false" aria-controls="form">Register</button>
-      </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-signin" aria-selected="true" aria-controls="form">Sign in</button>
+      <button role="tab" id="tab-register" aria-selected="false" aria-controls="form">Register</button>
+    </div>
 
+    <div class="panel-body">
       <div class="banner" id="banner"></div>
 
       <form id="form" novalidate>
         <div class="field">
-          <label for="email">Email address</label>
-          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required>
+          <label for="email">Email Address</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@organisation.com" required>
           <div class="err" id="email-err"></div>
         </div>
 
@@ -139,28 +328,82 @@
         </div>
 
         <div class="field" id="confirm-field" hidden>
-          <label for="confirm">Confirm password</label>
+          <label for="confirm">Confirm Password</label>
           <input id="confirm" name="confirm" type="password" autocomplete="new-password" placeholder="••••••••">
           <div class="err" id="confirm-err"></div>
+        </div>
+
+        <!-- register-only profile block -->
+        <div id="profile" hidden>
+          <p class="section">Organisation</p>
+
+          <div class="field">
+            <label for="org">Organisation</label>
+            <input id="org" name="org" type="text" autocomplete="organization" placeholder="e.g. Aether Space">
+            <div class="err" id="org-err"></div>
+          </div>
+
+          <div class="field">
+            <label for="role">Role</label>
+            <input id="role" name="role" type="text" autocomplete="organization-title" placeholder="e.g. Mission Manager">
+            <div class="err" id="role-err"></div>
+          </div>
+
+          <div class="field">
+            <label for="country">Main Operating Country</label>
+            <select id="country" name="country" autocomplete="country-name" required>
+              <option value="" selected>Select a country</option>
+            </select>
+            <div class="err" id="country-err"></div>
+          </div>
+
+          <p class="section">Contact</p>
+
+          <div class="field">
+            <label for="linkedin">LinkedIn <span class="opt">Optional</span></label>
+            <input id="linkedin" name="linkedin" type="url" placeholder="linkedin.com/in/yourname">
+            <div class="err" id="linkedin-err"></div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="dial">Country Code</label>
+              <select id="dial" name="dial" required>
+                <option value="" selected>Select a code</option>
+              </select>
+              <div class="err" id="dial-err"></div>
+            </div>
+
+            <div class="field">
+              <label for="phone">Phone Number</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="7700 900000">
+              <div class="err" id="phone-err"></div>
+            </div>
+          </div>
         </div>
 
         <button class="primary" type="submit" id="submit">Sign in</button>
       </form>
 
       <p class="note" id="note"></p>
-    </section>
+    </div>
+  </section>
 
-    <!-- signed-in view -->
-    <section id="account" class="account" hidden>
-      <div class="avatar" id="avatar">?</div>
-      <h1>You're in</h1>
-      <p>Signed in as <strong id="who"></strong></p>
-      <button class="primary" id="signout">Sign out</button>
+  <!-- signed-in -->
+  <section id="account" class="panel" hidden>
+    <div class="panel-body granted">
+      <div class="seal" id="seal">?</div>
+      <p class="eyebrow">Session Active</p>
+      <h1><span class="lite">Access</span> <span class="bold">Granted</span></h1>
+      <p class="who" id="who"></p>
+      <div class="meta" id="meta"></div>
+      <button class="alt" id="signout">Sign out</button>
       <p class="note"><button class="linkish" id="wipe">Clear all local accounts</button></p>
-    </section>
-  </div>
+    </div>
+  </section>
+
   <p class="disclaimer">Demo only — accounts live in this browser's localStorage and passwords are not securely stored. Wire the form up to a real backend before using it with real credentials.</p>
-</main>
+</div>
 
 <script>
 (function () {
@@ -171,10 +414,54 @@
   const authView = $('auth'), accountView = $('account');
   const form = $('form'), banner = $('banner'), note = $('note');
   const email = $('email'), password = $('password'), confirm = $('confirm');
-  const confirmField = $('confirm-field');
+  const org = $('org'), role = $('role'), country = $('country');
+  const linkedin = $('linkedin'), dial = $('dial'), phone = $('phone');
+  const confirmField = $('confirm-field'), profileBlock = $('profile');
   const tabSignin = $('tab-signin'), tabRegister = $('tab-register');
 
+  const REGISTER_ONLY = [confirm, org, role, country, linkedin, dial, phone];
+  const ALL_FIELDS = [email, password, ...REGISTER_ONLY];
+
   let mode = 'signin';
+
+  // name:dial-code — feeds both the operating-country and country-code selects
+  const COUNTRIES = ('Afghanistan:93,Albania:355,Algeria:213,Andorra:376,Angola:244,Argentina:54,Armenia:374,' +
+    'Australia:61,Austria:43,Azerbaijan:994,Bahamas:1242,Bahrain:973,Bangladesh:880,Barbados:1246,Belarus:375,' +
+    'Belgium:32,Belize:501,Benin:229,Bhutan:975,Bolivia:591,Bosnia and Herzegovina:387,Botswana:267,Brazil:55,' +
+    'Brunei:673,Bulgaria:359,Burkina Faso:226,Burundi:257,Cambodia:855,Cameroon:237,Canada:1,Cape Verde:238,' +
+    'Chad:235,Chile:56,China:86,Colombia:57,Costa Rica:506,Croatia:385,Cuba:53,Cyprus:357,Czechia:420,' +
+    'Democratic Republic of the Congo:243,Denmark:45,Djibouti:253,Dominican Republic:1809,Ecuador:593,Egypt:20,' +
+    'El Salvador:503,Estonia:372,Eswatini:268,Ethiopia:251,Fiji:679,Finland:358,France:33,Gabon:241,Georgia:995,' +
+    'Germany:49,Ghana:233,Greece:30,Guatemala:502,Guinea:224,Guyana:592,Haiti:509,Honduras:504,Hong Kong:852,' +
+    'Hungary:36,Iceland:354,India:91,Indonesia:62,Iraq:964,Ireland:353,Israel:972,Italy:39,Ivory Coast:225,' +
+    'Jamaica:1876,Japan:81,Jordan:962,Kazakhstan:7,Kenya:254,Kuwait:965,Kyrgyzstan:996,Laos:856,Latvia:371,' +
+    'Lebanon:961,Lesotho:266,Liberia:231,Libya:218,Liechtenstein:423,Lithuania:370,Luxembourg:352,Madagascar:261,' +
+    'Malawi:265,Malaysia:60,Maldives:960,Mali:223,Malta:356,Mauritania:222,Mauritius:230,Mexico:52,Moldova:373,' +
+    'Monaco:377,Mongolia:976,Montenegro:382,Morocco:212,Mozambique:258,Myanmar:95,Namibia:264,Nepal:977,' +
+    'Netherlands:31,New Zealand:64,Nicaragua:505,Niger:227,Nigeria:234,North Macedonia:389,Norway:47,Oman:968,' +
+    'Pakistan:92,Panama:507,Papua New Guinea:675,Paraguay:595,Peru:51,Philippines:63,Poland:48,Portugal:351,' +
+    'Qatar:974,Romania:40,Rwanda:250,Saudi Arabia:966,Senegal:221,Serbia:381,Seychelles:248,Sierra Leone:232,' +
+    'Singapore:65,Slovakia:421,Slovenia:386,Somalia:252,South Africa:27,South Korea:82,Spain:34,Sri Lanka:94,' +
+    'Sudan:249,Sweden:46,Switzerland:41,Taiwan:886,Tajikistan:992,Tanzania:255,Thailand:66,Togo:228,' +
+    'Trinidad and Tobago:1868,Tunisia:216,Turkey:90,Turkmenistan:993,Uganda:256,Ukraine:380,' +
+    'United Arab Emirates:971,United Kingdom:44,United States:1,Uruguay:598,Uzbekistan:998,Venezuela:58,' +
+    'Vietnam:84,Yemen:967,Zambia:260,Zimbabwe:263').split(',').map(entry => {
+      const i = entry.lastIndexOf(':');
+      return { name: entry.slice(0, i), dial: '+' + entry.slice(i + 1) };
+    });
+
+  COUNTRIES.forEach(c => {
+    country.add(new Option(c.name, c.name));
+    // Code first — the half-width select clips long country names.
+    dial.add(new Option(`${c.dial} · ${c.name}`, c.dial));
+  });
+
+  // Grey the select until a real choice is made
+  const markPlaceholder = sel => sel.classList.toggle('placeholder', !sel.value);
+  [country, dial].forEach(sel => {
+    markPlaceholder(sel);
+    sel.addEventListener('change', () => markPlaceholder(sel));
+  });
 
   const loadUsers = () => {
     try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; }
@@ -198,6 +485,8 @@
   }
 
   const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+  const validLinkedIn = v => /^(https?:\/\/)?([\w-]+\.)?linkedin\.com\/.+/i.test(v.trim());
+  const validPhone = v => /^[\d][\d\s().-]{4,}$/.test(v.trim());
 
   function setError(input, msg) {
     $(input.id + '-err').textContent = msg || '';
@@ -216,21 +505,26 @@
     const registering = mode === 'register';
     tabSignin.setAttribute('aria-selected', String(!registering));
     tabRegister.setAttribute('aria-selected', String(registering));
-    $('title').textContent = registering ? 'Create your account' : 'Welcome back';
-    $('subtitle').textContent = registering
+    $('eyebrow').textContent = registering ? 'New Account' : 'Authentication';
+    $('headline').innerHTML = registering
+      ? '<span class="lite">Request</span> <span class="bold">Access</span>'
+      : '<span class="lite">Access</span> <span class="bold">Aether</span>';
+    $('lede').textContent = registering
       ? 'Register with your email to get started.'
-      : 'Sign in to your account to continue.';
+      : 'Sign in to continue to mission control.';
     $('submit').textContent = registering ? 'Create account' : 'Sign in';
     confirmField.hidden = !registering;
+    profileBlock.hidden = !registering;
     password.setAttribute('autocomplete', registering ? 'new-password' : 'current-password');
-    note.textContent = registering ? 'Passwords must be at least 8 characters.' : '';
-    [email, password, confirm].forEach(i => setError(i, ''));
+    note.textContent = registering ? 'Minimum 8 characters' : '';
+    ALL_FIELDS.forEach(i => setError(i, ''));
+    [country, dial].forEach(markPlaceholder);
     clearBanner();
   }
 
   tabSignin.addEventListener('click', () => setMode('signin'));
   tabRegister.addEventListener('click', () => setMode('register'));
-  [email, password, confirm].forEach(i => i.addEventListener('input', () => setError(i, '')));
+  ALL_FIELDS.forEach(i => i.addEventListener('input', () => setError(i, '')));
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
@@ -244,6 +538,14 @@
         ok = setError(password, 'Use at least 8 characters.') && ok;
       }
       ok = setError(confirm, confirm.value === password.value ? '' : 'Passwords do not match.') && ok;
+      ok = setError(org, org.value.trim() ? '' : 'Organisation is required.') && ok;
+      ok = setError(role, role.value.trim() ? '' : 'Role is required.') && ok;
+      ok = setError(country, country.value ? '' : 'Operating country is required.') && ok;
+      ok = setError(linkedin, !linkedin.value.trim() || validLinkedIn(linkedin.value)
+        ? '' : 'Enter a LinkedIn profile URL.') && ok;
+      ok = setError(dial, dial.value ? '' : 'Country code is required.') && ok;
+      ok = setError(phone, !phone.value.trim() ? 'Phone number is required.'
+        : validPhone(phone.value) ? '' : 'Enter a valid phone number.') && ok;
     }
     if (!ok) return;
 
@@ -254,10 +556,19 @@
     if (mode === 'register') {
       if (users[addr]) {
         setError(email, 'That email is already registered.');
-        showBanner('An account with that email already exists. Try signing in.', 'bad');
+        showBanner('An account with that email already exists', 'bad');
         return;
       }
-      users[addr] = { hash, createdAt: new Date().toISOString() };
+      users[addr] = {
+        hash,
+        org: org.value.trim(),
+        role: role.value.trim(),
+        country: country.value,
+        linkedin: linkedin.value.trim(),
+        dial: dial.value,
+        phone: phone.value.trim(),
+        createdAt: new Date().toISOString(),
+      };
       saveUsers(users);
       signIn(addr);
       return;
@@ -265,7 +576,7 @@
 
     const user = users[addr];
     if (!user || user.hash !== hash) {
-      showBanner('Email or password is incorrect.', 'bad');
+      showBanner('Email or password is incorrect', 'bad');
       return;
     }
     signIn(addr);
@@ -281,7 +592,7 @@
     form.reset();
     setMode('signin');
     render();
-    showBanner('You have been signed out.', 'ok');
+    showBanner('Session ended', 'ok');
   });
 
   $('wipe').addEventListener('click', () => {
@@ -290,18 +601,31 @@
     form.reset();
     setMode('signin');
     render();
-    showBanner('All local accounts cleared.', 'ok');
+    showBanner('All local accounts cleared', 'ok');
   });
 
   function render() {
     const addr = localStorage.getItem(SESSION_KEY);
-    const signedIn = Boolean(addr && loadUsers()[addr]);
-    authView.hidden = signedIn;
-    accountView.hidden = !signedIn;
-    if (signedIn) {
-      $('who').textContent = addr;
-      $('avatar').textContent = addr[0].toUpperCase();
-    }
+    const user = addr ? loadUsers()[addr] : null;
+    authView.hidden = Boolean(user);
+    accountView.hidden = !user;
+    if (!user) return;
+
+    $('who').textContent = addr;
+    $('seal').textContent = addr.slice(0, 2).toUpperCase();
+
+    const rows = [
+      [user.role, user.org].filter(Boolean).join(' · '),
+      user.country,
+      [user.dial, user.phone].filter(Boolean).join(' '),
+    ].filter(Boolean);
+    const meta = $('meta');
+    meta.textContent = '';
+    rows.forEach(r => {
+      const line = document.createElement('div');
+      line.textContent = r;   // user-supplied — never innerHTML
+      meta.appendChild(line);
+    });
   }
 
   setMode('signin');
