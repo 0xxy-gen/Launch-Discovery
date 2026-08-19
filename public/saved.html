@@ -11,17 +11,17 @@
 <script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
-  .launch-card { padding: 22px; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 12px; }
+  .launch-card { padding: clamp(26px, 1.9vw, 40px); background: var(--surface); border: 1px solid var(--surface-line); border-radius: 12px; }
   .launch-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-  .launch-head h2 { margin: 0 0 6px; font-size: 17px; font-weight: 500; }
-  .provider { font-size: 13px; color: var(--text-3); }
-  .launch-target { margin: 0; font-size: 13px; color: var(--text-3); }
+  .launch-head h2 { margin: 0 0 8px; font-size: clamp(19px, 1.4vw, 26px); font-weight: 500; }
+  .provider { font-size: clamp(14px, 1vw, 18px); color: var(--text-3); }
+  .launch-target { margin: 0; font-size: clamp(15px, 1.05vw, 19px); color: var(--text-3); }
   .meter { margin: 18px 0 0; }
   .meter-track { height: 6px; background: var(--track); border-radius: 999px; overflow: hidden; }
   .meter-fill { height: 100%; background: var(--cyan); border-radius: 999px; }
-  .meter-legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12.5px; color: var(--text-3); }
+  .meter-legend { display: flex; justify-content: space-between; margin-top: 10px; font-size: clamp(14px, 1vw, 18px); color: var(--text-3); }
   .meter-legend b { color: var(--text); font-weight: 600; }
-  .saved-at { margin-top: 14px; font-size: 12px; color: var(--text-4); }
+  .saved-at { margin-top: 16px; font-size: clamp(13px, .95vw, 17px); color: var(--text-4); }
 </style>
 </head>
 <body>

@@ -11,11 +11,11 @@
 <script src="theme.js"></script>
 <link rel="stylesheet" href="app.css">
 <style>
-  .profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 44px; align-items: start; }
+  .profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) clamp(300px, 22vw, 420px); gap: 44px; align-items: start; }
   @media (max-width: 880px) { .profile-grid { grid-template-columns: 1fr; } }
 
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
-  .hint { margin-top: 6px; font-size: 12px; color: var(--text-4); }
+  .hint { margin-top: 7px; font-size: clamp(13px, .95vw, 17px); color: var(--text-4); }
 
   .actions { display: flex; align-items: center; gap: 10px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); }
   .actions button { width: auto; margin: 0; padding: 12px 22px; }
@@ -35,8 +35,8 @@
     background: var(--cyan); border-radius: 50%;
     color: #04181d; font-size: 21px; font-weight: 700;
   }
-  .id-org { font-size: 17px; font-weight: 600; }
-  .id-role { margin-top: 4px; font-size: 13px; color: var(--text-3); }
+  .id-org { font-size: clamp(18px, 1.35vw, 24px); font-weight: 600; }
+  .id-role { margin-top: 6px; font-size: clamp(14.5px, 1.02vw, 18px); color: var(--text-3); }
   .id-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 16px; }
   .people { display: grid; gap: 10px; max-width: 620px; margin-bottom: 26px; }
   .person {
@@ -44,13 +44,13 @@
     grid-template-columns: 1fr auto auto;
     align-items: center;
     gap: 14px;
-    padding: 14px 18px;
+    padding: clamp(16px, 1.3vw, 24px) clamp(18px, 1.5vw, 28px);
     background: var(--surface);
     border: 1px solid var(--surface-line);
     border-radius: 12px;
   }
-  .person-email { font-size: 14px; font-weight: 500; }
-  .person-role { margin-top: 2px; font-size: 12.5px; color: var(--text-3); }
+  .person-email { font-size: clamp(16px, 1.15vw, 21px); font-weight: 500; }
+  .person-role { margin-top: 4px; font-size: clamp(14px, 1vw, 18px); color: var(--text-3); }
   .person.pending { border-style: dashed; }
 
   .invite { display: flex; align-items: flex-end; gap: 12px; max-width: 620px; }
@@ -105,7 +105,7 @@
   .check-item input:checked { border-color: var(--cyan); background: var(--cyan) var(--tick) center/11px no-repeat; }
 
   .meter { margin-top: 20px; text-align: left; }
-  .meter-head { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12.5px; color: var(--text-3); }
+  .meter-head { display: flex; justify-content: space-between; margin-bottom: 9px; font-size: clamp(14px, 1vw, 18px); color: var(--text-3); }
   .meter-head b { color: var(--text); font-weight: 700; }
   .meter-track { height: 6px; background: var(--track); border-radius: 999px; overflow: hidden; }
   .meter-fill { height: 100%; width: 0; background: var(--cyan); border-radius: 999px; transition: width .35s; }

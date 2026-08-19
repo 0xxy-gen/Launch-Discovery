@@ -1,3 +1,6 @@
+.topbar, .account { --chip: clamp(38px, 2.9vw, 54px); }
+.icon-link svg, .menu-button svg { width: 46%; height: 46%; }
+
 /* Chrome shared by every signed-in page. */
 body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 
@@ -6,22 +9,22 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    padding: 22px clamp(28px, 2.6vw, 56px);
+    padding: clamp(18px, 1.5vw, 30px) clamp(28px, 2.6vw, 56px);
     border-bottom: 1px solid var(--surface-line);
     background: var(--surface);
   }
-  .brand { font-weight: 700; font-size: 19px; letter-spacing: -0.02em; }
+  .brand { font-weight: 700; font-size: clamp(17px, 1.25vw, 23px); letter-spacing: -0.02em; }
   .brand span { font-weight: 300; color: var(--text-3); }
   .whoami { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-3); }
 
   .ghost-sm {
-    padding: 11px 20px;
+    padding: clamp(10px, .8vw, 15px) clamp(18px, 1.4vw, 28px);
     background: transparent;
     border: 1px solid var(--line-strong);
     border-radius: 8px;
     color: var(--text-2);
     font: inherit;
-    font-size: 15.5px;
+    font-size: clamp(15px, 1.05vw, 19px);
     cursor: pointer;
     transition: border-color .2s, color .2s;
   }
@@ -32,7 +35,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 
   .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; margin-bottom: 48px; }
   .page-head h1 { font-size: clamp(38px, 3.1vw, 62px); }
-  button.compact { width: auto; margin: 0; padding: 16px 28px; font-size: 16px; white-space: nowrap; }
+  button.compact { width: auto; margin: 0; padding: clamp(14px, 1.1vw, 21px) clamp(24px, 1.9vw, 38px); font-size: clamp(15px, 1.1vw, 20px); white-space: nowrap; }
 
   /* ── requirement rows ────────────────────────────────────────────────── */
   .rows { display: grid; gap: 16px; }
@@ -52,9 +55,9 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   .row-actions { display: flex; align-items: center; gap: 8px; }
 
   .pill {
-    padding: 6px 12px;
+    padding: clamp(5px, .45vw, 9px) clamp(11px, .9vw, 17px);
     border-radius: 999px;
-    font-size: 11.5px;
+    font-size: clamp(11px, .8vw, 14.5px);
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -64,35 +67,35 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 
   /* ── empty state ─────────────────────────────────────────────────────── */
   .empty {
-    padding: 64px 40px;
+    padding: clamp(52px, 4.4vw, 96px) clamp(32px, 3vw, 64px);
     background: var(--surface);
     border: 1px solid var(--surface-line);
     border-radius: 14px;
     text-align: center;
   }
-  .empty h2 { margin: 0 0 14px; font-size: 34px; font-weight: 300; letter-spacing: -0.03em; }
+  .empty h2 { margin: 0 0 16px; font-size: clamp(28px, 2.3vw, 44px); font-weight: 300; letter-spacing: -0.03em; }
   .empty h2 b { font-weight: 700; }
-  .empty p { max-width: 560px; margin: 0 auto 32px; font-size: 17px; line-height: 1.6; color: var(--text-3); }
+  .empty p { max-width: 620px; margin: 0 auto 34px; font-size: clamp(16px, 1.1vw, 20px); line-height: 1.6; color: var(--text-3); }
   .empty button { width: auto; margin: 0; padding: 12px 22px; }
 
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag {
-  padding: 7px 15px;
+  padding: clamp(6px, .5vw, 10px) clamp(13px, 1vw, 19px);
   border: 1px solid var(--line-strong);
   border-radius: 999px;
-  font-size: 14.5px;
+  font-size: clamp(14px, 1vw, 18px);
   color: var(--text-2);
 }
 .tag.key { border-color: rgba(34, 211, 238, .45); color: var(--cyan); }
 
 .topbar-left { display: flex; align-items: center; gap: 32px; }
 
-.nav { display: flex; gap: 34px; }
+.nav { display: flex; gap: clamp(24px, 2.1vw, 44px); }
 .nav-tab {
   padding: 4px 0;
   border-bottom: 2px solid transparent;
   color: var(--text-3);
-  font-size: 17px;
+  font-size: clamp(15.5px, 1.15vw, 21px);
   font-weight: 500;
   text-decoration: none;
   transition: color .2s;
@@ -101,12 +104,12 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 .nav-tab.current { color: var(--text); border-bottom-color: var(--rule); }
 
 .nav-badge {
-  margin-left: 7px;
-  padding: 2px 7px;
+  margin-left: 8px;
+  padding: 3px clamp(7px, .55vw, 11px);
   border-radius: 999px;
   background: var(--cyan);
   color: #04181d;
-  font-size: 10px;
+  font-size: clamp(9.5px, .72vw, 13px);
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -121,7 +124,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   position: relative;
   display: grid;
   place-items: center;
-  width: 44px; height: 44px;
+  width: var(--chip); height: var(--chip);
   border-radius: 10px;
   color: var(--text-3);
   transition: color .2s, background .2s;
@@ -156,7 +159,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 .menu-button {
   display: grid;
   place-items: center;
-  width: 44px; height: 44px;
+  width: var(--chip); height: var(--chip);
   padding: 0;
   background: transparent;
   border: 1px solid var(--surface-line);
@@ -172,7 +175,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   top: calc(100% + 10px);
   right: 0;
   z-index: 60;
-  min-width: 250px;
+  min-width: clamp(250px, 18vw, 340px);
   padding: 6px;
   background: var(--surface);
   border: 1px solid var(--surface-line);
@@ -182,13 +185,13 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 .menu-item {
   display: block;
   width: 100%;
-  padding: 13px 16px;
+  padding: clamp(12px, .95vw, 18px) clamp(14px, 1.1vw, 20px);
   background: none;
   border: 0;
   border-radius: 8px;
   color: var(--text-2);
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: clamp(14.5px, 1.05vw, 19px);
   text-align: left;
   text-decoration: none;
   cursor: pointer;
@@ -200,9 +203,9 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 .avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .avatar {
-  width: 44px;
+  width: var(--chip);
   text-decoration: none;
-  height: 44px;
+  height: var(--chip);
   display: grid;
   place-items: center;
   padding: 0;
@@ -211,7 +214,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
   border-radius: 50%;
   color: #04181d;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: clamp(12px, .9vw, 16px);
   font-weight: 700;
   letter-spacing: .02em;
   cursor: pointer;
@@ -225,7 +228,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 
 /* favourite toggle — the same heart on every surface */
 .fav {
-  padding: 6px;
+  padding: clamp(6px, .5vw, 10px);
   background: none;
   border: 0;
   border-radius: 8px;
@@ -235,6 +238,7 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 }
 .fav:hover { color: var(--heart); background: var(--tint); }
 .fav:active { transform: scale(.9); }
+.fav svg { width: clamp(18px, 1.35vw, 26px); height: clamp(18px, 1.35vw, 26px); }
 .fav.on { color: var(--heart); }
 
 /* ── publish confirmation ─────────────────────────────────────────────────── */
