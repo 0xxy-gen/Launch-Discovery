@@ -353,3 +353,51 @@ a.alert-go { display: inline-block; text-decoration: none; }
   object-fit: contain;
 }
 .launch-main { flex: 1; min-width: 0; }
+
+/* ─── sort tabs and the shortlist ─────────────────────────────────────────── */
+/* Google Flights splits Best from Cheapest. There is no published price in
+   launch, so the axes are fit, headroom and date instead. */
+.sort-tabs {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.sort-tab {
+  flex: 1;
+  padding: clamp(11px, .95vw, 16px) clamp(12px, 1.1vw, 20px);
+  background: none;
+  border: 0;
+  border-right: 1px solid var(--line);
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-3);
+  font: inherit;
+}
+.sort-tab:last-child { border-right: 0; }
+.sort-tab:hover { background: var(--chip); }
+.sort-tab.on { background: var(--chip); color: var(--text-1); }
+.sort-label { display: block; font-weight: 600; font-size: clamp(14px, 1.02vw, 17px); }
+.sort-hint {
+  display: block;
+  margin-top: 3px;
+  font-size: clamp(11.5px, .84vw, 14px);
+  color: var(--text-4);
+}
+.sort-tab.on .sort-label { color: var(--text-1); }
+
+.top-box { margin-bottom: 30px; }
+.top-head { margin-bottom: 14px; }
+.top-head h2 {
+  margin: 0;
+  font-size: clamp(19px, 1.45vw, 27px);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.top-head p {
+  margin: 5px 0 0;
+  color: var(--text-3);
+  font-size: clamp(13.5px, 1vw, 17px);
+}
+.top-box .rows > * { border-color: var(--accent); }

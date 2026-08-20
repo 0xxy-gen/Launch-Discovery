@@ -126,6 +126,62 @@
     return params.toString();
   }
 
+
+  // ─── ranking ──────────────────────────────────────────────────────────────
+  // Google Flights sorts on price. Launch pricing is negotiated and unpublished,
+  // so there is no price here to sort on — the axes that actually separate one
+  // flight from another are whether it fits, how much room is left over, and
+  // how soon it goes.
+
+  let sortKey = 'best';
+
+  const SORTS = [
+    { key: 'best',    label: 'Best match', hint: 'Fits most of your satellites, with room to spare' },
+    { key: 'soonest', label: 'Soonest',    hint: 'Earliest launch window first' },
+    { key: 'roomiest', label: 'Most spare capacity', hint: 'Largest unsold mass first' },
+  ];
+
+  const fitting = l => l.candidates.filter(c => c.ok && c.mass <= l.availableKg);
+
+  // How comfortably the heaviest satellite that fits would sit on this flight.
+  function headroom(l) {
+    const ok = fitting(l);
+    if (!ok.length) return 0;
+    return l.availableKg - Math.max(...ok.map(c => c.mass));
+  }
+
+  function compare(a, b) {
+    if (sortKey === 'soonest') return a.windowMonth.localeCompare(b.windowMonth);
+    if (sortKey === 'roomiest') return b.availableKg - a.availableKg;
+
+    // best: fits more of your satellites, then more headroom, then sooner
+    const fa = fitting(a).length, fb = fitting(b).length;
+    if (fa !== fb) return fb - fa;
+    const ha = headroom(a), hb = headroom(b);
+    if (ha !== hb) return hb - ha;
+    return a.windowMonth.localeCompare(b.windowMonth);
+  }
+
+  function renderTabs() {
+    const host = $('sort-tabs');
+    host.textContent = '';
+    for (const s of SORTS) {
+      const tab = el('button', 'sort-tab' + (s.key === sortKey ? ' on' : ''));
+      tab.type = 'button';
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', String(s.key === sortKey));
+      tab.append(el('span', 'sort-label', s.label));
+      tab.append(el('span', 'sort-hint', s.hint));
+      tab.addEventListener('click', () => {
+        if (sortKey === s.key) return;
+        sortKey = s.key;
+        paint();
+      });
+      host.append(tab);
+    }
+    host.hidden = false;
+  }
+
   let timer;
   const scheduleLoad = () => { clearTimeout(timer); timer = setTimeout(load, 200); };
 
@@ -146,12 +202,47 @@
       }
     }
 
-    rows.textContent = '';
-    data.launches.forEach(l => rows.append(card(l)));
-    empty.hidden = data.launches.length > 0;
-    $('count').textContent = `${data.launches.length} launch${data.launches.length === 1 ? '' : 'es'}`;
+    current = data.launches;
+    paint();
+  }
 
-    rows.querySelector('.focused')?.scrollIntoView({ block: 'center' });
+  let current = [];
+
+  function paint() {
+    const all = [...current].sort(compare);
+
+    // The shortlist only means anything if something actually fits. With no
+    // satellites listed, or nothing compatible, promoting three at random would
+    // be dressing up a guess.
+    const viable = all.filter(l => fitting(l).length);
+    const top = sortKey === 'best' ? viable.slice(0, 3) : [];
+    const topIds = new Set(top.map(l => l.id));
+
+    const box = $('top-box');
+    const topRows = $('top-rows');
+    topRows.textContent = '';
+    if (top.length) {
+      top.forEach(l => topRows.append(card(l)));
+      const refs = [...new Set(top.flatMap(l => fitting(l).map(c => c.reference)))];
+      $('top-lede').textContent =
+        `Ranked on what fits ${refs.slice(0, 3).join(', ')}`
+        + `${refs.length > 3 ? ` and ${refs.length - 3} more` : ''}, and how much room is left over.`;
+      box.hidden = false;
+    } else {
+      box.hidden = true;
+    }
+
+    const rest = all.filter(l => !topIds.has(l.id));
+    rows.textContent = '';
+    rest.forEach(l => rows.append(card(l)));
+
+    empty.hidden = all.length > 0;
+    renderTabs();
+    $('count').textContent = top.length
+      ? `${rest.length} other launch${rest.length === 1 ? '' : 'es'}`
+      : `${all.length} launch${all.length === 1 ? '' : 'es'}`;
+
+    document.querySelector('.focused')?.scrollIntoView({ block: 'center' });
   }
 
   FILTERS.forEach(id => {
