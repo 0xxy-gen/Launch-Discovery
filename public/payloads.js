@@ -109,9 +109,9 @@
   // same way. Telling a provider to "list your mission" is the wrong verb.
   function ctaCard() {
     const copy = sellsLaunch
-      ? { title: 'Have capacity to sell?',
-          lead: 'List a flight with its spare mass and these operators can find it. '
-              + 'You stay named — supply is advertised openly.',
+      ? { title: 'Looking for a payload to fill your launch capacity?',
+          lead: 'List a launch to contact satellite operators. You stay named — '
+              + 'supply is advertised openly, and demand comes to you.',
           action: 'List a launch', href: '/my-launches' }
       : { title: 'Want to find launch capacity?',
           lead: 'Describe your mission and providers can find it — banded, so nobody '
@@ -169,6 +169,13 @@
     if (!me.ok) return;
     sellsLaunch = me.data.user.accountType === 'launch_provider'
       || me.data.user.accountType === 'broker';
+    if (sellsLaunch) {
+      document.querySelector('.page-head h1').innerHTML =
+        '<span class="lite">Find</span> <span class="bold">payloads</span>';
+      document.querySelector('.page-head .lede').textContent =
+        'Satellite operators with a payload and no ride yet. Figures are banded and '
+        + 'names withheld until the owner accepts an introduction.';
+    }
     renderAccount(me.data.user);
     renderNav(me.data.user, 'payloads');
     const fill = (id, list) => { for (const o of list) $(id).add(new Option(o.label, o.value)); };
