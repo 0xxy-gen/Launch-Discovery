@@ -89,6 +89,16 @@
       </div>
 
       <div class="field">
+        <span class="filter-label">Price per kg</span>
+        <div id="price-range"></div>
+      </div>
+
+      <div class="field">
+        <span class="filter-label">Altitude</span>
+        <div id="alt-range"></div>
+      </div>
+
+      <div class="field">
         <label for="minAvailable">Payload mass (kg)</label>
         <input id="minAvailable" type="number" min="0" step="1" placeholder="e.g. 180">
         <p class="filter-hint">Shows flights with at least this much spare.</p>
@@ -150,6 +160,7 @@
 <script src="nav.js"></script>
 <script src="provider-badge.js"></script>
 <script src="vehicle-glyph.js"></script>
+<script src="range-slider.js"></script>
 <script src="launches.js"></script>
 </body>
 </html>

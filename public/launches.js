@@ -5,6 +5,7 @@
   // "SSO or polar" and "US or EU", almost never exactly one value.
   const picked = { orbit: new Set(), country: new Set() };
   let windowFrom = '', windowTo = '';
+  let priceRange = null, altRange = null;
 
   async function api(path) {
     const res = await fetch(path, { credentials: 'same-origin' });
@@ -113,6 +114,13 @@
     if (picked.orbit.size) params.set('orbit', [...picked.orbit].join(','));
     if (picked.country.size) params.set('country', [...picked.country].join(','));
     if ($('minAvailable').value) params.set('minAvailable', $('minAvailable').value);
+    for (const [name, slider] of [['price', priceRange], ['alt', altRange]]) {
+      if (!slider) continue;
+      const [lo, hi] = slider.get();
+      // only send a bound that actually narrows anything
+      if (lo > slider.floor) params.set(name + 'Min', lo);
+      if (hi != null) params.set(name + 'Max', hi);
+    }
     if (windowFrom) params.set('from', windowFrom);
     if (windowTo) params.set('to', windowTo);
     return params.toString();
@@ -294,6 +302,35 @@
     });
   }
 
+  // ─── ranges ───────────────────────────────────────────────────────────────
+  // Sliders suit a preference with fuzzy edges — a budget, an acceptable shell.
+  // Payload mass stays a typed field below, because that is a number you know
+  // exactly and dragging to 180 kg is worse than typing it.
+
+  function setupRanges(bounds) {
+    if (!bounds || bounds.priceMax == null) return;
+
+    const priceTop = Math.ceil(bounds.priceMax / 5000) * 5000;
+    priceRange = rangeSlider($('price-range'), {
+      min: 0, max: priceTop, step: 500,
+      value: [0, priceTop],
+      format: v => '$' + (v / 1000) + 'k',
+      onChange: load,
+    });
+    priceRange.floor = 0;
+
+    // GTO and MEO sit far above the LEO shells, so the track covers LEO in
+    // useful detail and the open-ended top still lets the high orbits through.
+    const altTop = 2000;
+    altRange = rangeSlider($('alt-range'), {
+      min: 200, max: altTop, step: 25,
+      value: [200, altTop],
+      format: v => v + ' km',
+      onChange: load,
+    });
+    altRange.floor = 200;
+  }
+
   // ─── price context ────────────────────────────────────────────────────────
   // Google Flights can say "prices are typical" because it has a price history
   // to compare against. There is no such history here — launch prices are not
@@ -443,6 +480,7 @@
       }
 
       setupWindow([...new Set(data.launches.map(l => l.windowMonth))].sort());
+      setupRanges(data.bounds);
     }
 
     current = data.launches;
@@ -495,6 +533,8 @@
     picked.country.clear();
     $('minAvailable').value = '';
     windowFrom = windowTo = '';
+    priceRange?.reset();
+    altRange?.reset();
     document.querySelectorAll('.check-group input').forEach(i => { i.checked = false; });
     paintWindowButton();
     load();
