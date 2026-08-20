@@ -154,6 +154,17 @@
     return l.availableKg - Math.max(...ok.map(c => c.mass));
   }
 
+  // The shortlist is a recommendation, not a view of the current sort, so it is
+  // always ranked this way — switching tabs reorders the list underneath it and
+  // leaves the top three where they are.
+  function bestFirst(a, b) {
+    const fa = fitting(a).length, fb = fitting(b).length;
+    if (fa !== fb) return fb - fa;
+    const ha = headroom(a), hb = headroom(b);
+    if (ha !== hb) return hb - ha;
+    return a.windowMonth.localeCompare(b.windowMonth);
+  }
+
   function compare(a, b) {
     if (sortKey === 'soonest') return a.windowMonth.localeCompare(b.windowMonth);
     if (sortKey === 'cheapest') {
@@ -163,12 +174,7 @@
       return a.windowMonth.localeCompare(b.windowMonth);
     }
 
-    // best: fits more of your satellites, then more headroom, then sooner
-    const fa = fitting(a).length, fb = fitting(b).length;
-    if (fa !== fb) return fb - fa;
-    const ha = headroom(a), hb = headroom(b);
-    if (ha !== hb) return hb - ha;
-    return a.windowMonth.localeCompare(b.windowMonth);
+    return bestFirst(a, b);
   }
 
   // The value that would lead under each sort, shown on the tab so the choice
@@ -240,8 +246,8 @@
     // The shortlist only means anything if something actually fits. With no
     // satellites listed, or nothing compatible, promoting three at random would
     // be dressing up a guess.
-    const viable = all.filter(l => fitting(l).length);
-    const top = sortKey === 'best' ? viable.slice(0, 3) : [];
+    const viable = [...current].filter(l => fitting(l).length).sort(bestFirst);
+    const top = viable.slice(0, 3);
     const topIds = new Set(top.map(l => l.id));
 
     const box = $('top-box');
