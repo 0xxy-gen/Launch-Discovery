@@ -10,6 +10,11 @@
     --surface-line: var(--line-strong);
     --cyan: #22d3ee;          /* cyan-400 — solid CTA fill */
     --cyan-hover: #67e8f9;    /* cyan-300 */
+    /* selection: an outline, a wash behind it, and text that stays readable
+       on that wash. Named for the job so callers do not reach for --cyan. */
+    --accent: var(--cyan);
+    --accent-soft: rgba(34, 211, 238, 0.12);
+    --accent-ink: #a5f3fc;    /* cyan-200 — legible on the dark wash */
     --rule: #3ce0f5;          /* section titles / active tab */
     --destructive: #ff6b6b;
     --danger-text: #ff8f8f;
@@ -47,6 +52,9 @@
     --surface-line: rgba(0, 0, 0, 0.12);
     --cyan: #06b6d4;
     --cyan-hover: #0891b2;
+    --accent: var(--cyan);
+    --accent-soft: rgba(6, 182, 212, 0.10);
+    --accent-ink: #0e5a6b;
     --rule: #0e7490;
     --destructive: #c0342b;
     --danger-text: #b3271e;

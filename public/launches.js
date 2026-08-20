@@ -130,6 +130,7 @@
   const fitting = l => l.candidates.filter(c => c.ok && c.mass <= l.availableKg);
 
   const money = n => '$' + Math.round(n).toLocaleString('en-US');
+  const plain = n => Math.round(n).toLocaleString('en-US');   // second half of a range
 
   // Quoting on request is normal in launch, so a missing price is stated rather
   // than hidden — an empty space would read as free.
@@ -141,8 +142,7 @@
       return span;
     }
     // one currency symbol across the range, not one per end
-    const high = Math.round(l.priceHigh).toLocaleString('en-US');
-    span.append(el('b', null, `${money(l.priceLow)}–${high}`));
+    span.append(el('b', null, `${money(l.priceLow)}–${plain(l.priceHigh)}`));
     span.append(document.createTextNode(' /kg'));
     return span;
   }
@@ -176,6 +176,79 @@
 
     return bestFirst(a, b);
   }
+
+
+  // ─── price context ────────────────────────────────────────────────────────
+  // Google Flights can say "prices are typical" because it has a price history
+  // to compare against. There is no such history here — launch prices are not
+  // published, let alone tracked over time — so inventing a trend line would be
+  // fabricating market data. What IS honest is describing the listings actually
+  // on screen: the range they span and where the middle of them sits.
+
+  const quantile = (sorted, q) => {
+    const pos = (sorted.length - 1) * q;
+    const lo = Math.floor(pos);
+    const hi = Math.ceil(pos);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+  };
+
+  function renderPricePanel(list) {
+    const panel = $('price-panel');
+    const priced = list.filter(l => l.priceLow != null);
+
+    // one listing is not a spread, and none is not a panel
+    if (priced.length < 3) { panel.hidden = true; return; }
+
+    const lows = priced.map(l => l.priceLow).sort((a, b) => a - b);
+    const min = lows[0];
+    const max = lows[lows.length - 1];
+    const q1 = quantile(lows, 0.25);
+    const q3 = quantile(lows, 0.75);
+    const median = quantile(lows, 0.5);
+
+    $('pp-title').textContent =
+      `Listed prices run ${money(min)}–${plain(max)} per kg`;
+    $('pp-lede').textContent =
+      `Across ${priced.length} priced flights matching these filters. Half sit between `
+      + `${money(q1)} and ${plain(q3)} — anything below that is cheap for this search.`;
+
+    const span = max - min || 1;
+    const pct = v => ((v - min) / span) * 100;
+
+    const scale = $('pp-scale');
+    scale.textContent = '';
+
+    // the middle half, shaded, so "typical" is a band rather than a claim
+    const mid = el('div', 'pp-mid');
+    mid.style.left = pct(q1) + '%';
+    mid.style.width = (pct(q3) - pct(q1)) + '%';
+    scale.append(mid);
+
+    // one tick per listing, so the shape of the market is visible, not asserted
+    for (const l of priced) {
+      const tick = el('div', 'pp-tick');
+      tick.style.left = pct(l.priceLow) + '%';
+      tick.title = `${l.name} — ${money(l.priceLow)}/kg`;
+      scale.append(tick);
+    }
+
+    const mark = el('div', 'pp-median');
+    mark.style.left = pct(median) + '%';
+    mark.append(el('span', 'pp-median-label', `${money(median)} median`));
+    scale.append(mark);
+
+    $('pp-min').textContent = money(min);
+    $('pp-max').textContent = money(max);
+    panel.hidden = false;
+  }
+
+  $('pp-toggle').addEventListener('click', () => {
+    const body = $('pp-body');
+    const open = body.hidden;
+    body.hidden = !open;
+    $('pp-toggle').textContent = open ? 'Hide' : 'Show';
+    $('pp-toggle').setAttribute('aria-expanded', String(open));
+  });
 
   // The value that would lead under each sort, shown on the tab so the choice
   // is informative before you make it — Google Flights' "Cheapest from $191".
@@ -270,6 +343,7 @@
 
     empty.hidden = all.length > 0;
     renderTabs(all);
+    renderPricePanel(all);
     $('count').textContent = top.length
       ? `${rest.length} other launch${rest.length === 1 ? '' : 'es'}`
       : `${all.length} launch${all.length === 1 ? '' : 'es'}`;

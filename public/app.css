@@ -354,37 +354,46 @@ a.alert-go { display: inline-block; text-decoration: none; }
 }
 .launch-main { flex: 1; min-width: 0; }
 
-/* ─── sort tabs and the shortlist ─────────────────────────────────────────── */
-/* One line per tab, with the leading value beside the label, so choosing a sort
-   tells you something before you click it. */
+/* ─── sort tabs ───────────────────────────────────────────────────────────── */
+/* The selected tab is filled and outlined rather than merely underlined, so it
+   reads as a chosen state from across a room. */
 .sort-tabs {
   display: flex;
+  gap: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
-  overflow: hidden;
   margin-bottom: 22px;
+  background: var(--surface);
 }
 .sort-tab {
   flex: 1;
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 8px;
-  padding: clamp(13px, 1.05vw, 18px) clamp(12px, 1.1vw, 20px);
+  gap: 9px;
+  padding: clamp(14px, 1.15vw, 20px) clamp(12px, 1.1vw, 20px);
   background: none;
-  border: 0;
-  border-right: 1px solid var(--line);
+  border: 2px solid transparent;
+  border-radius: 11px;
+  margin: -1px;
   cursor: pointer;
-  color: var(--text-3);
+  color: var(--text-2);
   font: inherit;
   white-space: nowrap;
 }
-.sort-tab:last-child { border-right: 0; }
+.sort-tab + .sort-tab { border-left-color: var(--line); border-left-width: 1px; }
 .sort-tab:hover { background: var(--chip); }
-.sort-tab.on { background: var(--chip); color: var(--text-1); box-shadow: inset 0 -2px 0 var(--accent); }
-.sort-label { font-weight: 600; font-size: clamp(14px, 1.05vw, 18px); }
-.sort-tab.on .sort-label { color: var(--text-1); }
-.sort-lead { font-size: clamp(12px, .9vw, 15px); color: var(--text-4); }
+.sort-tab.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  z-index: 1;
+}
+.sort-label { font-weight: 600; font-size: clamp(15px, 1.15vw, 19px); }
+.sort-tab.on .sort-label { color: var(--accent-ink); }
+.sort-lead { font-size: clamp(12.5px, .95vw, 16px); color: var(--text-4); }
+.sort-lead b { color: var(--text-1); font-weight: 650; }
+.sort-tab.on .sort-lead { color: var(--accent-ink); opacity: .8; }
 
 /* price sits at the end of the capacity legend, where the eye already lands */
 .price { color: var(--text-2); font-size: clamp(13px, 1vw, 17px); }
@@ -405,3 +414,95 @@ a.alert-go { display: inline-block; text-decoration: none; }
   font-size: clamp(13.5px, 1vw, 17px);
 }
 .top-box .rows > * { border-color: var(--accent); }
+
+/* ─── price context panel ─────────────────────────────────────────────────── */
+/* Describes the listings on screen. There is no price history in launch, so
+   there is no trend line here — only the spread of what is actually offered. */
+.price-panel {
+  margin-bottom: 24px;
+  padding: clamp(18px, 1.5vw, 28px) clamp(20px, 1.7vw, 32px);
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.pp-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.pp-head h2 {
+  margin: 0;
+  font-size: clamp(16px, 1.25vw, 22px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.pp-head p {
+  margin: 6px 0 0;
+  color: var(--text-3);
+  font-size: clamp(13px, .98vw, 16.5px);
+  max-width: 62ch;
+}
+.pp-toggle {
+  flex: none;
+  background: none;
+  border: 0;
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: clamp(13px, .95vw, 16px);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.pp-toggle:hover { text-decoration: underline; }
+
+.pp-body { margin-top: clamp(24px, 2vw, 38px); }
+.pp-scale {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    #34d399 0%, #34d399 22%, #fbbf24 42%, #fbbf24 62%, #f87171 88%);
+}
+.pp-mid {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  background: var(--surface);
+  opacity: .28;
+  border-radius: 4px;
+}
+.pp-tick {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 14px;
+  margin-left: -1px;
+  background: var(--text-1);
+  opacity: .45;
+  border-radius: 1px;
+}
+.pp-median {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--accent);
+}
+.pp-median-label {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: clamp(12px, .9vw, 15px);
+  font-weight: 600;
+}
+.pp-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 11px;
+  font-size: clamp(12px, .88vw, 15px);
+  color: var(--text-4);
+}
