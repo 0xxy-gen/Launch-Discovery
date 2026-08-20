@@ -31,7 +31,10 @@
 
     const right = el('div');
     right.style.textAlign = 'right';
-    right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+    const line = el('div', 'provider-line');
+    line.append(providerBadge(l.provider, l.providerLogo));
+    line.append(el('span', 'provider', l.provider || 'Unnamed provider'));
+    right.append(line);
     if (l.resold) right.append(el('div', 'operator', `flies on ${l.operator}`));
     const fav = el('button', 'fav on');
     fav.type = 'button';

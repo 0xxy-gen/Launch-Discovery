@@ -35,7 +35,10 @@
     const right = el('div', 'launch-right');
     // A broker sells ports on someone else's rocket, so name both, stacked.
     const seller = el('div', 'seller');
-    seller.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+    const line = el('div', 'provider-line');
+    line.append(providerBadge(l.provider, l.providerLogo));
+    line.append(el('span', 'provider', l.provider || 'Unnamed provider'));
+    seller.append(line);
     if (l.resold) seller.append(el('div', 'operator', `flies on ${l.operator}`));
     right.append(seller);
 

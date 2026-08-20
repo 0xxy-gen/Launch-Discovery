@@ -312,3 +312,22 @@ a.alert-go { display: inline-block; text-decoration: none; }
 
 /* a broker lists capacity it does not fly — name both parties */
 .operator { font-size: clamp(12px, .88vw, 15px); color: var(--text-4); margin-top: 2px; }
+
+/* the provider's mark beside a listing — their logo once uploaded, a monogram
+   until then, because shipping other companies' trademarks is not ours to do */
+.provider-line { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.provider-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: clamp(26px, 2vw, 34px);
+  aspect-ratio: 1;
+  border-radius: 7px;
+  overflow: hidden;
+  font-size: clamp(10px, .74vw, 12px);
+  font-weight: 700;
+  letter-spacing: .02em;
+  background: var(--chip);
+  color: var(--text-2);
+}
+.provider-badge img { width: 100%; height: 100%; object-fit: contain; }
