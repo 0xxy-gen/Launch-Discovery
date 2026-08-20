@@ -1,5 +1,6 @@
 import express from 'express';
 import { join, dirname } from 'node:path';
+import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { COUNTRIES } from './lib/countries.js';
@@ -54,6 +55,20 @@ const PORT = Number(process.env.PORT ?? 3100);
 const SESSION_TTL = 1000 * 60 * 60 * 24 * 14;   // 14 days
 const COOKIE = 'ld_session';
 const SECURE_COOKIES = process.env.NODE_ENV === 'production';
+
+// Whatever vehicle images are sitting in public/vehicles at start-up. The page
+// swaps the drawn silhouette for a real image when one exists for that vehicle,
+// so adding artwork is a matter of dropping files in and restarting.
+function vehicleImages() {
+  try {
+    return Object.fromEntries(readdirSync(join(root, 'public', 'vehicles'))
+      .filter(f => /\.(png|webp|svg|jpe?g)$/i.test(f))
+      .map(f => [f.replace(/\.[^.]+$/, '').toLowerCase(), '/vehicles/' + f]));
+  } catch {
+    return {};
+  }
+}
+const VEHICLE_IMAGES = vehicleImages();
 
 const app = express();
 app.disable('x-powered-by');
@@ -147,6 +162,7 @@ app.get('/api/options', (req, res) => {
     flightHeritage: FLIGHT_HERITAGE,
     exportRegimes: EXPORT_REGIMES,
     applications: APPLICATIONS,
+    vehicleImages: VEHICLE_IMAGES,
   });
 });
 

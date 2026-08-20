@@ -26,6 +26,15 @@
   function card(l) {
     const card = el('div', 'launch-card' + (l.id === focusId ? ' focused' : ''));
 
+    // The silhouette sits alongside the card rather than inside a chip, so the
+    // size class is actually legible — that is the only thing it encodes.
+    const art = el('div', 'launch-art');
+    art.append(vehicleGlyph(l.vehicle, l.capacityKg));
+    card.append(art);
+
+    const main = el('div', 'launch-main');
+    card.append(main);
+
     const head = el('div', 'launch-head');
     const left = el('div');
     left.append(el('h2', null, l.name));
@@ -64,7 +73,7 @@
     right.append(save);
 
     head.append(right);
-    card.append(head);
+    main.append(head);
 
     const tags = el('div', 'tags');
     tags.style.marginTop = '14px';
@@ -73,7 +82,7 @@
     if (l.providerCountry) {
       tags.append(el('span', 'tag', `${flags.get(l.providerCountry) ?? ''} ${l.providerCountry}`.trim()));
     }
-    card.append(tags);
+    main.append(tags);
 
     const used = l.capacityKg - l.availableKg;
     const pct = Math.min(100, Math.round((used / l.capacityKg) * 100));
@@ -87,7 +96,7 @@
     spare.append(el('b', null, `${l.availableKg} kg`), document.createTextNode(' spare'));
     legend.append(spare, el('span', null, `${l.capacityKg} kg capacity`));
     meter.append(track, legend);
-    card.append(meter);
+    main.append(meter);
 
     // does anything of mine actually fit
     const fits = l.candidates.filter(c => c.ok && c.mass <= l.availableKg);
@@ -105,7 +114,7 @@
         }).join(' · ')));
         fit.append(why);
       }
-      card.append(fit);
+      main.append(fit);
     }
 
     return card;
@@ -160,6 +169,7 @@
     if (!me.ok) return;
     renderAccount(me.data.user);
     renderNav(me.data.user, 'launches');
+    setVehicleImages(options.data.vehicleImages);
     for (const o of options.data.orbitTypes) $('orbit').add(new Option(o.label, o.value));
     flags = new Map(options.data.countries.map(c => [c.name, c.flag]));
     load();

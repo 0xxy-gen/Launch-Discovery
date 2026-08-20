@@ -3,3 +3,7 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 data/snapshots/
+public/logos/*
+!public/logos/README.md
+public/vehicles/*
+!public/vehicles/README.md
