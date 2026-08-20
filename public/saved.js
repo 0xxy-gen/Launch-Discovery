@@ -49,7 +49,7 @@
 
     const tags = el('div', 'tags');
     tags.style.marginTop = '14px';
-    [l.vehicle, l.site, l.providerCountry && `${flags.get(l.providerCountry) ?? ''} ${l.providerCountry}`.trim()]
+    [l.vehicle, l.site || null, l.providerCountry && `${flags.get(l.providerCountry) ?? ''} ${l.providerCountry}`.trim()]
       .filter(Boolean).forEach(t => tags.append(el('span', 'tag', t)));
     card.append(tags);
 

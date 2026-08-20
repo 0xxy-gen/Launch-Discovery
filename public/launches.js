@@ -65,7 +65,8 @@
 
     const tags = el('div', 'tags');
     tags.style.marginTop = '14px';
-    tags.append(el('span', 'tag', l.vehicle), el('span', 'tag', l.site));
+    tags.append(el('span', 'tag', l.vehicle));
+    if (l.site) tags.append(el('span', 'tag', l.site));
     if (l.providerCountry) {
       tags.append(el('span', 'tag', `${flags.get(l.providerCountry) ?? ''} ${l.providerCountry}`.trim()));
     }

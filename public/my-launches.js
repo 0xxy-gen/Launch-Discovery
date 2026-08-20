@@ -80,7 +80,7 @@
       left.append(title);
 
       const facts = el('div', 'facts');
-      [l.vehicle, l.site, l.orbitType, `${l.altitudeKm} km`, `${l.inclinationDeg}°`, l.windowMonth]
+      [l.vehicle, l.site || null, l.orbitType, `${l.altitudeKm} km`, `${l.inclinationDeg}°`, l.windowMonth]
         .filter(Boolean).forEach(f => facts.append(el('span', null, f)));
       left.append(facts);
 
