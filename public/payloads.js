@@ -169,13 +169,6 @@
     if (!me.ok) return;
     sellsLaunch = me.data.user.accountType === 'launch_provider'
       || me.data.user.accountType === 'broker';
-    if (sellsLaunch) {
-      document.querySelector('.page-head h1').innerHTML =
-        '<span class="lite">Find</span> <span class="bold">payloads</span>';
-      document.querySelector('.page-head .lede').textContent =
-        'Satellite operators with a payload and no ride yet. Figures are banded and '
-        + 'names withheld until the owner accepts an introduction.';
-    }
     renderAccount(me.data.user);
     renderNav(me.data.user, 'payloads');
     const fill = (id, list) => { for (const o of list) $(id).add(new Option(o.label, o.value)); };
