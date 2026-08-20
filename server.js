@@ -30,7 +30,7 @@ import {
 } from './lib/constellations.js';
 import {
   createLaunch, updateLaunch, setLaunchStatus, launchById, launchesForOwner,
-  deleteLaunch, browseLaunches, launchView, ownerLaunch, launchCountries,
+  deleteLaunch, browseLaunches, launchView, ownerLaunch, launchCountries, launchOrbits,
 } from './lib/launches.js';
 import {
   createMission, updateMission, setMissionStatus,
@@ -547,9 +547,11 @@ app.delete('/api/missions/:id', requireUser, (req, res) => {
 app.get('/api/launches', requireUser, (req, res) => {
   const q = req.query;
   const num = v => (v === undefined || v === '' ? null : Number(v));
+  // orbit and country arrive comma-separated; empty means no constraint
+  const list = v => (typeof v === 'string' ? v.split(',').map(x => x.trim()).filter(Boolean) : []);
   const rows = browseLaunches({
-    orbitType: q.orbit, fromMonth: q.from, toMonth: q.to,
-    minAvailable: num(q.minAvailable), country: q.country,
+    orbitTypes: list(q.orbit), fromMonth: q.from, toMonth: q.to,
+    minAvailable: num(q.minAvailable), countries: list(q.country),
   });
 
   // for a payload owner, which of their missions could actually fly on each
@@ -564,7 +566,7 @@ app.get('/api/launches', requireUser, (req, res) => {
     }),
   }));
 
-  res.json({ launches, countries: launchCountries() });
+  res.json({ launches, countries: launchCountries(), orbits: launchOrbits() });
 });
 
 // ─── saved launches ─────────────────────────────────────────────────────────

@@ -506,3 +506,87 @@ a.alert-go { display: inline-block; text-decoration: none; }
   font-size: clamp(12px, .88vw, 15px);
   color: var(--text-4);
 }
+
+/* ─── checkbox filters ────────────────────────────────────────────────────── */
+.filter-label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: clamp(13px, .95vw, 16px);
+  color: var(--text-2);
+  font-weight: 500;
+}
+.check-group { display: grid; gap: 2px; }
+.check-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 7px;
+  margin: 0 -7px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: clamp(13px, .98vw, 16.5px);
+  color: var(--text-2);
+}
+.check-row:hover { background: var(--chip); }
+.check-row input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.check-row:has(input:checked) { color: var(--text-1); }
+.check-count { color: var(--text-4); font-size: clamp(11.5px, .85vw, 14px); font-variant-numeric: tabular-nums; }
+.check-row.extra { display: none; }
+.check-group.open .check-row.extra { display: grid; }
+.reveal.more { margin-top: 8px; }
+
+/* ─── launch window ───────────────────────────────────────────────────────── */
+.window-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 13px;
+  background: none;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  color: var(--text-3);
+  font: inherit;
+  font-size: clamp(13px, .98vw, 16.5px);
+  cursor: pointer;
+}
+.window-btn:hover { border-color: var(--text-4); }
+.window-btn.set { color: var(--text-1); border-color: var(--accent); }
+
+.month-range {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+}
+.mr-hint { margin: 0 0 12px; font-size: clamp(11.5px, .85vw, 14px); color: var(--text-4); }
+.mr-year + .mr-year { margin-top: 12px; }
+.mr-year-label {
+  font-size: clamp(11px, .8vw, 13px);
+  color: var(--text-4);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.mr-months { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; }
+.mr-month {
+  padding: 6px 0;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  color: var(--text-2);
+  font: inherit;
+  font-size: clamp(11.5px, .86vw, 14px);
+  cursor: pointer;
+}
+.mr-month:hover { background: var(--chip); }
+/* a month nothing flies in is still selectable — it just says so */
+.mr-month.empty { color: var(--text-4); opacity: .5; }
+.mr-month.in { background: var(--accent-soft); color: var(--text-1); border-radius: 0; }
+.mr-month.end {
+  background: var(--accent);
+  color: var(--background);
+  font-weight: 650;
+  border-radius: 6px;
+}
+.mr-actions { display: flex; justify-content: space-between; margin-top: 12px; }

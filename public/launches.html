@@ -78,13 +78,14 @@
       </div>
 
       <div class="field">
-        <label for="orbit">Orbit</label>
-        <select id="orbit"><option value="">Any</option></select>
+        <span class="filter-label">Orbit</span>
+        <div class="check-group" id="orbit-group"></div>
       </div>
 
       <div class="field">
-        <label for="country">Launcher country</label>
-        <select id="country"><option value="">Any</option></select>
+        <span class="filter-label">Launcher country</span>
+        <div class="check-group" id="country-group"></div>
+        <button type="button" class="reveal more" id="country-more" hidden></button>
       </div>
 
       <div class="field">
@@ -93,14 +94,18 @@
         <p class="filter-hint">Shows flights with at least this much spare.</p>
       </div>
 
-      <div class="pair">
-        <div class="field">
-          <label for="from">Window from</label>
-          <input id="from" type="month">
-        </div>
-        <div class="field">
-          <label for="to">to</label>
-          <input id="to" type="month">
+      <div class="field">
+        <span class="filter-label">Launch window</span>
+        <button type="button" class="window-btn" id="window-btn" aria-expanded="false">
+          <span id="window-text">Any window</span>
+        </button>
+        <div class="month-range" id="month-range" hidden>
+          <p class="mr-hint" id="mr-hint">Pick the first month you could fly.</p>
+          <div id="mr-years"></div>
+          <div class="mr-actions">
+            <button type="button" class="reveal" id="mr-clear">Clear</button>
+            <button type="button" class="reveal" id="mr-done">Done</button>
+          </div>
         </div>
       </div>
     </form>

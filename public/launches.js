@@ -1,7 +1,10 @@
 (function () {
   const $ = id => document.getElementById(id);
   const rows = $('rows'), empty = $('empty'), banner = $('banner');
-  const FILTERS = ['orbit', 'country', 'minAvailable', 'from', 'to'];
+  // Orbit and country are sets, not single choices: the real constraint is
+  // "SSO or polar" and "US or EU", almost never exactly one value.
+  const picked = { orbit: new Set(), country: new Set() };
+  let windowFrom = '', windowTo = '';
 
   async function api(path) {
     const res = await fetch(path, { credentials: 'same-origin' });
@@ -10,6 +13,8 @@
   }
 
   let flags = new Map();
+  let orbitLabels = new Map();
+  let filtersBuilt = false;
 
   const heart = on => `<svg viewBox="0 0 20 20" width="18" height="18" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M10 16.5S3.5 12.6 3.5 8.2A3.7 3.7 0 0110 6a3.7 3.7 0 016.5 2.2c0 4.4-6.5 8.3-6.5 8.3z"/></svg>`;
 
@@ -105,7 +110,11 @@
 
   function query() {
     const params = new URLSearchParams();
-    for (const id of FILTERS) if ($(id).value) params.set(id, $(id).value);
+    if (picked.orbit.size) params.set('orbit', [...picked.orbit].join(','));
+    if (picked.country.size) params.set('country', [...picked.country].join(','));
+    if ($('minAvailable').value) params.set('minAvailable', $('minAvailable').value);
+    if (windowFrom) params.set('from', windowFrom);
+    if (windowTo) params.set('to', windowTo);
     return params.toString();
   }
 
@@ -177,6 +186,113 @@
     return bestFirst(a, b);
   }
 
+
+
+  // ─── checkbox filters ─────────────────────────────────────────────────────
+  // Counts come from the data, so an option with nothing behind it is never
+  // offered — and you can see what a box is worth before ticking it.
+
+  function checkGroup(host, items, set, { limit = 0 } = {}) {
+    host.textContent = '';
+    items.forEach((item, i) => {
+      const label = el('label', 'check-row' + (limit && i >= limit ? ' extra' : ''));
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.value = item.value;
+      box.checked = set.has(item.value);
+      box.addEventListener('change', () => {
+        if (box.checked) set.add(item.value); else set.delete(item.value);
+        load();
+      });
+      label.append(box, el('span', 'check-text', item.label), el('span', 'check-count', String(item.n)));
+      host.append(label);
+    });
+  }
+
+  // ─── launch window ────────────────────────────────────────────────────────
+  // Nobody books a launch on a given day, so the picker works in months and
+  // takes both ends on one calendar: click the first month, then the last.
+
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthKey = (y, m) => `${y}-${String(m + 1).padStart(2, '0')}`;
+  let anchor = '';   // first click of a new range, before the second lands
+
+  function paintWindowButton() {
+    const text = !windowFrom && !windowTo ? 'Any window'
+      : windowFrom && windowTo && windowFrom !== windowTo ? `${windowFrom} → ${windowTo}`
+      : `${windowFrom || windowTo} only`;
+    $('window-text').textContent = text;
+    $('window-btn').classList.toggle('set', Boolean(windowFrom || windowTo));
+  }
+
+  function paintCalendar(years) {
+    const host = $('mr-years');
+    host.textContent = '';
+    for (const y of years) {
+      const row = el('div', 'mr-year');
+      row.append(el('div', 'mr-year-label', String(y)));
+      const grid = el('div', 'mr-months');
+      for (let m = 0; m < 12; m++) {
+        const key = monthKey(y, m);
+        const cell = el('button', 'mr-month', MONTHS[m]);
+        cell.type = 'button';
+        cell.dataset.key = key;
+        if (!windowsAvailable.has(key)) cell.classList.add('empty');
+        if (windowFrom && windowTo && key >= windowFrom && key <= windowTo) cell.classList.add('in');
+        if (key === windowFrom || key === windowTo) cell.classList.add('end');
+        if (key === anchor) cell.classList.add('end');
+        cell.addEventListener('click', () => pickMonth(key, years));
+        grid.append(cell);
+      }
+      row.append(grid);
+      host.append(row);
+    }
+  }
+
+  let windowsAvailable = new Set();
+
+  function pickMonth(key, years) {
+    if (!anchor) {
+      // first click starts a new range and clears the old one
+      anchor = key;
+      windowFrom = windowTo = '';
+      $('mr-hint').textContent = 'Now pick the last month you could fly.';
+    } else {
+      windowFrom = anchor < key ? anchor : key;
+      windowTo = anchor < key ? key : anchor;
+      anchor = '';
+      $('mr-hint').textContent = 'Pick the first month you could fly.';
+      load();
+    }
+    paintCalendar(years);
+    paintWindowButton();
+  }
+
+  function setupWindow(months) {
+    windowsAvailable = new Set(months);
+    const years = [...new Set(months.map(m => Number(m.slice(0, 4))))].sort();
+    if (!years.length) return;
+
+    paintCalendar(years);
+    paintWindowButton();
+
+    $('window-btn').addEventListener('click', () => {
+      const panel = $('month-range');
+      panel.hidden = !panel.hidden;
+      $('window-btn').setAttribute('aria-expanded', String(!panel.hidden));
+    });
+    $('mr-clear').addEventListener('click', () => {
+      windowFrom = windowTo = anchor = '';
+      $('mr-hint').textContent = 'Pick the first month you could fly.';
+      paintCalendar(years);
+      paintWindowButton();
+      load();
+    });
+    $('mr-done').addEventListener('click', () => {
+      $('month-range').hidden = true;
+      $('window-btn').setAttribute('aria-expanded', 'false');
+    });
+  }
 
   // ─── price context ────────────────────────────────────────────────────────
   // Google Flights can say "prices are typical" because it has a price history
@@ -297,14 +413,36 @@
       banner.className = 'banner show bad';
       return;
     }
-    // options come from the data, with a count, so nothing offered is empty
-    const select = $('country');
-    if (!select.dataset.filled && data.countries) {
-      select.dataset.filled = '1';
-      for (const c of data.countries) {
-        const flag = flags.get(c.country);
-        select.add(new Option(`${flag ? flag + '  ' : ''}${c.country} (${c.n})`, c.country));
+    // Built once, from the unfiltered response, so the options do not vanish
+    // underneath you as you tick them.
+    if (!filtersBuilt && data.countries && data.orbits) {
+      filtersBuilt = true;
+
+      checkGroup($('orbit-group'),
+        data.orbits.map(o => ({
+          value: o.orbitType, label: orbitLabels.get(o.orbitType) ?? o.orbitType, n: o.n,
+        })),
+        picked.orbit);
+
+      const countries = data.countries.map(c => ({
+        value: c.country,
+        label: `${flags.get(c.country) ?? ''} ${c.country}`.trim(),
+        n: c.n,
+      }));
+      checkGroup($('country-group'), countries, picked.country, { limit: 6 });
+      if (countries.length > 6) {
+        const more = $('country-more');
+        more.hidden = false;
+        more.textContent = `Show all ${countries.length}`;
+        let open = false;
+        more.addEventListener('click', () => {
+          open = !open;
+          $('country-group').classList.toggle('open', open);
+          more.textContent = open ? 'Show fewer' : `Show all ${countries.length}`;
+        });
       }
+
+      setupWindow([...new Set(data.launches.map(l => l.windowMonth))].sort());
     }
 
     current = data.launches;
@@ -351,12 +489,14 @@
     document.querySelector('.focused')?.scrollIntoView({ block: 'center' });
   }
 
-  FILTERS.forEach(id => {
-    $(id).addEventListener('change', scheduleLoad);
-    $(id).addEventListener('input', scheduleLoad);
-  });
+  $('minAvailable').addEventListener('input', scheduleLoad);
   $('clear').addEventListener('click', () => {
-    FILTERS.forEach(id => { $(id).value = ''; });
+    picked.orbit.clear();
+    picked.country.clear();
+    $('minAvailable').value = '';
+    windowFrom = windowTo = '';
+    document.querySelectorAll('.check-group input').forEach(i => { i.checked = false; });
+    paintWindowButton();
     load();
   });
 
@@ -367,7 +507,7 @@
     renderAccount(me.data.user);
     renderNav(me.data.user, 'launches');
     setVehicleImages(options.data.vehicleImages);
-    for (const o of options.data.orbitTypes) $('orbit').add(new Option(o.label, o.value));
+    orbitLabels = new Map(options.data.orbitTypes.map(o => [o.value, o.label]));
     flags = new Map(options.data.countries.map(c => [c.name, c.flag]));
     load();
   })();
