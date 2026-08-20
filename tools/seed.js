@@ -4,6 +4,7 @@
 import { db, createUser, findUserByEmail, createCompany, attachUser, updateCompany } from '../lib/db.js';
 import { createMission, missionsForOwner } from '../lib/missions.js';
 import { createLaunch, launchesForOwner } from '../lib/launches.js';
+import { priceFor } from '../lib/pricing.js';
 import { hashPassword } from '../lib/auth.js';
 
 const PASSWORD = 'aether-demo-2026';
@@ -117,7 +118,11 @@ for (const account of ACCOUNTS) {
   }
 
   if (account.launches?.length && launchesForOwner(user.company_id).length === 0) {
-    for (const { publish, ...l } of account.launches) createLaunch(user.id, user.company_id, l, publish);
+    for (const { publish, ...l } of account.launches) {
+      const p = priceFor(l.vehicle, { broker: Boolean(l.operator) });
+      createLaunch(user.id, user.company_id,
+        { ...l, priceLow: p?.[0] ?? null, priceHigh: p?.[1] ?? null }, publish);
+    }
     console.log(`        + ${account.launches.length} launch(es)`);
   }
 }

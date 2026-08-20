@@ -355,37 +355,41 @@ a.alert-go { display: inline-block; text-decoration: none; }
 .launch-main { flex: 1; min-width: 0; }
 
 /* ─── sort tabs and the shortlist ─────────────────────────────────────────── */
-/* Google Flights splits Best from Cheapest. There is no published price in
-   launch, so the axes are fit, headroom and date instead. */
+/* One line per tab, with the leading value beside the label, so choosing a sort
+   tells you something before you click it. */
 .sort-tabs {
   display: flex;
   border: 1px solid var(--line);
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 .sort-tab {
   flex: 1;
-  padding: clamp(11px, .95vw, 16px) clamp(12px, 1.1vw, 20px);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding: clamp(13px, 1.05vw, 18px) clamp(12px, 1.1vw, 20px);
   background: none;
   border: 0;
   border-right: 1px solid var(--line);
-  text-align: center;
   cursor: pointer;
   color: var(--text-3);
   font: inherit;
+  white-space: nowrap;
 }
 .sort-tab:last-child { border-right: 0; }
 .sort-tab:hover { background: var(--chip); }
-.sort-tab.on { background: var(--chip); color: var(--text-1); }
-.sort-label { display: block; font-weight: 600; font-size: clamp(14px, 1.02vw, 17px); }
-.sort-hint {
-  display: block;
-  margin-top: 3px;
-  font-size: clamp(11.5px, .84vw, 14px);
-  color: var(--text-4);
-}
+.sort-tab.on { background: var(--chip); color: var(--text-1); box-shadow: inset 0 -2px 0 var(--accent); }
+.sort-label { font-weight: 600; font-size: clamp(14px, 1.05vw, 18px); }
 .sort-tab.on .sort-label { color: var(--text-1); }
+.sort-lead { font-size: clamp(12px, .9vw, 15px); color: var(--text-4); }
+
+/* price sits at the end of the capacity legend, where the eye already lands */
+.price { color: var(--text-2); font-size: clamp(13px, 1vw, 17px); }
+.price b { color: var(--text-1); font-weight: 650; }
+.price.on-request { color: var(--text-4); font-style: italic; }
 
 .top-box { margin-bottom: 30px; }
 .top-head { margin-bottom: 14px; }

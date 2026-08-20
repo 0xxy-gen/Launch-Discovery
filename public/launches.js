@@ -94,28 +94,11 @@
     const legend = el('div', 'meter-legend');
     const spare = el('span');
     spare.append(el('b', null, `${l.availableKg} kg`), document.createTextNode(' spare'));
-    legend.append(spare, el('span', null, `${l.capacityKg} kg capacity`));
+    spare.append(document.createTextNode(` of ${l.capacityKg} kg`));
+    legend.append(spare, priceLabel(l));
     meter.append(track, legend);
     main.append(meter);
 
-    // does anything of mine actually fit
-    const fits = l.candidates.filter(c => c.ok && c.mass <= l.availableKg);
-    if (l.candidates.length) {
-      const fit = el('div', 'fit');
-      if (fits.length) {
-        fit.append(el('span', 'fit-yes',
-          `Fits: ${fits.map(c => c.reference).join(', ')}`));
-      } else {
-        const why = el('div', 'fit-no');
-        why.append(el('b', null, 'None of your missions fit. '));
-        why.append(document.createTextNode(l.candidates.map(c => {
-          if (!c.ok) return `${c.reference}: ${c.reasons[0]}`;
-          return `${c.reference}: ${c.mass} kg exceeds the ${l.availableKg} kg spare`;
-        }).join(' · ')));
-        fit.append(why);
-      }
-      main.append(fit);
-    }
 
     return card;
   }
@@ -136,12 +119,33 @@
   let sortKey = 'best';
 
   const SORTS = [
-    { key: 'best',    label: 'Best match', hint: 'Fits most of your satellites, with room to spare' },
-    { key: 'soonest', label: 'Soonest',    hint: 'Earliest launch window first' },
-    { key: 'roomiest', label: 'Most spare capacity', hint: 'Largest unsold mass first' },
+    { key: 'best',     label: 'Best match',
+      hint: 'Fits the most of your satellites, with the most room to spare' },
+    { key: 'cheapest', label: 'Cheapest',
+      hint: 'Lowest quoted price per kilogram first' },
+    { key: 'soonest',  label: 'Soonest',
+      hint: 'Earliest launch window first' },
   ];
 
   const fitting = l => l.candidates.filter(c => c.ok && c.mass <= l.availableKg);
+
+  const money = n => '$' + Math.round(n).toLocaleString('en-US');
+
+  // Quoting on request is normal in launch, so a missing price is stated rather
+  // than hidden — an empty space would read as free.
+  function priceLabel(l) {
+    const span = el('span', 'price');
+    if (l.priceLow == null) {
+      span.classList.add('on-request');
+      span.textContent = 'Price on request';
+      return span;
+    }
+    // one currency symbol across the range, not one per end
+    const high = Math.round(l.priceHigh).toLocaleString('en-US');
+    span.append(el('b', null, `${money(l.priceLow)}–${high}`));
+    span.append(document.createTextNode(' /kg'));
+    return span;
+  }
 
   // How comfortably the heaviest satellite that fits would sit on this flight.
   function headroom(l) {
@@ -152,7 +156,12 @@
 
   function compare(a, b) {
     if (sortKey === 'soonest') return a.windowMonth.localeCompare(b.windowMonth);
-    if (sortKey === 'roomiest') return b.availableKg - a.availableKg;
+    if (sortKey === 'cheapest') {
+      // an unpriced flight cannot be ranked on price, so it sorts to the back
+      const pa = a.priceLow ?? Infinity, pb = b.priceLow ?? Infinity;
+      if (pa !== pb) return pa - pb;
+      return a.windowMonth.localeCompare(b.windowMonth);
+    }
 
     // best: fits more of your satellites, then more headroom, then sooner
     const fa = fitting(a).length, fb = fitting(b).length;
@@ -162,7 +171,22 @@
     return a.windowMonth.localeCompare(b.windowMonth);
   }
 
-  function renderTabs() {
+  // The value that would lead under each sort, shown on the tab so the choice
+  // is informative before you make it — Google Flights' "Cheapest from $191".
+  function leadValue(key, list) {
+    if (!list.length) return '';
+    if (key === 'cheapest') {
+      const priced = list.filter(l => l.priceLow != null);
+      return priced.length ? `from ${money(Math.min(...priced.map(l => l.priceLow)))}/kg` : '';
+    }
+    if (key === 'soonest') {
+      return `from ${list.map(l => l.windowMonth).sort()[0]}`;
+    }
+    const n = list.filter(l => fitting(l).length).length;
+    return n ? `${n} fit yours` : '';
+  }
+
+  function renderTabs(list) {
     const host = $('sort-tabs');
     host.textContent = '';
     for (const s of SORTS) {
@@ -170,8 +194,10 @@
       tab.type = 'button';
       tab.setAttribute('role', 'tab');
       tab.setAttribute('aria-selected', String(s.key === sortKey));
+      tab.title = s.hint;
       tab.append(el('span', 'sort-label', s.label));
-      tab.append(el('span', 'sort-hint', s.hint));
+      const lead = leadValue(s.key, list);
+      if (lead) tab.append(el('span', 'sort-lead', lead));
       tab.addEventListener('click', () => {
         if (sortKey === s.key) return;
         sortKey = s.key;
@@ -237,7 +263,7 @@
     rest.forEach(l => rows.append(card(l)));
 
     empty.hidden = all.length > 0;
-    renderTabs();
+    renderTabs(all);
     $('count').textContent = top.length
       ? `${rest.length} other launch${rest.length === 1 ? '' : 'es'}`
       : `${all.length} launch${all.length === 1 ? '' : 'es'}`;

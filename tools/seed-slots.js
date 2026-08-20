@@ -6,6 +6,7 @@
 // fields the app requires. The sheet's own wording is kept verbatim in `notes`.
 import { findUserByEmail, createUser, createCompany, attachUser, updateCompany } from '../lib/db.js';
 import { createLaunch, launchesForOwner } from '../lib/launches.js';
+import { priceFor } from '../lib/pricing.js';
 import { hashPassword } from '../lib/auth.js';
 
 const PASSWORD = 'aether-demo-2026';
@@ -94,6 +95,9 @@ function providerAccount(name) {
   return findUserByEmail(spec.email);
 }
 
+// null price means "on request", which the app keeps rather than inventing one
+const band = p => ({ priceLow: p?.[0] ?? null, priceHigh: p?.[1] ?? null });
+
 function noteFor(slot) {
   const lines = [
     slot.capacity ? `Capacity as listed: ${slot.capacity}` : null,
@@ -123,6 +127,7 @@ for (const slot of SLOTS) {
     windowMonth: slot.window,
     capacityKg: slot.kg,
     committedKg: 0,
+    ...band(priceFor(slot.vehicle)),
     notes: noteFor(slot),
   }, true);
   console.log(`  + ${slot.mission.padEnd(24)} ${slot.vehicle} · ${slot.window} · ${slot.kg} kg`);

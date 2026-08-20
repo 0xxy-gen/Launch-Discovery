@@ -11,6 +11,7 @@
 // This file only adds breadth: orbits and countries that file does not reach.
 import { findUserByEmail, createUser, createCompany, attachUser, updateCompany } from '../lib/db.js';
 import { createLaunch, launchesForOwner } from '../lib/launches.js';
+import { priceFor } from '../lib/pricing.js';
 import { hashPassword } from '../lib/auth.js';
 
 const PASSWORD = 'aether-demo-2026';
@@ -149,6 +150,10 @@ for (const l of LAUNCHES) {
     windowMonth: l.when,
     capacityKg: l.cap,
     committedKg: l.done,
+    ...(() => {
+      const p = priceFor(l.vehicle, { broker: Boolean(l.operator) });
+      return { priceLow: p?.[0] ?? null, priceHigh: p?.[1] ?? null };
+    })(),
     notes: [l.extra, l.operator ? `Sold by ${l.seller}; flown by ${l.operator}.` : null, ILLUSTRATIVE]
       .filter(Boolean).join('\n'),
   }, true);

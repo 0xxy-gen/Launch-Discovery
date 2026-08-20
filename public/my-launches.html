@@ -141,6 +141,17 @@
           <label for="committedKg">Already committed (kg)</label>
           <input id="committedKg" type="number" min="0" step="1" placeholder="0">
           <p class="hint">Spare mass is the difference.</p>
+        </div>
+
+        <div class="field">
+          <label for="priceLow">Price per kg <span class="opt">optional</span></label>
+          <div class="pair">
+            <input id="priceLow" type="number" min="0" step="100" placeholder="from (USD)">
+            <input id="priceHigh" type="number" min="0" step="100" placeholder="to (USD)">
+          </div>
+          <p class="hint">A range buyers can plan against. Leave both blank to quote on request.</p>
+          <div class="err" id="priceLow-err"></div>
+          <div class="err" id="priceHigh-err"></div>
           <div class="err" id="committedKg-err"></div>
         </div>
       </div>
