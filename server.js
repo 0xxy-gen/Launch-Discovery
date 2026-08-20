@@ -21,6 +21,9 @@ import {
 } from './lib/messages.js';
 import { waitlistEntry, joinWaitlist, leaveWaitlist } from './lib/waitlist.js';
 import {
+  setMissionAlerts, runAlertsForLaunch, alertHits, alertUnread, markAlertsRead,
+} from './lib/alerts.js';
+import {
   createConstellation, constellationById, constellationsFor,
   renameConstellation, deleteConstellation, assignMission, summarise,
 } from './lib/constellations.js';
@@ -153,7 +156,8 @@ app.get('/api/me', (req, res) => {
   if (!user) return res.status(401).json({ error: 'Not signed in.' });
   // the saved count rides along so the nav badge does not need its own request
   const unread = threadsFor(user.company_id)
-    .reduce((n, p) => n + unreadCount(p.id, user.company_id), 0);
+    .reduce((n, p) => n + unreadCount(p.id, user.company_id), 0)
+    + alertUnread(user.company_id);
   res.json({
     user: { ...publicUser(user), savedCount: savedIds(user.company_id).size, unreadCount: unread },
   });
@@ -599,14 +603,18 @@ app.post('/api/my-launches', requireJson, requireUser, requireProvider, (req, re
   const publish = req.body.publish === true;
   if (publish && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
 
-  res.status(201).json({ launch: ownerLaunch(createLaunch(req.user.id, req.user.company_id, values, publish)) });
+  const launch = createLaunch(req.user.id, req.user.company_id, values, publish);
+  runAlertsForLaunch(launch);
+  res.status(201).json({ launch: ownerLaunch(launch) });
 });
 
 app.put('/api/my-launches/:id', requireJson, requireUser, requireProvider, (req, res) => {
   if (!ownedLaunch(req, res)) return;
   const { fields, values } = validateLaunch(req.body);
   if (Object.keys(fields).length) return res.status(400).json({ fields });
-  res.json({ launch: ownerLaunch(updateLaunch(req.user.company_id, Number(req.params.id), values)) });
+  const launch = updateLaunch(req.user.company_id, Number(req.params.id), values);
+  runAlertsForLaunch(launch);   // an edit can bring a launch into range
+  res.json({ launch: ownerLaunch(launch) });
 });
 
 app.post('/api/my-launches/:id/status', requireJson, requireUser, requireProvider, (req, res) => {
@@ -616,13 +624,26 @@ app.post('/api/my-launches/:id/status', requireJson, requireUser, requireProvide
     return res.status(400).json({ error: 'Status must be draft or published.' });
   }
   if (status === 'published' && !profileReady(req.user)) return res.status(409).json(NEEDS_PROFILE);
-  res.json({ launch: ownerLaunch(setLaunchStatus(req.user.company_id, Number(req.params.id), status)) });
+  const launch = setLaunchStatus(req.user.company_id, Number(req.params.id), status);
+  runAlertsForLaunch(launch);
+  res.json({ launch: ownerLaunch(launch) });
 });
 
 app.delete('/api/my-launches/:id', requireUser, requireProvider, (req, res) => {
   if (!ownedLaunch(req, res)) return;
   deleteLaunch(req.user.company_id, Number(req.params.id));
   res.status(204).end();
+});
+
+// ─── launch alerts ──────────────────────────────────────────────────────────
+// The satellite is the alert criteria, so there is nothing to configure beyond
+// a switch. Turning it on backfills against launches already listed.
+
+app.post('/api/missions/:id/alerts', requireJson, requireUser, (req, res) => {
+  const on = req.body.on === true;
+  const mission = setMissionAlerts(req.user.company_id, Number(req.params.id), on);
+  if (!mission) return res.status(404).json({ error: 'Not found.' });
+  res.json({ mission: ownerMission(mission, req.user), unread: alertUnread(req.user.company_id) });
 });
 
 // ─── pooling ────────────────────────────────────────────────────────────────
@@ -752,9 +773,42 @@ app.get('/api/threads', requireUser, (req, res) => {
       },
       lastAt: last ? last.created_at : pool.created_at,
     };
-  }).sort((a, b) => b.lastAt - a.lastAt);
+  });
 
+  // Alerts are a thread from Aether rather than a separate notification centre:
+  // the inbox is already where a message about a launch would arrive.
+  const hits = alertHits(req.user.company_id);
+  if (hits.length) {
+    const newest = hits[0];
+    const refs = [...new Set(hits.map(h => h.missionRef))];
+    threads.push({
+      id: 'alerts',
+      kind: 'alerts',
+      name: 'Launch alerts',
+      context: refs.length === 1 ? refs[0] : `${refs.length} satellites`,
+      members: 0,
+      unread: alertUnread(req.user.company_id),
+      last: {
+        body: `${newest.launch} matches ${newest.missionRef} — `
+          + `${newest.spareKg} kg spare, ${newest.windowMonth}.`,
+        organisation: 'Aether',
+        mine: false,
+        at: newest.at,
+      },
+      lastAt: newest.createdAt,
+    });
+  }
+
+  threads.sort((a, b) => b.lastAt - a.lastAt);
   res.json({ threads, unreadTotal: threads.reduce((n, t) => n + t.unread, 0) });
+});
+
+// The alerts thread reads rather than converses, so it has its own detail route
+// instead of pretending to be a pool.
+app.get('/api/threads/alerts/detail', requireUser, (req, res) => {
+  const hits = alertHits(req.user.company_id);
+  markAlertsRead(req.user.company_id);
+  res.json({ kind: 'alerts', name: 'Launch alerts', hits });
 });
 
 function ownThread(req, res) {

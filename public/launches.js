@@ -20,8 +20,11 @@
     return node;
   };
 
+  // an alert links to one launch, so mark it and scroll it into view
+  const focusId = Number(new URLSearchParams(location.search).get('launch')) || 0;
+
   function card(l) {
-    const card = el('div', 'launch-card');
+    const card = el('div', 'launch-card' + (l.id === focusId ? ' focused' : ''));
 
     const head = el('div', 'launch-head');
     const left = el('div');
@@ -130,6 +133,8 @@
     data.launches.forEach(l => rows.append(card(l)));
     empty.hidden = data.launches.length > 0;
     $('count').textContent = `${data.launches.length} launch${data.launches.length === 1 ? '' : 'es'}`;
+
+    rows.querySelector('.focused')?.scrollIntoView({ block: 'center' });
   }
 
   FILTERS.forEach(id => {

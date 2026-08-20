@@ -34,12 +34,16 @@
     '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4">' +
     '<circle cx="12" cy="12" r="4.5"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)"/></svg>';
 
+  const BELL_GLYPH =
+    '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4">' +
+    '<path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M10.5 20a2 2 0 0 0 3 0"/></svg>';
+
   function threadRow(t) {
     const row = el('button', 'thread' + (current === t.id ? ' current' : ''));
     row.type = 'button';
 
     const glyph = el('div', 'thread-glyph');
-    glyph.innerHTML = ORBIT_GLYPH;
+    glyph.innerHTML = t.kind === 'alerts' ? BELL_GLYPH : ORBIT_GLYPH;
     row.append(glyph);
 
     row.append(highlight(el('div', 'thread-context'), t.context));
@@ -173,7 +177,80 @@
     pane.append(actions);
   }
 
+  // Alerts arrive in the inbox but are not a conversation — there is nobody on
+  // the other end — so the thread reads as a list of matches with a way through
+  // to each launch, and carries no composer.
+  async function openAlerts(t) {
+    current = t.id;
+    renderThreads();
+
+    const pane = $('pane');
+    pane.textContent = '';
+
+    const head = el('div', 'thread-head');
+    head.append(el('h2', undefined, 'Launch alerts'));
+    head.append(el('p', undefined, 'Sent when a published launch matches one of your satellites.'));
+    pane.append(head);
+
+    const list = el('div', 'messages');
+    pane.append(list);
+
+    const { ok, data } = await api('/api/threads/alerts/detail');
+    if (!ok) return;
+
+    // The right column normally explains the pool. Here it explains which
+    // satellites are being watched and how much each has attracted.
+    const pane2 = $('detail');
+    pane2.textContent = '';
+    const counts = new Map();
+    for (const h of data.hits) counts.set(h.missionRef, (counts.get(h.missionRef) ?? 0) + 1);
+
+    const section = el('div', 'detail-section');
+    section.append(el('h3', undefined, 'Watching'));
+    for (const [ref, n] of counts) {
+      const r = el('div', 'detail-row');
+      r.append(el('span', undefined, ref));
+      r.append(el('strong', undefined, `${n} match${n === 1 ? '' : 'es'}`));
+      section.append(r);
+    }
+    pane2.append(section);
+
+    const hint = el('p', 'detail-empty',
+      'Alerts follow each satellite. Turn them on or off from My Missions.');
+    pane2.append(hint);
+
+    for (const h of data.hits) {
+      const msg = el('div', 'msg alert-msg');
+      msg.append(el('div', 'msg-who', `Aether · ${when(h.at)}`));
+
+      const body = el('div', 'msg-body');
+      body.append(el('div', 'alert-lead',
+        `${h.launch} can fly ${h.missionRef}.`));
+
+      const facts = el('div', 'alert-facts');
+      [
+        `${h.provider}${h.providerCountry ? ' · ' + h.providerCountry : ''}`,
+        h.vehicle,
+        `${h.orbitType.toUpperCase()} · ${h.altitudeKm} km · ${h.inclinationDeg}°`,
+        h.windowMonth,
+        `${h.spareKg} kg spare (you need ${h.massKg} kg)`,
+      ].filter(Boolean).forEach(f => facts.append(el('span', undefined, f)));
+      body.append(facts);
+
+      const go = el('a', 'ghost-sm alert-go', 'View launch');
+      go.href = `/launches?launch=${h.launchId}`;
+      body.append(go);
+
+      msg.append(body);
+      list.append(msg);
+    }
+
+    // reading clears the badge, so refresh the counts the nav is showing
+    load();
+  }
+
   async function openThread(t) {
+    if (t.kind === 'alerts') return openAlerts(t);
     current = t.id;
     renderThreads();
 

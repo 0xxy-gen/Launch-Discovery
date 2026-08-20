@@ -146,7 +146,20 @@
     copy.addEventListener('click', () => duplicate(m));
     const edit = el('button', 'ghost-sm', 'Edit');
     edit.addEventListener('click', () => openEditor(m));
-    actions.append(toggle, copy, edit);
+
+    // The satellite already carries the criteria, so the alert is a switch
+    // rather than a form. Only meaningful once providers can match against it.
+    const bell = el('button', 'ghost-sm bell' + (m.alertsOn ? ' on' : ''));
+    bell.append(el('span', 'bell-glyph', m.alertsOn ? '🔔' : '🔕'),
+                el('span', undefined, m.alertsOn ? 'Alerts on' : 'Alert me'));
+    bell.title = m.alertsOn
+      ? 'Stop telling me when a launch matches this satellite'
+      : 'Tell me when a published launch matches this satellite';
+    bell.disabled = m.status !== 'published';
+    if (bell.disabled) bell.title = 'Publish this satellite to get matching launch alerts';
+    bell.addEventListener('click', () => setAlerts(m));
+
+    actions.append(bell, toggle, copy, edit);
 
     card.append(left, actions);
     return card;
@@ -274,6 +287,22 @@
     constellations.forEach(c => select.add(new Option(c.name, c.id)));
 
     renderList(data.missions, data.constellations);
+  }
+
+  async function setAlerts(m) {
+    const on = !m.alertsOn;
+    const { ok, data } = await api(`/api/missions/${m.id}/alerts`,
+      { method: 'POST', body: { on } });
+    if (!ok) return showBanner(data.error ?? 'Could not change that.', 'bad');
+
+    // Switching on backfills, so say what it found rather than just "saved".
+    if (!on) showBanner(`Alerts off for ${m.reference}`, 'ok');
+    else if (data.unread) {
+      showBanner(`Alerts on — ${data.unread} matching launch${data.unread === 1 ? '' : 'es'} waiting in your inbox`, 'ok');
+    } else {
+      showBanner(`Alerts on for ${m.reference} — nothing matches yet`, 'ok');
+    }
+    loadList();
   }
 
   async function setStatus(id, status, mission) {

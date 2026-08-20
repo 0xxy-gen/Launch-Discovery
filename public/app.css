@@ -285,3 +285,27 @@ body { height: auto; min-height: 100vh; overflow: auto; padding: 0; }
 .modal-panel.kept li { color: var(--text-3); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .modal-actions button { width: auto; margin: 0; padding: 12px 22px; }
+
+/* ─── launch alerts ──────────────────────────────────────────────────────── */
+
+/* The bell sits with the other row actions but reads as a state, not a verb,
+   so it keeps its tint while switched on. */
+.bell { display: inline-flex; align-items: center; gap: 6px; }
+.bell-glyph { font-size: 0.95em; line-height: 1; }
+.bell.on { border-color: var(--accent); color: var(--text-1); }
+.bell:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.alert-msg { max-width: 100%; }
+.alert-lead { font-weight: 600; margin-bottom: 10px; }
+.alert-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.alert-facts span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: clamp(12px, 0.86vw, 14px);
+  color: var(--text-2);
+}
+a.alert-go { display: inline-block; text-decoration: none; }
+
+/* the launch an alert pointed at, so arriving from the inbox lands somewhere */
+.launch-card.focused { border-color: var(--accent); }

@@ -1,4 +1,5 @@
 (function () {
+  let sellsLaunch = false;
   const $ = id => document.getElementById(id);
   const rows = $('rows'), empty = $('empty'), banner = $('banner');
   const FILTERS = ['orbit', 'ride', 'form', 'massMin', 'massMax', 'from', 'to'];
@@ -83,13 +84,6 @@
     specs.append(specRow('ride', `${p.rideType}${p.propulsion ? ' · propulsive' : ''}`));
     card.append(specs);
 
-    const actions = el('div', 'card-actions');
-    const interest = el('button', 'ghost-sm', 'Express interest');
-    interest.disabled = true;
-    interest.title = 'Introductions are not wired up yet';
-    actions.append(interest);
-    card.append(actions);
-
     return card;
   }
 
@@ -110,16 +104,28 @@
     return node;
   }
 
+  // This page shows demand, so the prompt depends on which side is reading it:
+  // a provider is here to sell capacity, an operator to find someone going the
+  // same way. Telling a provider to "list your mission" is the wrong verb.
   function ctaCard() {
+    const copy = sellsLaunch
+      ? { title: 'Have capacity to sell?',
+          lead: 'List a flight with its spare mass and these operators can find it. '
+              + 'You stay named — supply is advertised openly.',
+          action: 'List a launch', href: '/my-launches' }
+      : { title: 'Want to find launch capacity?',
+          lead: 'Describe your mission and providers can find it — banded, so nobody '
+              + 'learns your figures or your name until you accept an introduction.',
+          action: 'List your satellite', href: '/missions' };
+
     const cta = el('div', 'cta-card');
     const top = el('div');
     top.append(satellite());
-    top.append(el('h2', null, 'Want to find launch capacity?'));
-    top.append(el('p', null,
-      'Describe your mission and providers can find it — banded, so nobody learns your figures or your name until you accept an introduction.'));
+    top.append(el('h2', null, copy.title));
+    top.append(el('p', null, copy.lead));
     cta.append(top);
-    const link = el('a', null, 'List your mission');
-    link.href = '/missions';
+    const link = el('a', null, copy.action);
+    link.href = copy.href;
     cta.append(link);
     return cta;
   }
@@ -161,6 +167,8 @@
   (async function init() {
     const [me, options] = await Promise.all([api('/api/me'), api('/api/options')]);
     if (!me.ok) return;
+    sellsLaunch = me.data.user.accountType === 'launch_provider'
+      || me.data.user.accountType === 'broker';
     renderAccount(me.data.user);
     renderNav(me.data.user, 'payloads');
     const fill = (id, list) => { for (const o of list) $(id).add(new Option(o.label, o.value)); };
