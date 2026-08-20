@@ -15,6 +15,7 @@ const PROVIDERS = {
   ISRO:        { email: 'isro@demo.aether', country: 'India' },
   'Rocket Lab': { email: 'rocketlab@demo.aether', country: 'United States' },
   ExPace:      { email: 'expace@demo.aether', country: 'China' },
+  'Skyroot Aerospace': { email: 'skyroot@demo.aether', country: 'India' },
 };
 
 // capacity as written in the sheet, plus the kg the app needs to filter on
@@ -51,7 +52,10 @@ const SLOTS = [
   { mission: 'SSLV', provider: 'ISRO', vehicle: 'SSLV',
     capacity: '', kg: 300, window: '2027-02', orbit: 'sso', alt: 500, inc: 97.4,
     brokers: 'Auxos Global, Commercial Space Technologies (CST)', sheetWindow: 'Feb 2027' },
-  { mission: 'Skyroot', provider: 'ISRO', vehicle: 'Vikram-1',
+  // The sheet put "Skyroot" in the mission column and ISRO in the provider
+  // column, but Vikram-1 is Skyroot Aerospace's vehicle — ISRO only owns the
+  // range it flies from. Corrected here so the seller matches the rocket.
+  { mission: 'Vikram-1 (Feb 2027)', provider: 'Skyroot Aerospace', vehicle: 'Vikram-1',
     capacity: '', kg: 300, window: '2027-02', orbit: 'sso', alt: 500, inc: 97.4,
     brokers: 'Auxos Global, Commercial Space Technologies (CST)', sheetWindow: 'Feb 2027' },
   { mission: 'Neutron-2', provider: 'Rocket Lab', vehicle: 'Neutron',

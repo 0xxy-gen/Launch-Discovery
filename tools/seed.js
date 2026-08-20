@@ -71,7 +71,7 @@ const ACCOUNTS = [
                linkedin: '', dial: '+33', phone: '145550188' },
     missions: [],
     launches: [
-      { name: 'Vega-C shared manifest', vehicle: 'Vega-C', operator: 'ArianeGroup',
+      { name: 'Vega-C shared manifest', vehicle: 'Vega-C', operator: 'Avio',
         site: 'Kourou SLV', orbitType: 'sso', altitudeKm: 550, inclinationDeg: 97.5,
         windowMonth: '2027-09', capacityKg: 800, committedKg: 260,
         notes: 'Ports resold by Vector Rideshare. Integration and paperwork handled by us; '
