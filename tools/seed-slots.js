@@ -42,7 +42,7 @@ const SLOTS = [
     capacity: 'Multiple CubeSats > ~400kg', kg: 400, window: '2027-04', orbit: 'sso', alt: 550, inc: 97.5,
     brokers: 'Space BD', deployer: 'No',
     sheetWindow: 'Feb-July 2027 (target late April, might delay to Q4 or 2028)' },
-  { mission: 'PSLV (pending)', provider: 'ISRO', vehicle: 'PSLV',
+  { mission: 'PSLV (early 2028, unconfirmed)', provider: 'ISRO', vehicle: 'PSLV',
     capacity: '', kg: 400, window: '2028-02', orbit: 'sso', alt: 550, inc: 97.5,
     brokers: 'RIDE! Space', deployer: 'No', sheetWindow: 'Early 2028' },
   { mission: 'PSLV', provider: 'ISRO', vehicle: 'PSLV',

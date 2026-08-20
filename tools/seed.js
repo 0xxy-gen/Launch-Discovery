@@ -52,14 +52,14 @@ const ACCOUNTS = [
                linkedin: '', dial: '+1', phone: '2025550143' },
     missions: [],
     launches: [
-      { name: 'Transporter-14', vehicle: 'Falcon 9', site: 'Vandenberg SLC-4E',
+      { name: 'RC-4 SSO', vehicle: 'RocketCo Aurora', site: 'Vandenberg SLC-8',
         orbitType: 'sso', altitudeKm: 525, inclinationDeg: 97.5, windowMonth: '2027-04',
         capacityKg: 3500, committedKg: 2100,
         notes: 'ESPA and 15-inch ports available. Integration cut-off L-8 weeks.', publish: true },
-      { name: 'RC-7 dedicated', vehicle: 'RocketCo Vega', site: 'Kourou ELV',
+      { name: 'RC-7 mid-inclination', vehicle: 'RocketCo Aurora', site: 'Cape Canaveral SLC-46',
         orbitType: 'leo_mid', altitudeKm: 500, inclinationDeg: 45, windowMonth: '2028-02',
         capacityKg: 1200, committedKg: 300, notes: '', publish: true },
-      { name: 'Transporter-16', vehicle: 'Falcon 9', site: 'Cape Canaveral SLC-40',
+      { name: 'RC-9 SSO', vehicle: 'RocketCo Aurora', site: 'Vandenberg SLC-8',
         orbitType: 'sso', altitudeKm: 560, inclinationDeg: 97.6, windowMonth: '2027-10',
         capacityKg: 3500, committedKg: 0, notes: 'Manifest opening soon.', publish: false },
     ],
@@ -70,6 +70,17 @@ const ACCOUNTS = [
     profile: { organisation: 'Vector Rideshare', role: 'Manifest Lead', country: 'France',
                linkedin: '', dial: '+33', phone: '145550188' },
     missions: [],
+    launches: [
+      { name: 'Vega-C shared manifest', vehicle: 'Vega-C', operator: 'ArianeGroup',
+        site: 'Kourou SLV', orbitType: 'sso', altitudeKm: 550, inclinationDeg: 97.5,
+        windowMonth: '2027-09', capacityKg: 800, committedKg: 260,
+        notes: 'Ports resold by Vector Rideshare. Integration and paperwork handled by us; '
+             + 'the vehicle and range are ArianeGroup.', publish: true },
+      { name: 'Electron dedicated block', vehicle: 'Electron', operator: 'Rocket Lab',
+        site: 'Mahia LC-1', orbitType: 'leo_polar', altitudeKm: 500, inclinationDeg: 90,
+        windowMonth: '2027-07', capacityKg: 200, committedKg: 40,
+        notes: 'Block-booked by Vector Rideshare and resold by the kilogram.', publish: true },
+    ],
   },
 ];
 

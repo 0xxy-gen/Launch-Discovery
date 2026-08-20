@@ -54,6 +54,34 @@ const OPERATORS = [
     person: ['Kenji', 'Watanabe'], role: 'Manifest Lead', entity: 'commercial', funding: 'series_b',
     size: '201-1000', founded: 2014, heritage: '10+', regime: 'none', apps: ['comms'],
     website: 'lyraspace.example', about: 'Optical inter-satellite relay for LEO constellations.' },
+  { key: 'boreal', email: 'boreal@demo.aether', name: 'Boreal Sensing', country: 'Sweden',
+    person: ['Elin', 'Sandberg'], role: 'Launch Manager', entity: 'commercial', funding: 'pre_seed',
+    size: '11-50', founded: 2021, heritage: '1-3', regime: 'eu_dual', apps: ['eo', 'science'],
+    website: 'borealsensing.example', about: 'Thermal imaging of Arctic sea ice and permafrost.' },
+  { key: 'terrafirma', email: 'terrafirma@demo.aether', name: 'Terra Firma Imaging', country: 'Brazil',
+    person: ['Rafael', 'Duarte'], role: 'Head of Launch', entity: 'commercial', funding: 'series_a',
+    size: '11-50', founded: 2019, heritage: '1-3', regime: 'none', apps: ['eo'],
+    website: 'terrafirma.example', about: 'Deforestation and land-use monitoring across the Amazon basin.' },
+  { key: 'hansa', email: 'hansa@demo.aether', name: 'Hansa Orbital', country: 'Poland',
+    person: ['Marta', 'Lewandowska'], role: 'Mission Manager', entity: 'commercial', funding: 'pre_seed',
+    size: '1-10', founded: 2022, heritage: 'none', regime: 'eu_dual', apps: ['iot', 'tech_demo'],
+    website: 'hansaorbital.example', about: 'Store-and-forward messaging for Baltic shipping.' },
+  { key: 'zephyr', email: 'zephyr@demo.aether', name: 'Zephyr Dynamics', country: 'United States',
+    person: ['Alicia', 'Moreno'], role: 'Director of Launch', entity: 'commercial', funding: 'listed',
+    size: '201-1000', founded: 2013, heritage: '10+', regime: 'itar', apps: ['comms', 'defence'],
+    website: 'zephyrdynamics.example', about: 'Secure narrowband communications for government customers.' },
+  { key: 'sagara', email: 'sagara@demo.aether', name: 'Sagara Maritime', country: 'Singapore',
+    person: ['Wei Ling', 'Tan'], role: 'Programme Manager', entity: 'commercial', funding: 'pre_seed',
+    size: '11-50', founded: 2021, heritage: 'none', regime: 'none', apps: ['eo', 'iot'],
+    website: 'sagaramaritime.example', about: 'AIS and vessel-tracking coverage across the Strait of Malacca.' },
+  { key: 'atacama', email: 'atacama@demo.aether', name: 'Atacama Astronomy Consortium', country: 'Chile',
+    person: ['Camila', 'Rojas'], role: 'Principal Investigator', entity: 'academic', funding: '',
+    size: '11-50', founded: 2005, heritage: '1-3', regime: 'none', apps: ['science'],
+    website: 'atacama-ac.example', about: 'Ultraviolet transient astronomy with university partners.' },
+  { key: 'meridiem', email: 'meridiem@demo.aether', name: 'Meridiem Space', country: 'United Arab Emirates',
+    person: ['Yousef', 'Al Marzooqi'], role: 'Head of Missions', entity: 'commercial', funding: 'series_b',
+    size: '51-200', founded: 2017, heritage: '4-10', regime: 'unsure', apps: ['comms', 'eo'],
+    website: 'meridiemspace.example', about: 'Regional broadband relay and high-revisit optical tasking.' },
 ];
 
 // Clustered on purpose: several operators heading for the same shell in the
@@ -100,11 +128,57 @@ const SATELLITES = [
     ride: 'dedicated', form: 'custom', prop: true, notes: 'Relay node. Dedicated or large rideshare.' },
   { op: 'solstice', ref: 'Solstice-M1', orbit: 'meo', alt: 8000, inc: 55, mass: 600, when: '2028-06',
     ride: 'dedicated', form: 'mini', prop: true, notes: '', draft: true },
+
+  // ── SSO Q3–Q4 2027, matching the newly listed European supply ──────────
+  { op: 'boreal', ref: 'Boreal-1', orbit: 'sso', alt: 550, inc: 97.6, mass: 120, when: '2027-08',
+    ride: 'rideshare', form: 'micro', prop: false, notes: 'Thermal payload; needs a 22:00 LTDN.' },
+  { op: 'boreal', ref: 'Boreal-2', orbit: 'sso', alt: 550, inc: 97.6, mass: 120, when: '2027-11',
+    ride: 'rideshare', form: 'micro', prop: false, notes: '' },
+  { op: 'terrafirma', ref: 'TF-Verde-1', orbit: 'sso', alt: 560, inc: 97.6, mass: 210, when: '2027-09',
+    ride: 'rideshare', form: 'espa', prop: true, notes: '' },
+  { op: 'hansa', ref: 'Hansa-A', orbit: 'sso', alt: 535, inc: 97.5, mass: 9, when: '2027-08',
+    ride: 'rideshare', form: 'cubesat_12u', prop: false, notes: 'First flight. Very flexible on altitude.' },
+  { op: 'sagara', ref: 'Sagara-1', orbit: 'sso', alt: 545, inc: 97.5, mass: 55, when: '2027-10',
+    ride: 'rideshare', form: 'cubesat_12u', prop: false, notes: '' },
+  { op: 'atacama', ref: 'ATA-UV1', orbit: 'sso', alt: 555, inc: 97.6, mass: 18, when: '2027-11',
+    ride: 'rideshare', form: 'cubesat_12u', prop: false, notes: 'Consortium build. Grant window closes Q4 2027.' },
+
+  // ── polar, now that there is polar supply to match ─────────────────────
+  { op: 'boreal', ref: 'Boreal-P1', orbit: 'leo_polar', alt: 500, inc: 90, mass: 85, when: '2027-06',
+    ride: 'rideshare', form: 'micro', prop: false, notes: 'True polar needed — SSO will not do for this one.' },
+  { op: 'zephyr', ref: 'Zephyr-P4', orbit: 'leo_polar', alt: 510, inc: 90, mass: 160, when: '2027-07',
+    ride: 'rideshare', form: 'micro', prop: true, notes: 'ITAR-controlled. US-licensed providers only.' },
+  { op: 'sagara', ref: 'Sagara-P1', orbit: 'leo_polar', alt: 500, inc: 90, mass: 40, when: '2028-02',
+    ride: 'rideshare', form: 'cubesat_12u', prop: false, notes: '' },
+
+  // ── equatorial, the orbit nobody else here wants ───────────────────────
+  { op: 'sagara', ref: 'Sagara-E1', orbit: 'leo_equat', alt: 500, inc: 5, mass: 70, when: '2028-07',
+    ride: 'rideshare', form: 'micro', prop: false, notes: 'Equatorial coverage of the Malacca approaches.' },
+
+  // ── mid-inclination Q4 2027 ────────────────────────────────────────────
+  { op: 'zephyr', ref: 'Zephyr-M2', orbit: 'leo_mid', alt: 500, inc: 45, mass: 240, when: '2027-11',
+    ride: 'rideshare', form: 'espa', prop: true, notes: '' },
+  { op: 'hansa', ref: 'Hansa-B', orbit: 'leo_mid', alt: 505, inc: 45, mass: 11, when: '2027-11',
+    ride: 'rideshare', form: 'cubesat_12u', prop: false, notes: '' },
+  { op: 'terrafirma', ref: 'TF-Verde-2', orbit: 'leo_mid', alt: 500, inc: 45, mass: 200, when: '2027-07',
+    ride: 'rideshare', form: 'espa', prop: true, notes: '' },
+
+  // ── GTO, matching the Ariane 6 and H3 listings ─────────────────────────
+  { op: 'meridiem', ref: 'Meridiem-G1', orbit: 'gto', alt: 35786, inc: 6, mass: 1400, when: '2028-04',
+    ride: 'rideshare', form: 'custom', prop: true, notes: 'Co-manifest acceptable. Electric raising after separation.' },
+
+  // ── drafts, so the demo shows unpublished work in progress ─────────────
+  { op: 'meridiem', ref: 'Meridiem-G2', orbit: 'gto', alt: 35786, inc: 6, mass: 1450, when: '2029-01',
+    ride: 'rideshare', form: 'custom', prop: true, notes: '', draft: true },
+  { op: 'atacama', ref: 'ATA-UV2', orbit: 'sso', alt: 555, inc: 97.6, mass: 20, when: '2028-09',
+    ride: 'rideshare', form: 'cubesat_12u', prop: false, notes: 'Funding not confirmed.', draft: true },
 ];
 
 const CONSTELLATIONS = [
   { op: 'kestrel', name: 'Kestrel', members: ['Kestrel-1', 'Kestrel-2'] },
   { op: 'vantage', name: 'Vantage Tier-2', members: ['Vantage-3', 'Vantage-4'] },
+  { op: 'boreal', name: 'Boreal Thermal', members: ['Boreal-1', 'Boreal-2'] },
+  { op: 'sagara', name: 'Sagara Maritime Tier-1', members: ['Sagara-1', 'Sagara-P1'] },
 ];
 
 const POOLS = [
@@ -128,6 +202,16 @@ const POOLS = [
       ['solstice', 'Solstice-D1 is 420 kg, 45°, June. We carry hydrazine so we need a provider comfortable with hazardous handling — flagging early.'],
       ['tidewater', 'Tidewater-5, 150 kg, 550 km, 45°, May. Ours is ITAR-controlled, so US-licensed providers only. Worth both of us saying that up front.'],
       ['nimbus', 'Nimbus-B2 is 15 kg and we are flexible. Bandwagon-6 looks like the obvious target for this plane.'],
+    ],
+  },
+  {
+    name: 'Polar 500 · Q2–Q3 2027',
+    lead: 'boreal', seed: 'Boreal-P1',
+    join: [['zephyr', 'Zephyr-P4']],
+    messages: [
+      ['boreal', 'True polar, 90°, 500 km. Boreal-P1 is 85 kg in June. SSO does not work for us — we need the 90° plane specifically, so rideshare options are thin.'],
+      ['zephyr', 'Same plane, Zephyr-P4 at 160 kg in July. Ours is ITAR-controlled so we are limited to US-licensed providers, which narrows it further. The Electron polar dedicated has 160 kg spare and would take both of us.'],
+      ['boreal', 'Agreed — 245 kg between us against 160 kg listed spare, so we would need them to open a second flight or we drop one. Worth asking.'],
     ],
   },
 ];

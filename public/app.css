@@ -309,3 +309,6 @@ a.alert-go { display: inline-block; text-decoration: none; }
 
 /* the launch an alert pointed at, so arriving from the inbox lands somewhere */
 .launch-card.focused { border-color: var(--accent); }
+
+/* a broker lists capacity it does not fly — name both parties */
+.operator { font-size: clamp(12px, .88vw, 15px); color: var(--text-4); margin-top: 2px; }

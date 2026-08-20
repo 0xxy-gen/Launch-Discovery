@@ -32,6 +32,7 @@
     const right = el('div');
     right.style.textAlign = 'right';
     right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+    if (l.resold) right.append(el('div', 'operator', `flies on ${l.operator}`));
     const fav = el('button', 'fav on');
     fav.type = 'button';
     fav.title = 'Remove from saved';

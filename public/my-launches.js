@@ -3,7 +3,7 @@
   const listView = $('list-view'), editorView = $('editor-view');
   const form = $('launch-form'), rows = $('rows'), empty = $('empty'), banner = $('banner');
 
-  const FIELDS = ['name', 'vehicle', 'site', 'orbitType', 'altitudeKm', 'inclinationDeg',
+  const FIELDS = ['name', 'vehicle', 'operator', 'site', 'orbitType', 'altitudeKm', 'inclinationDeg',
                   'windowMonth', 'capacityKg', 'committedKg', 'notes'];
 
   let editingId = null;
@@ -32,7 +32,8 @@
   const clearErrors = () => FIELDS.forEach(id => setError(id, ''));
 
   const readForm = () => ({
-    name: $('name').value, vehicle: $('vehicle').value, site: $('site').value,
+    name: $('name').value, vehicle: $('vehicle').value,
+    operator: $('operator').value, site: $('site').value,
     orbitType: $('orbitType').value, altitudeKm: $('altitudeKm').value,
     inclinationDeg: $('inclinationDeg').value, windowMonth: $('windowMonth').value,
     capacityKg: $('capacityKg').value, committedKg: $('committedKg').value,
@@ -42,6 +43,7 @@
   function fillForm(l) {
     $('name').value = l?.name ?? '';
     $('vehicle').value = l?.vehicle ?? '';
+    $('operator').value = l?.operator ?? '';
     $('site').value = l?.site ?? '';
     $('orbitType').value = l?.orbitTypeValue ?? '';
     $('altitudeKm').value = l?.altitudeKm ?? '';

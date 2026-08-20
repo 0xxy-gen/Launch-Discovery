@@ -33,7 +33,11 @@
       `${l.orbitType} · ${l.altitudeKm} km · ${l.inclinationDeg}° · ${l.windowMonth}`));
     head.append(left);
     const right = el('div', 'launch-right');
-    right.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+    // A broker sells ports on someone else's rocket, so name both, stacked.
+    const seller = el('div', 'seller');
+    seller.append(el('div', 'provider', l.provider || 'Unnamed provider'));
+    if (l.resold) seller.append(el('div', 'operator', `flies on ${l.operator}`));
+    right.append(seller);
 
     const save = el('button', 'fav' + (l.saved ? ' on' : ''));
     save.type = 'button';
